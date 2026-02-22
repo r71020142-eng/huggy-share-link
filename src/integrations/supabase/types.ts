@@ -315,6 +315,7 @@ export type Database = {
       }
       product_additionals: {
         Row: {
+          category: string | null
           created_at: string
           id: string
           is_active: boolean | null
@@ -328,6 +329,7 @@ export type Database = {
           store_id: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
@@ -341,6 +343,7 @@ export type Database = {
           store_id: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           id?: string
           is_active?: boolean | null
