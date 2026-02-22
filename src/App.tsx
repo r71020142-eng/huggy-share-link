@@ -25,6 +25,8 @@ import SuperAdminLogin from "@/pages/superadmin/Login";
 import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
 import SuperAdminKeys from "@/pages/superadmin/Keys";
 import SuperAdminStores from "@/pages/superadmin/Stores";
+import SuperAdminUsers from "@/pages/superadmin/Users";
+import SuperAdminActivityLogs from "@/pages/superadmin/ActivityLogs";
 import PublicMenu from "@/pages/public/PublicMenu";
 import NotFound from "@/pages/NotFound";
 
@@ -76,6 +78,8 @@ const App = () => (
                 <Route index element={<SuperAdminDashboard />} />
                 <Route path="keys" element={<SuperAdminKeys />} />
                 <Route path="stores" element={<SuperAdminStores />} />
+                <Route path="users" element={<SuperAdminUsers />} />
+                <Route path="logs" element={<SuperAdminActivityLogs />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

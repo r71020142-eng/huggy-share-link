@@ -22,6 +22,8 @@ const navItems = [
   { title: "Visão Geral", url: "/superadmin", icon: LayoutDashboard },
   { title: "Chaves", url: "/superadmin/keys", icon: Key },
   { title: "Lojas", url: "/superadmin/stores", icon: Store },
+  { title: "Usuários", url: "/superadmin/users", icon: Users },
+  { title: "Logs", url: "/superadmin/logs", icon: Shield },
 ];
 
 export function SuperAdminLayout() {
