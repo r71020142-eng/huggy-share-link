@@ -179,7 +179,11 @@ export default function Products() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Excluir este produto?")) return;
-    await supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao excluir produto: " + error.message);
+      return;
+    }
     toast.success("Produto excluído");
     fetchProducts();
   };
