@@ -4,16 +4,21 @@ import { useStore } from "@/hooks/useStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, ShoppingCart, DollarSign, Star, Package, BookOpen, Target } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+import { TrendingUp, ShoppingCart, DollarSign, ClipboardList, Star, Package, BookOpen, Target, Settings, Tag } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar } from "recharts";
 import { OnboardingChecklist } from "@/components/admin/OnboardingChecklist";
-import { ProGate } from "@/components/admin/ProGate";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 type Period = "today" | "7days" | "30days";
 
+interface TopProduct {
+  name: string;
+  count: number;
+}
+
 export default function Dashboard() {
-  const { store, isPro } = useStore();
+  const { store } = useStore();
+  const navigate = useNavigate();
   const [period, setPeriod] = useState<Period>("7days");
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -29,11 +34,11 @@ export default function Dashboard() {
     menuCount: 0,
     monthlyGoal: 5000,
     monthlyRevenue: 0,
-    prevPeriodRevenue: 0,
-    prevPeriodOrders: 0,
   });
   const [chartData, setChartData] = useState<{ date: string; revenue: number }[]>([]);
+  const [ordersChartData, setOrdersChartData] = useState<{ date: string; pedidos: number }[]>([]);
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
 
   useEffect(() => {
     if (!store) return;
@@ -48,21 +53,17 @@ export default function Dashboard() {
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-
     const periodDays = period === "today" ? 0 : period === "7days" ? 7 : 30;
     const periodStart = new Date(now.getTime() - periodDays * 86400000).toISOString();
-    const prevPeriodStart = new Date(now.getTime() - periodDays * 2 * 86400000).toISOString();
 
-    const [{ data: orders }, { data: todayOrders }, { data: pendingOrders }, { count: productCount }, { count: menuCount }, { data: prevOrders }] = await Promise.all([
+    const [{ data: orders }, { data: todayOrders }, { data: pendingOrders }, { count: productCount }, { count: menuCount }] = await Promise.all([
       supabase.from("orders").select("*").eq("store_id", store.id).gte("created_at", periodStart),
       supabase.from("orders").select("*").eq("store_id", store.id).gte("created_at", todayStart),
       supabase.from("orders").select("*").eq("store_id", store.id).eq("status", "pending"),
       supabase.from("products").select("*", { count: "exact", head: true }).eq("store_id", store.id),
       supabase.from("menus").select("*", { count: "exact", head: true }).eq("store_id", store.id),
-      supabase.from("orders").select("total").eq("store_id", store.id).gte("created_at", prevPeriodStart).lt("created_at", periodStart),
     ]);
 
-    // Fetch order items for top product
     const { data: orderItems } = await supabase
       .from("order_items")
       .select("product_name, quantity, order_id")
@@ -74,15 +75,14 @@ export default function Dashboard() {
     const avgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     const todayRev = (todayOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
 
-    const prevPeriodRevenue = (prevOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
-    const prevPeriodOrders = (prevOrders || []).length;
-
-    // Top product
+    // Top products
     const productCounts: Record<string, number> = {};
     (orderItems || []).forEach(item => {
       productCounts[item.product_name] = (productCounts[item.product_name] || 0) + item.quantity;
     });
-    const topEntry = Object.entries(productCounts).sort((a, b) => b[1] - a[1])[0];
+    const sortedProducts = Object.entries(productCounts).sort((a, b) => b[1] - a[1]);
+    const topEntry = sortedProducts[0];
+    setTopProducts(sortedProducts.slice(0, 5).map(([name, count]) => ({ name, count })));
 
     // Monthly revenue
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -90,13 +90,16 @@ export default function Dashboard() {
       .from("orders").select("total").eq("store_id", store.id).gte("created_at", monthStart);
     const monthlyRevenue = (monthOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
 
-    // Chart data
+    // Revenue chart data
     const dateMap: Record<string, number> = {};
+    const ordersDateMap: Record<string, number> = {};
     allOrders.forEach(o => {
       const date = new Date(o.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
       dateMap[date] = (dateMap[date] || 0) + Number(o.total);
+      ordersDateMap[date] = (ordersDateMap[date] || 0) + 1;
     });
     const chart = Object.entries(dateMap).map(([date, revenue]) => ({ date, revenue })).sort((a, b) => a.date.localeCompare(b.date));
+    const ordersChart = Object.entries(ordersDateMap).map(([date, pedidos]) => ({ date, pedidos })).sort((a, b) => a.date.localeCompare(b.date));
 
     // Status distribution
     const statusCounts: Record<string, number> = {};
@@ -121,10 +124,9 @@ export default function Dashboard() {
       menuCount: menuCount || 0,
       monthlyGoal: store.monthly_goal || 5000,
       monthlyRevenue,
-      prevPeriodRevenue,
-      prevPeriodOrders,
     });
     setChartData(chart);
+    setOrdersChartData(ordersChart);
     setStatusData(
       Object.entries(statusCounts).map(([name, value]) => ({
         name: statusLabels[name] || name, value, color: statusColors[name] || "#999",
@@ -135,44 +137,17 @@ export default function Dashboard() {
 
   const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   const goalProgress = stats.monthlyGoal > 0 ? Math.min((stats.monthlyRevenue / stats.monthlyGoal) * 100, 100) : 0;
-
-  const getGrowth = (current: number, previous: number) => {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return ((current - previous) / previous) * 100;
-  };
-
-  const revenueGrowth = getGrowth(stats.totalRevenue, stats.prevPeriodRevenue);
-  const ordersGrowth = getGrowth(stats.totalOrders, stats.prevPeriodOrders);
+  const periodLabel = period === "today" ? "Hoje" : period === "7days" ? "7 dias" : "30 dias";
 
   if (!store) {
     return <div className="text-center py-12 text-muted-foreground">Selecione uma loja para continuar.</div>;
   }
 
-  const GrowthIndicator = ({ value }: { value: number }) => {
-    const positive = value >= 0;
-    return (
-      <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${positive ? "text-success" : "text-destructive"}`}>
-        {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-        {positive ? "+" : ""}{value.toFixed(0)}%
-      </span>
-    );
-  };
-
-  const SkeletonCard = () => (
-    <Card>
-      <CardContent className="p-6">
-        <Skeleton className="h-4 w-20 mb-3" />
-        <Skeleton className="h-8 w-28 mb-1" />
-        <Skeleton className="h-3 w-16" />
-      </CardContent>
-    </Card>
-  );
-
   return (
     <div className="space-y-6">
-      {/* Onboarding Checklist */}
       <OnboardingChecklist />
 
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Visão Geral</h2>
@@ -193,161 +168,144 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {loading ? (
-          <>
-            <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
-          </>
-        ) : (
-          <>
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-              <Card className="overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">Faturamento</p>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-                      <DollarSign className="h-4 w-4 text-primary" />
-                    </div>
-                  </div>
-                  <p className="mt-2 text-2xl font-bold tracking-tight text-primary">{formatBRL(stats.totalRevenue)}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <GrowthIndicator value={revenueGrowth} />
-                    <span className="text-xs text-muted-foreground">vs período anterior</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+      {/* 4 KPI Cards */}
+      {loading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}><CardContent className="p-6"><Skeleton className="h-4 w-20 mb-3" /><Skeleton className="h-8 w-28 mb-1" /><Skeleton className="h-3 w-16" /></CardContent></Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {/* Hoje */}
+          <Card className="border-purple-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">Hoje</p>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <p className="mt-2 text-2xl font-bold tracking-tight">{formatBRL(stats.todayRevenue)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{stats.todayOrders} pedidos hoje</p>
+            </CardContent>
+          </Card>
 
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">Pedidos</p>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent">
-                      <ShoppingCart className="h-4 w-4 text-primary" />
-                    </div>
-                  </div>
-                  <p className="mt-2 text-2xl font-bold tracking-tight">{stats.totalOrders}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <GrowthIndicator value={ordersGrowth} />
-                    <span className="text-xs text-muted-foreground">vs período anterior</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+          {/* Pendentes */}
+          <Card className="border-purple-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
+                <ShoppingCart className="h-5 w-5 text-purple-500" />
+              </div>
+              <p className="mt-2 text-2xl font-bold tracking-tight">{stats.pendingOrders}</p>
+              <p className={`mt-1 text-xs font-medium ${stats.pendingOrders > 0 ? "text-orange-500" : "text-muted-foreground"}`}>
+                {stats.pendingOrders > 0 ? "⚡ Aguardando" : "Nenhum pendente"}
+              </p>
+            </CardContent>
+          </Card>
 
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">Ticket médio</p>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent">
-                      <DollarSign className="h-4 w-4 text-primary" />
-                    </div>
-                  </div>
-                  <p className="mt-2 text-2xl font-bold tracking-tight">{formatBRL(stats.avgTicket)}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{stats.totalOrders} pedidos no período</p>
-                </CardContent>
-              </Card>
-            </motion.div>
+          {/* Faturamento */}
+          <Card className="border-purple-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">Faturamento</p>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+              </div>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-primary">{formatBRL(stats.totalRevenue)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{periodLabel}</p>
+            </CardContent>
+          </Card>
 
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-              <Card className={stats.pendingOrders > 0 ? "border-warning/40" : ""}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-muted-foreground">Pendentes</p>
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${stats.pendingOrders > 0 ? "bg-warning/10" : "bg-accent"}`}>
-                      <ShoppingCart className={`h-4 w-4 ${stats.pendingOrders > 0 ? "text-warning" : "text-muted-foreground"}`} />
-                    </div>
-                  </div>
-                  <p className="mt-2 text-2xl font-bold tracking-tight">{stats.pendingOrders}</p>
-                  <p className={`mt-1 text-xs ${stats.pendingOrders > 0 ? "text-warning font-medium" : "text-muted-foreground"}`}>
-                    {stats.pendingOrders > 0 ? "⚡ Aguardando ação" : "Nenhum pendente"}
-                  </p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </>
-        )}
-      </div>
+          {/* Ticket médio */}
+          <Card className="border-purple-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-muted-foreground">Ticket médio</p>
+                <ClipboardList className="h-5 w-5 text-purple-500" />
+              </div>
+              <p className="mt-2 text-2xl font-bold tracking-tight text-primary">{formatBRL(stats.avgTicket)}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{stats.totalOrders} pedidos</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      {/* Quick stats */}
+      {/* Quick stats: Mais vendido + Produtos + Cardápios */}
       <div className="grid gap-4 md:grid-cols-3">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <Star className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Mais vendido</p>
-                  {loading ? <Skeleton className="h-5 w-32" /> : (
-                    <p className="font-semibold text-sm">🏆 {stats.topProduct} ({stats.topProductCount}×)</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent">
-                  <Package className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Produtos</p>
-                  <p className="font-bold text-lg">{stats.productCount}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          <Card>
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Cardápios</p>
-                  <p className="font-bold text-lg">{stats.menuCount}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Monthly Goal */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
+        <Card className="border-purple-200 md:col-span-1">
+          <CardContent className="p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                <Target className="h-5 w-5 text-primary" />
+                <Star className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">Meta mensal</p>
-                <p className="text-xs text-muted-foreground">{formatBRL(stats.monthlyRevenue)} de {formatBRL(stats.monthlyGoal)}</p>
+                <p className="text-xs text-muted-foreground">Produto mais vendido</p>
+                {loading ? <Skeleton className="h-5 w-32" /> : (
+                  <p className="font-bold text-sm">🏆 {stats.topProduct} <span className="font-normal text-muted-foreground">({stats.topProductCount}×)</span></p>
+                )}
               </div>
             </div>
-            <span className="text-lg font-bold text-primary">{Math.round(goalProgress)}%</span>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Package className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Produtos</p>
+                <p className="font-bold text-lg">{stats.productCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Cardápios</p>
+                <p className="font-bold text-lg">{stats.menuCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Meta mensal */}
+      <Card className="border-purple-200">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-primary" />
+              <span className="font-semibold">Meta mensal</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold text-primary">{Math.round(goalProgress)}%</span>
+              <button className="text-xs text-primary hover:underline">Editar meta</button>
+            </div>
           </div>
-          <Progress value={goalProgress} className="mt-3 h-2.5" />
+          <Progress value={goalProgress} className="h-2.5" />
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-muted-foreground">{formatBRL(stats.monthlyRevenue)} arrecadado</p>
+            <p className="text-xs text-muted-foreground">Meta: {formatBRL(stats.monthlyGoal)}</p>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Charts - Pro gated for detailed analytics */}
+      {/* Charts: Faturamento por dia + Pedidos por status */}
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 border-purple-200">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold">Faturamento por dia</CardTitle>
-            <p className="text-xs text-muted-foreground">{period === "7days" ? "Últimos 7 dias" : period === "30days" ? "Últimos 30 dias" : "Hoje"}</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Faturamento por dia</CardTitle>
+                <p className="text-xs text-muted-foreground">{periodLabel}</p>
+              </div>
+              <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -372,7 +330,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-purple-200">
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-semibold">Pedidos por status</CardTitle>
             <p className="text-xs text-muted-foreground">Total: {stats.totalOrders}</p>
@@ -383,7 +341,7 @@ export default function Dashboard() {
             ) : statusData.length > 0 ? (
               <ResponsiveContainer width="100%" height={260}>
                 <PieChart>
-                  <Pie data={statusData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" nameKey="name">
+                  <Pie data={statusData} cx="50%" cy="45%" innerRadius={50} outerRadius={80} dataKey="value" nameKey="name">
                     {statusData.map((entry, index) => (
                       <Cell key={index} fill={entry.color} />
                     ))}
@@ -401,19 +359,109 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Today summary */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="p-5">
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span className="font-semibold">Hoje:</span>
+      {/* Produtos mais pedidos + Pedidos por dia */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="border-purple-200">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Produtos mais pedidos</CardTitle>
+                <p className="text-xs text-muted-foreground">Por quantidade — {periodLabel}</p>
+              </div>
+              <Package className="h-5 w-5 text-muted-foreground" />
             </div>
-            <span className="text-sm"><strong>{formatBRL(stats.todayRevenue)}</strong> em vendas</span>
-            <span className="text-sm"><strong>{stats.todayOrders}</strong> pedidos</span>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <Skeleton className="h-48 w-full rounded-xl" />
+            ) : topProducts.length > 0 ? (
+              <div className="space-y-4">
+                {topProducts.map((product, index) => {
+                  const maxCount = topProducts[0].count;
+                  const barWidth = maxCount > 0 ? (product.count / maxCount) * 100 : 0;
+                  const barColors = ["bg-purple-500", "bg-orange-400", "bg-blue-800", "bg-purple-400", "bg-purple-400"];
+                  return (
+                    <div key={index} className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold text-white ${index === 0 ? "bg-green-500" : "bg-gray-400"}`}>
+                            {index + 1}
+                          </span>
+                          <span className="text-sm font-medium">{product.name}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">{product.count}×</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-muted">
+                        <div
+                          className={`h-2 rounded-full ${barColors[index] || "bg-purple-400"}`}
+                          style={{ width: `${barWidth}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+                Sem dados no período
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-200">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-base font-semibold">Pedidos por dia</CardTitle>
+                <p className="text-xs text-muted-foreground">{periodLabel}</p>
+              </div>
+              <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <Skeleton className="h-48 w-full rounded-xl" />
+            ) : ordersChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={ordersChartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="date" className="text-xs" />
+                  <YAxis className="text-xs" allowDecimals={false} />
+                  <Tooltip formatter={(v: number) => [v, "Pedidos"]} />
+                  <Bar dataKey="pedidos" fill="#f97316" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+                Sem pedidos no período
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick links */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-purple-200 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/orders")}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <ShoppingCart className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm font-medium">Ver pedidos</span>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/categories")}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Tag className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm font-medium">Categorias</span>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/settings")}>
+          <CardContent className="p-4 flex items-center gap-3">
+            <Settings className="h-5 w-5 text-muted-foreground" />
+            <span className="text-sm font-medium">Configurações</span>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
