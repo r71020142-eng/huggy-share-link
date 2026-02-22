@@ -26,9 +26,9 @@ export function CartDrawer({ open, onClose, cart, onUpdateQty, onRemove, onCheck
   }, 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
+      <div className="flex items-center justify-between border-b px-4 py-3 min-h-[56px]">
         <div className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5" />
           <h2 className="text-lg font-bold">Minha sacola</h2>
