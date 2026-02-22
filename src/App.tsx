@@ -17,6 +17,9 @@ import CRM from "@/pages/admin/CRM";
 import Reports from "@/pages/admin/Reports";
 import Settings from "@/pages/admin/Settings";
 import Plans from "@/pages/admin/Plans";
+import Neighborhoods from "@/pages/admin/Neighborhoods";
+import SuperAdmin from "@/pages/admin/SuperAdmin";
+import PublicMenu from "@/pages/public/PublicMenu";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,16 +50,19 @@ const App = () => (
               <Route path="/" element={<Navigate to="/admin" replace />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+              <Route path="/m/:slug" element={<PublicMenu />} />
               <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
                 <Route path="orders" element={<Orders />} />
                 <Route path="menus" element={<Menus />} />
                 <Route path="categories" element={<Categories />} />
                 <Route path="products" element={<Products />} />
+                <Route path="neighborhoods" element={<Neighborhoods />} />
                 <Route path="crm" element={<CRM />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="plans" element={<Plans />} />
+                <Route path="superadmin" element={<SuperAdmin />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

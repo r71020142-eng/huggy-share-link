@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 
 export default function Settings() {
@@ -19,6 +20,8 @@ export default function Settings() {
   const [isOpen, setIsOpen] = useState(true);
   const [deliveryEnabled, setDeliveryEnabled] = useState(true);
   const [pickupEnabled, setPickupEnabled] = useState(true);
+  const [logoUrl, setLogoUrl] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -33,6 +36,8 @@ export default function Settings() {
       setIsOpen(store.is_open ?? true);
       setDeliveryEnabled(store.delivery_enabled ?? true);
       setPickupEnabled(store.pickup_enabled ?? true);
+      setLogoUrl(store.logo_url || "");
+      setBannerUrl(store.banner_url || "");
     }
   }, [store]);
 
@@ -51,6 +56,8 @@ export default function Settings() {
       is_open: isOpen,
       delivery_enabled: deliveryEnabled,
       pickup_enabled: pickupEnabled,
+      logo_url: logoUrl || null,
+      banner_url: bannerUrl || null,
     }).eq("id", store.id);
 
     if (error) toast.error("Erro ao salvar");
@@ -68,6 +75,28 @@ export default function Settings() {
       <h2 className="text-2xl font-bold">Configurações da Loja</h2>
 
       <div className="rounded-lg border bg-card p-6 space-y-5">
+        {/* Logo & Banner */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Logo da loja</Label>
+            <ImageUpload
+              value={logoUrl}
+              onChange={(url) => setLogoUrl(url || "")}
+              folder={`logos/${store?.id}`}
+              className="max-w-[150px]"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Banner</Label>
+            <ImageUpload
+              value={bannerUrl}
+              onChange={(url) => setBannerUrl(url || "")}
+              folder={`banners/${store?.id}`}
+              aspectRatio="aspect-video"
+            />
+          </div>
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
             <Label>Nome da loja</Label>

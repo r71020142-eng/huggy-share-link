@@ -11,6 +11,8 @@ import {
   LogOut,
   ChevronDown,
   Store,
+  MapPin,
+  Shield,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useStore } from "@/hooks/useStore";
@@ -40,10 +42,12 @@ const navItems = [
   { title: "Cardápios", url: "/admin/menus", icon: BookOpen },
   { title: "Categorias", url: "/admin/categories", icon: Tag },
   { title: "Produtos", url: "/admin/products", icon: Package },
+  { title: "Bairros", url: "/admin/neighborhoods", icon: MapPin },
   { title: "CRM", url: "/admin/crm", icon: Users },
   { title: "Relatórios", url: "/admin/reports", icon: BarChart3 },
   { title: "Configurações", url: "/admin/settings", icon: Settings },
   { title: "Planos", url: "/admin/plans", icon: Sparkles },
+  { title: "SuperAdmin", url: "/admin/superadmin", icon: Shield },
 ];
 
 export function AdminSidebar() {

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Star, ChevronDown } from "lucide-react";
+import { ImageUpload } from "@/components/ImageUpload";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -192,8 +193,13 @@ export default function Products() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>URL da imagem</Label>
-              <Input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+              <Label>Imagem</Label>
+              <ImageUpload
+                value={imageUrl}
+                onChange={(url) => setImageUrl(url || "")}
+                folder={`products/${store?.id}`}
+                className="max-w-[200px]"
+              />
             </div>
             <div className="space-y-2">
               <Label>Descrição</Label>
