@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
@@ -8,6 +8,23 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Plus, X, Search, GripVertical, RefreshCw, ExternalLink, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { Database } from "@/integrations/supabase/types";
 
 type Menu = Database["public"]["Tables"]["menus"]["Row"];
@@ -23,6 +40,57 @@ interface MenuProduct {
   product?: Product;
 }
 
+// Sortable product item component
+function SortableProductItem({
+  mp,
+  onRemove,
+  formatBRL,
+}: {
+  mp: MenuProduct;
+  onRemove: (id: string) => void;
+  formatBRL: (v: number) => string;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: mp.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between rounded-lg border bg-card p-3"
+    >
+      <div className="flex items-center gap-3">
+        <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </button>
+        {mp.product?.image_url ? (
+          <img src={mp.product.image_url} alt={mp.product?.name} className="h-12 w-12 rounded-lg object-cover" />
+        ) : (
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-lg">📦</div>
+        )}
+        <div>
+          <p className="font-medium">{mp.product?.name || "Produto"}</p>
+          <p className="text-sm text-primary font-medium">
+            {mp.product ? formatBRL(mp.product.price) : ""}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Badge variant="default" className="bg-green-600 text-white text-xs">Disponível</Badge>
+        <button onClick={() => onRemove(mp.id)} className="text-destructive hover:text-destructive/80 p-1">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function CardapioEditor() {
   const { menuId } = useParams();
   const navigate = useNavigate();
@@ -31,11 +99,15 @@ export default function CardapioEditor() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"produtos" | "categorias">("produtos");
 
-  // Products in menu
   const [menuProducts, setMenuProducts] = useState<MenuProduct[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   useEffect(() => {
     if (store && menuId) {
@@ -56,25 +128,20 @@ export default function CardapioEditor() {
   const fetchMenuProducts = async () => {
     if (!menuId) return;
     const { data } = await supabase
-      .from("menu_products" as any)
+      .from("menu_products")
       .select("*")
       .eq("menu_id", menuId)
       .order("sort_order");
 
     if (data) {
-      // Fetch product details for each menu product
-      const productIds = (data as any[]).map((mp: any) => mp.product_id);
+      const productIds = data.map((mp) => mp.product_id);
       if (productIds.length > 0) {
-        const { data: products } = await supabase
-          .from("products")
-          .select("*")
-          .in("id", productIds);
-
-        const enriched = (data as any[]).map((mp: any) => ({
+        const { data: products } = await supabase.from("products").select("*").in("id", productIds);
+        const enriched = data.map((mp) => ({
           ...mp,
           product: products?.find((p) => p.id === mp.product_id),
         }));
-        setMenuProducts(enriched);
+        setMenuProducts(enriched as MenuProduct[]);
       } else {
         setMenuProducts([]);
       }
@@ -83,30 +150,21 @@ export default function CardapioEditor() {
 
   const fetchAllProducts = async () => {
     if (!store) return;
-    const { data } = await supabase
-      .from("products")
-      .select("*")
-      .eq("store_id", store.id)
-      .eq("is_active", true)
-      .order("name");
+    const { data } = await supabase.from("products").select("*").eq("store_id", store.id).eq("is_active", true).order("name");
     setAllProducts(data || []);
   };
 
   const fetchCategories = async () => {
     if (!store) return;
-    const { data } = await supabase
-      .from("categories")
-      .select("*")
-      .eq("store_id", store.id)
-      .order("sort_order");
+    const { data } = await supabase.from("categories").select("*").eq("store_id", store.id).order("sort_order");
     setCategories(data || []);
   };
 
   const addToMenu = async (productId: string) => {
     if (!menuId) return;
     const { error } = await supabase
-      .from("menu_products" as any)
-      .insert({ menu_id: menuId, product_id: productId, sort_order: menuProducts.length } as any);
+      .from("menu_products")
+      .insert({ menu_id: menuId, product_id: productId, sort_order: menuProducts.length });
     if (error) {
       if (error.code === "23505") toast.error("Produto já está no cardápio");
       else toast.error("Erro ao adicionar");
@@ -117,27 +175,35 @@ export default function CardapioEditor() {
   };
 
   const removeFromMenu = async (id: string) => {
-    await supabase.from("menu_products" as any).delete().eq("id", id);
+    await supabase.from("menu_products").delete().eq("id", id);
     toast.success("Produto removido do cardápio");
     fetchMenuProducts();
   };
 
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = menuProducts.findIndex((mp) => mp.id === active.id);
+    const newIndex = menuProducts.findIndex((mp) => mp.id === over.id);
+
+    const reordered = arrayMove(menuProducts, oldIndex, newIndex);
+    setMenuProducts(reordered);
+
+    // Persist new order
+    const updates = reordered.map((mp, index) =>
+      supabase.from("menu_products").update({ sort_order: index }).eq("id", mp.id)
+    );
+    await Promise.all(updates);
+  }, [menuProducts]);
+
   const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
-  // Filter products not already in menu
   const menuProductIds = menuProducts.map((mp) => mp.product_id);
-  const availableProducts = allProducts.filter(
+  const filteredAvailable = allProducts.filter(
     (p) => !menuProductIds.includes(p.id) &&
       (searchQuery === "" || p.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-
-  // Also filter already-in-menu products by search
-  const filteredAvailable = searchQuery
-    ? allProducts.filter(
-        (p) => !menuProductIds.includes(p.id) &&
-          p.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : allProducts.filter((p) => !menuProductIds.includes(p.id));
 
   if (loading) {
     return (
@@ -178,15 +244,13 @@ export default function CardapioEditor() {
           </div>
         </div>
 
-        {/* Tabs: Produtos | Categorias */}
+        {/* Tabs */}
         <div className="border-b bg-card">
           <div className="flex">
             <button
               onClick={() => setActiveTab("produtos")}
               className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "produtos"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                activeTab === "produtos" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               Produtos ({menuProducts.length})
@@ -194,9 +258,7 @@ export default function CardapioEditor() {
             <button
               onClick={() => setActiveTab("categorias")}
               className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "categorias"
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
+                activeTab === "categorias" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               Categorias ({categories.length})
@@ -208,80 +270,42 @@ export default function CardapioEditor() {
         <ScrollArea className="flex-1">
           {activeTab === "produtos" && (
             <div className="p-6 space-y-6">
-              {/* Products in menu */}
               {menuProducts.length > 0 && (
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     NO CARDÁPIO — ARRASTE PARA REORDENAR
                   </h3>
-                  <div className="space-y-2">
-                    {menuProducts.map((mp) => (
-                      <div
-                        key={mp.id}
-                        className="flex items-center justify-between rounded-lg border bg-card p-3"
-                      >
-                        <div className="flex items-center gap-3">
-                          <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                          {mp.product?.image_url ? (
-                            <img
-                              src={mp.product.image_url}
-                              alt={mp.product?.name}
-                              className="h-12 w-12 rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-lg">📦</div>
-                          )}
-                          <div>
-                            <p className="font-medium">{mp.product?.name || "Produto"}</p>
-                            <p className="text-sm text-primary font-medium">
-                              {mp.product ? formatBRL(mp.product.price) : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="default" className="bg-green-600 text-white text-xs">
-                            Disponível
-                          </Badge>
-                          <button
-                            onClick={() => removeFromMenu(mp.id)}
-                            className="text-destructive hover:text-destructive/80 p-1"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
+                  <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={menuProducts.map((mp) => mp.id)} strategy={verticalListSortingStrategy}>
+                      <div className="space-y-2">
+                        {menuProducts.map((mp) => (
+                          <SortableProductItem
+                            key={mp.id}
+                            mp={mp}
+                            onRemove={removeFromMenu}
+                            formatBRL={formatBRL}
+                          />
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </SortableContext>
+                  </DndContext>
                 </div>
               )}
 
-              {/* Add products */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   ADICIONAR PRODUTOS
                 </h3>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscar produto..."
-                    className="pl-9"
-                  />
+                  <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Buscar produto..." className="pl-9" />
                 </div>
                 <div className="space-y-1">
                   {filteredAvailable.map((product) => (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between rounded-lg border bg-card p-3 hover:bg-muted/50 transition-colors"
-                    >
+                    <div key={product.id} className="flex items-center justify-between rounded-lg border bg-card p-3 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center gap-3">
                         {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="h-10 w-10 rounded-lg object-cover"
-                          />
+                          <img src={product.image_url} alt={product.name} className="h-10 w-10 rounded-lg object-cover" />
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm">📦</div>
                         )}
@@ -290,10 +314,7 @@ export default function CardapioEditor() {
                           <p className="text-sm text-muted-foreground">{formatBRL(product.price)}</p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => addToMenu(product.id)}
-                        className="text-muted-foreground hover:text-primary p-1 transition-colors"
-                      >
+                      <button onClick={() => addToMenu(product.id)} className="text-muted-foreground hover:text-primary p-1 transition-colors">
                         <Plus className="h-5 w-5" />
                       </button>
                     </div>
@@ -350,12 +371,7 @@ export default function CardapioEditor() {
             <button onClick={fetchMenu} className="flex items-center gap-1 text-xs text-primary hover:underline">
               <RefreshCw className="h-3 w-3" /> Recarregar
             </button>
-            <a
-              href={`/m/${menu.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            >
+            <a href={`/m/${menu.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>

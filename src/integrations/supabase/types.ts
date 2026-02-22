@@ -150,40 +150,61 @@ export type Database = {
       menus: {
         Row: {
           banner_url: string | null
+          bg_color: string | null
           created_at: string
+          font_family: string | null
           id: string
           is_primary: boolean | null
           is_published: boolean | null
           logo_url: string | null
           name: string
+          show_banner: boolean | null
+          show_categories: boolean | null
+          show_featured: boolean | null
+          show_search: boolean | null
           slug: string
           store_id: string
+          text_color: string | null
           theme_color: string | null
           updated_at: string
         }
         Insert: {
           banner_url?: string | null
+          bg_color?: string | null
           created_at?: string
+          font_family?: string | null
           id?: string
           is_primary?: boolean | null
           is_published?: boolean | null
           logo_url?: string | null
           name: string
+          show_banner?: boolean | null
+          show_categories?: boolean | null
+          show_featured?: boolean | null
+          show_search?: boolean | null
           slug: string
           store_id: string
+          text_color?: string | null
           theme_color?: string | null
           updated_at?: string
         }
         Update: {
           banner_url?: string | null
+          bg_color?: string | null
           created_at?: string
+          font_family?: string | null
           id?: string
           is_primary?: boolean | null
           is_published?: boolean | null
           logo_url?: string | null
           name?: string
+          show_banner?: boolean | null
+          show_categories?: boolean | null
+          show_featured?: boolean | null
+          show_search?: boolean | null
           slug?: string
           store_id?: string
+          text_color?: string | null
           theme_color?: string | null
           updated_at?: string
         }

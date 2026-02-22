@@ -25,70 +25,40 @@ const TABS = [
 
 const TEMPLATES = [
   {
-    id: "acai-premium",
-    name: "Açaí Premium",
-    icon: "🍇",
+    id: "acai-premium", name: "Açaí Premium", icon: "🍇",
     description: "Tons roxos vibrantes, layout de cards com imagens grandes. Perfeito para açaí e smoothies.",
-    tags: ["Açaí", "Smoothie", "Saudável"],
-    layout: "Cards",
-    font: "Poppins",
-    color: "#7c3aed",
-    dots: ["#7c3aed", "#9ca3af", "#d1d5db"],
+    tags: ["Açaí", "Smoothie", "Saudável"], layout: "Cards", font: "Poppins",
+    color: "#7c3aed", dots: ["#7c3aed", "#9ca3af", "#d1d5db"],
   },
   {
-    id: "fast-food",
-    name: "Fast Food",
-    icon: "🍔",
+    id: "fast-food", name: "Fast Food", icon: "🍔",
     description: "Vermelho e laranja energético, grade de 2 colunas para mostrar mais produtos. Ideal para hambúrgueres e lanches.",
-    tags: ["Hambúrguer", "Lanche", "Fast Food"],
-    layout: "Grade",
-    font: "Montserrat",
-    color: "#dc2626",
-    dots: ["#dc2626", "#9ca3af", "#d1d5db"],
+    tags: ["Hambúrguer", "Lanche", "Fast Food"], layout: "Grade", font: "Montserrat",
+    color: "#dc2626", dots: ["#dc2626", "#9ca3af", "#d1d5db"],
   },
   {
-    id: "pizzaria",
-    name: "Pizzaria",
-    icon: "🍕",
+    id: "pizzaria", name: "Pizzaria", icon: "🍕",
     description: "Verde italiano clássico, lista compacta para cardápios extensos. Elegante para pizzarias e restaurantes.",
-    tags: ["Pizza", "Restaurante", "Italiano"],
-    layout: "Lista",
-    font: "Playfair",
-    color: "#16a34a",
-    dots: ["#16a34a", "#9ca3af", "#d1d5db"],
+    tags: ["Pizza", "Restaurante", "Italiano"], layout: "Lista", font: "Playfair Display",
+    color: "#16a34a", dots: ["#16a34a", "#9ca3af", "#d1d5db"],
   },
   {
-    id: "japones",
-    name: "Japonês",
-    icon: "🍣",
+    id: "japones", name: "Japonês", icon: "🍣",
     description: "Vermelho japonês minimalista, lista limpa para um visual sofisticado. Ideal para sushi e culinária oriental.",
-    tags: ["Sushi", "Oriental", "Minimalista"],
-    layout: "Lista",
-    font: "Padrão",
-    color: "#b91c1c",
-    dots: ["#b91c1c", "#9ca3af", "#d1d5db"],
+    tags: ["Sushi", "Oriental", "Minimalista"], layout: "Lista", font: "Inter",
+    color: "#b91c1c", dots: ["#b91c1c", "#9ca3af", "#d1d5db"],
   },
   {
-    id: "sorveteria",
-    name: "Sorveteria",
-    icon: "🍦",
+    id: "sorveteria", name: "Sorveteria", icon: "🍦",
     description: "Rosa e azul pastéis, cards arredondados. Perfeito para sorveterias e docerias.",
-    tags: ["Sorvete", "Doces", "Colorido"],
-    layout: "Cards",
-    font: "Poppins",
-    color: "#db2777",
-    dots: ["#db2777", "#9ca3af", "#d1d5db"],
+    tags: ["Sorvete", "Doces", "Colorido"], layout: "Cards", font: "Poppins",
+    color: "#db2777", dots: ["#db2777", "#9ca3af", "#d1d5db"],
   },
   {
-    id: "dark-premium",
-    name: "Dark Premium",
-    icon: "✨",
+    id: "dark-premium", name: "Dark Premium", icon: "✨",
     description: "Tema escuro elegante com dourado. Premium e sofisticado para restaurantes finos.",
-    tags: ["Premium", "Dark", "Elegante"],
-    layout: "Lista",
-    font: "Playfair",
-    color: "#eab308",
-    dots: ["#eab308", "#9ca3af", "#d1d5db"],
+    tags: ["Premium", "Dark", "Elegante"], layout: "Lista", font: "Playfair Display",
+    color: "#eab308", dots: ["#eab308", "#9ca3af", "#d1d5db"],
   },
 ];
 
@@ -119,11 +89,16 @@ export default function MenuEditor() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("templates");
 
-  // Editable fields
+  // Design fields
   const [themeColor, setThemeColor] = useState("#7c3aed");
   const [bgColor, setBgColor] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#1a1a1a");
   const [selectedPalette, setSelectedPalette] = useState("Açaí");
+  const [fontFamily, setFontFamily] = useState("Inter");
+  const [showBanner, setShowBanner] = useState(true);
+  const [showCategories, setShowCategories] = useState(true);
+  const [showFeatured, setShowFeatured] = useState(true);
+  const [showSearch, setShowSearch] = useState(true);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -141,6 +116,13 @@ export default function MenuEditor() {
     if (data) {
       setMenu(data);
       setThemeColor(data.theme_color || "#7c3aed");
+      setBgColor((data as any).bg_color || "#ffffff");
+      setTextColor((data as any).text_color || "#1a1a1a");
+      setFontFamily((data as any).font_family || "Inter");
+      setShowBanner((data as any).show_banner ?? true);
+      setShowCategories((data as any).show_categories ?? true);
+      setShowFeatured((data as any).show_featured ?? true);
+      setShowSearch((data as any).show_search ?? true);
       setLogoUrl(data.logo_url);
       setBannerUrl(data.banner_url);
     }
@@ -154,7 +136,14 @@ export default function MenuEditor() {
       theme_color: themeColor,
       logo_url: logoUrl,
       banner_url: bannerUrl,
-    }).eq("id", menu.id);
+      font_family: fontFamily,
+      bg_color: bgColor,
+      text_color: textColor,
+      show_banner: showBanner,
+      show_categories: showCategories,
+      show_featured: showFeatured,
+      show_search: showSearch,
+    } as any).eq("id", menu.id);
     if (error) toast.error("Erro ao salvar: " + error.message);
     else {
       toast.success("Cardápio salvo com sucesso!");
@@ -172,10 +161,7 @@ export default function MenuEditor() {
     setUploading(true);
     const ext = file.name.split(".").pop();
     const fileName = `${type}s/${store?.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("store-assets").upload(fileName, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
+    const { error } = await supabase.storage.from("store-assets").upload(fileName, file, { cacheControl: "3600", upsert: false });
     if (error) {
       toast.error("Erro ao enviar imagem");
       setUploading(false);
@@ -195,6 +181,7 @@ export default function MenuEditor() {
 
   const applyTemplate = (template: typeof TEMPLATES[0]) => {
     setThemeColor(template.color);
+    setFontFamily(template.font);
     toast.success(`Template "${template.name}" aplicado!`);
   };
 
@@ -208,8 +195,7 @@ export default function MenuEditor() {
 
   const copyLink = () => {
     if (!menu) return;
-    const url = `${window.location.origin}/m/${menu.slug}`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`${window.location.origin}/m/${menu.slug}`);
     toast.success("Link copiado!");
   };
 
@@ -273,9 +259,7 @@ export default function MenuEditor() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    activeTab === tab.id ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -300,20 +284,13 @@ export default function MenuEditor() {
                   <div key={tpl.id} className="rounded-xl border bg-card p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex justify-center w-full">
-                        <span
-                          className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold text-white"
-                          style={{ backgroundColor: tpl.color }}
-                        >
+                        <span className="inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold text-white" style={{ backgroundColor: tpl.color }}>
                           {tpl.icon} {tpl.name}
                         </span>
                       </div>
-                      <div className="flex items-center gap-1 absolute right-6">
+                      <div className="flex items-center gap-1">
                         {tpl.dots.map((dot, i) => (
-                          <div
-                            key={i}
-                            className="h-2.5 w-2.5 rounded-full"
-                            style={{ backgroundColor: dot }}
-                          />
+                          <div key={i} className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: dot }} />
                         ))}
                       </div>
                     </div>
@@ -329,11 +306,7 @@ export default function MenuEditor() {
                     <p className="text-xs text-muted-foreground">
                       Layout: <strong>{tpl.layout}</strong> · Fonte: <strong>{tpl.font}</strong>
                     </p>
-                    <Button
-                      className="w-full gap-2 text-white"
-                      style={{ backgroundColor: tpl.color }}
-                      onClick={() => applyTemplate(tpl)}
-                    >
+                    <Button className="w-full gap-2 text-white" style={{ backgroundColor: tpl.color }} onClick={() => applyTemplate(tpl)}>
                       <Check className="h-4 w-4" /> Aplicar template
                     </Button>
                   </div>
@@ -345,7 +318,6 @@ export default function MenuEditor() {
           {/* CORES TAB */}
           {activeTab === "cores" && (
             <div className="space-y-6">
-              {/* Paletas Prontas */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Paletas Prontas</h3>
                 <div className="grid grid-cols-3 gap-3">
@@ -354,29 +326,20 @@ export default function MenuEditor() {
                       key={palette.name}
                       onClick={() => applyPalette(palette)}
                       className={`flex items-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
-                        selectedPalette === palette.name
-                          ? "border-primary ring-2 ring-primary/20"
-                          : "hover:border-muted-foreground/50"
+                        selectedPalette === palette.name ? "border-primary ring-2 ring-primary/20" : "hover:border-muted-foreground/50"
                       } ${palette.isDark ? "bg-foreground text-background" : ""}`}
                     >
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: palette.isDark ? "#ffffff" : palette.color }}
-                      />
+                      <div className="h-3 w-3 rounded-full" style={{ backgroundColor: palette.isDark ? "#ffffff" : palette.color }} />
                       {palette.name}
-                      {selectedPalette === palette.name && (
-                        <Check className="ml-auto h-3 w-3" />
-                      )}
+                      {selectedPalette === palette.name && <Check className="ml-auto h-3 w-3" />}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Cores Personalizadas */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Cores Personalizadas</h3>
                 <div className="space-y-3">
-                  {/* Cor primária */}
                   <div className="flex items-center justify-between rounded-lg border bg-card p-4">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full" style={{ backgroundColor: themeColor }} />
@@ -385,13 +348,8 @@ export default function MenuEditor() {
                         <p className="text-sm text-muted-foreground">Botões, destaques, links</p>
                       </div>
                     </div>
-                    <Input
-                      value={themeColor}
-                      onChange={(e) => setThemeColor(e.target.value)}
-                      className="w-24 text-center font-mono text-sm"
-                    />
+                    <Input value={themeColor} onChange={(e) => setThemeColor(e.target.value)} className="w-24 text-center font-mono text-sm" />
                   </div>
-                  {/* Cor de fundo */}
                   <div className="flex items-center justify-between rounded-lg border bg-card p-4">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full border" style={{ backgroundColor: bgColor }} />
@@ -400,13 +358,8 @@ export default function MenuEditor() {
                         <p className="text-sm text-muted-foreground">Fundo geral do cardápio</p>
                       </div>
                     </div>
-                    <Input
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="w-24 text-center font-mono text-sm"
-                    />
+                    <Input value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="w-24 text-center font-mono text-sm" />
                   </div>
-                  {/* Cor do texto */}
                   <div className="flex items-center justify-between rounded-lg border bg-card p-4">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full" style={{ backgroundColor: textColor }} />
@@ -415,16 +368,12 @@ export default function MenuEditor() {
                         <p className="text-sm text-muted-foreground">Textos e títulos</p>
                       </div>
                     </div>
-                    <Input
-                      value={textColor}
-                      onChange={(e) => setTextColor(e.target.value)}
-                      className="w-24 text-center font-mono text-sm"
-                    />
+                    <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-24 text-center font-mono text-sm" />
                   </div>
                 </div>
               </div>
 
-              {/* Color Preview Card */}
+              {/* Preview */}
               <div className="overflow-hidden rounded-lg border">
                 <div className="px-4 py-3" style={{ backgroundColor: themeColor }}>
                   <p className="font-semibold text-white">{store?.name || "Nome da Loja"}</p>
@@ -434,10 +383,7 @@ export default function MenuEditor() {
                   <p className="font-medium" style={{ color: textColor }}>Açaí Tradicional</p>
                   <div className="flex items-center justify-between">
                     <p className="text-sm" style={{ color: textColor }}>500ml</p>
-                    <button
-                      className="rounded-md px-3 py-1 text-sm font-medium text-white"
-                      style={{ backgroundColor: themeColor }}
-                    >
+                    <button className="rounded-md px-3 py-1 text-sm font-medium text-white" style={{ backgroundColor: themeColor }}>
                       Adicionar
                     </button>
                   </div>
@@ -457,7 +403,13 @@ export default function MenuEditor() {
                 {FONT_OPTIONS.map((font) => (
                   <button
                     key={font.value}
-                    className="flex items-center justify-between rounded-lg border bg-card p-4 text-left hover:border-primary transition-colors"
+                    onClick={() => {
+                      setFontFamily(font.value);
+                      toast.success(`Fonte "${font.name}" selecionada!`);
+                    }}
+                    className={`flex items-center justify-between rounded-lg border bg-card p-4 text-left transition-colors ${
+                      fontFamily === font.value ? "border-primary ring-2 ring-primary/20" : "hover:border-primary"
+                    }`}
                   >
                     <div>
                       <p className="font-medium" style={{ fontFamily: font.value }}>{font.name}</p>
@@ -465,6 +417,7 @@ export default function MenuEditor() {
                         Exemplo de texto para visualização
                       </p>
                     </div>
+                    {fontFamily === font.value && <Check className="h-4 w-4 text-primary" />}
                   </button>
                 ))}
               </div>
@@ -479,22 +432,42 @@ export default function MenuEditor() {
                 <p className="text-sm text-muted-foreground">Configure o layout do seu cardápio.</p>
               </div>
               <div className="space-y-4">
-                {[
-                  { title: "Mostrar banner", desc: "Exibir banner promocional no topo" },
-                  { title: "Mostrar categorias", desc: "Exibir filtros de categoria" },
-                  { title: "Mostrar destaques", desc: "Exibir seção de produtos em destaque" },
-                  { title: "Mostrar busca", desc: "Exibir campo de busca de produtos" },
-                ].map((item) => (
-                  <div key={item.title} className="rounded-lg border bg-card p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{item.title}</p>
-                        <p className="text-sm text-muted-foreground">{item.desc}</p>
-                      </div>
-                      <Switch defaultChecked />
+                <div className="rounded-lg border bg-card p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Mostrar banner</p>
+                      <p className="text-sm text-muted-foreground">Exibir banner promocional no topo</p>
                     </div>
+                    <Switch checked={showBanner} onCheckedChange={setShowBanner} />
                   </div>
-                ))}
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Mostrar categorias</p>
+                      <p className="text-sm text-muted-foreground">Exibir filtros de categoria</p>
+                    </div>
+                    <Switch checked={showCategories} onCheckedChange={setShowCategories} />
+                  </div>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Mostrar destaques</p>
+                      <p className="text-sm text-muted-foreground">Exibir seção de produtos em destaque</p>
+                    </div>
+                    <Switch checked={showFeatured} onCheckedChange={setShowFeatured} />
+                  </div>
+                </div>
+                <div className="rounded-lg border bg-card p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Mostrar busca</p>
+                      <p className="text-sm text-muted-foreground">Exibir campo de busca de produtos</p>
+                    </div>
+                    <Switch checked={showSearch} onCheckedChange={setShowSearch} />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -502,7 +475,6 @@ export default function MenuEditor() {
           {/* IMAGENS TAB */}
           {activeTab === "imagens" && (
             <div className="space-y-8">
-              {/* Logo */}
               <div className="space-y-3">
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Logo da Loja</h3>
@@ -527,9 +499,7 @@ export default function MenuEditor() {
                   disabled={uploadingLogo}
                   className="flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-8 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted"
                 >
-                  {uploadingLogo ? (
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  ) : (
+                  {uploadingLogo ? <Loader2 className="h-8 w-8 animate-spin" /> : (
                     <>
                       <Upload className="mb-2 h-8 w-8" />
                       <span className="font-medium">Enviar nova logo</span>
@@ -544,7 +514,6 @@ export default function MenuEditor() {
                 }} />
               </div>
 
-              {/* Banner */}
               <div className="space-y-3">
                 <div>
                   <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Banner do Cardápio</h3>
@@ -567,9 +536,7 @@ export default function MenuEditor() {
                   disabled={uploadingBanner}
                   className="flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-8 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted"
                 >
-                  {uploadingBanner ? (
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  ) : (
+                  {uploadingBanner ? <Loader2 className="h-8 w-8 animate-spin" /> : (
                     <>
                       <Upload className="mb-2 h-8 w-8" />
                       <span className="font-medium">Enviar novo banner</span>
@@ -597,9 +564,7 @@ export default function MenuEditor() {
                 <Label>Link do cardápio</Label>
                 <div className="flex items-center gap-2">
                   <Input readOnly value={menuUrl} className="flex-1" />
-                  <Button variant="outline" size="icon" onClick={copyLink}>
-                    <Copy className="h-4 w-4" />
-                  </Button>
+                  <Button variant="outline" size="icon" onClick={copyLink}><Copy className="h-4 w-4" /></Button>
                 </div>
                 <p className="text-xs text-muted-foreground">Este é o link público do seu cardápio.</p>
               </div>
@@ -609,7 +574,6 @@ export default function MenuEditor() {
           {/* COMPARTILHAR TAB */}
           {activeTab === "compartilhar" && (
             <div className="space-y-6">
-              {/* QR Code */}
               <div className="rounded-lg border bg-card p-6 space-y-4">
                 <div className="text-center">
                   <h3 className="font-semibold">QR Code do cardápio</h3>
@@ -617,11 +581,7 @@ export default function MenuEditor() {
                 </div>
                 <div className="flex justify-center">
                   <div className="rounded-lg border p-3">
-                    <img
-                      src={qrCodeUrl}
-                      alt="QR Code"
-                      className="h-[200px] w-[200px]"
-                    />
+                    <img src={qrCodeUrl} alt="QR Code" className="h-[200px] w-[200px]" />
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -634,7 +594,6 @@ export default function MenuEditor() {
                 </div>
               </div>
 
-              {/* Status da publicação */}
               <div className="rounded-lg border bg-card p-5 space-y-3">
                 <h3 className="font-semibold">Status da publicação</h3>
                 <div className="flex items-center gap-2">
@@ -644,12 +603,7 @@ export default function MenuEditor() {
                   </span>
                 </div>
                 {menu.is_published && (
-                  <a
-                    href={`/m/${menu.slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                  >
+                  <a href={`/m/${menu.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                     <ExternalLink className="h-3 w-3" /> Abrir cardápio público
                   </a>
                 )}
@@ -670,12 +624,7 @@ export default function MenuEditor() {
             <button onClick={fetchMenu} className="flex items-center gap-1 text-xs text-primary hover:underline">
               <RefreshCw className="h-3 w-3" /> Recarregar
             </button>
-            <a
-              href={`/m/${menu.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-            >
+            <a href={`/m/${menu.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
