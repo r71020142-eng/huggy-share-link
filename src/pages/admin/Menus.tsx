@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ type Menu = Database["public"]["Tables"]["menus"]["Row"];
 
 export default function Menus() {
   const { store } = useStore();
+  const navigate = useNavigate();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -94,7 +96,7 @@ export default function Menus() {
                   {menu.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
                 <Button size="icon" variant="ghost"><Copy className="h-4 w-4" /></Button>
-                <Button size="icon" variant="ghost"><Pencil className="h-4 w-4" /></Button>
+                <Button size="icon" variant="ghost" onClick={() => navigate(`/admin/menus/${menu.id}/editor`)}><Pencil className="h-4 w-4" /></Button>
                 {!menu.is_primary && (
                   <Button size="icon" variant="ghost" className="text-destructive" onClick={() => handleDelete(menu.id)}>
                     <Trash2 className="h-4 w-4" />
@@ -103,10 +105,10 @@ export default function Menus() {
               </div>
             </div>
             <div className="mt-3 flex items-center gap-4 text-sm">
-              <button className="flex items-center gap-1 text-primary hover:underline">✏️ Produtos e categorias</button>
-              <button className="flex items-center gap-1 text-primary hover:underline">🖼️ Logo e banner</button>
-              <button className="flex items-center gap-1 text-primary hover:underline"><Palette className="h-3 w-3" /> Design e tema</button>
-              <button className="flex items-center gap-1 text-primary hover:underline">🔗 Ver cardápio</button>
+              <button onClick={() => navigate(`/admin/menus/${menu.id}/editor`)} className="flex items-center gap-1 text-primary hover:underline">✏️ Produtos e categorias</button>
+              <button onClick={() => navigate(`/admin/menus/${menu.id}/editor`)} className="flex items-center gap-1 text-primary hover:underline">🖼️ Logo e banner</button>
+              <button onClick={() => navigate(`/admin/menus/${menu.id}/editor`)} className="flex items-center gap-1 text-primary hover:underline"><Palette className="h-3 w-3" /> Design e tema</button>
+              <a href={`/m/${menu.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">🔗 Ver cardápio</a>
             </div>
           </div>
         ))}
