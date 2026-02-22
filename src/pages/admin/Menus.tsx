@@ -105,7 +105,7 @@ export default function Menus() {
               </div>
             </div>
             <div className="mt-3 flex items-center gap-4 text-sm">
-              <button onClick={() => navigate(`/admin/menus/${menu.id}/editor`)} className="flex items-center gap-1 text-primary hover:underline">✏️ Produtos e categorias</button>
+              <button onClick={() => navigate(`/admin/menus/${menu.id}`)} className="flex items-center gap-1 text-primary hover:underline">✏️ Produtos e categorias</button>
               <button onClick={() => navigate(`/admin/menus/${menu.id}/editor`)} className="flex items-center gap-1 text-primary hover:underline">🖼️ Logo e banner</button>
               <button onClick={() => navigate(`/admin/menus/${menu.id}/editor`)} className="flex items-center gap-1 text-primary hover:underline"><Palette className="h-3 w-3" /> Design e tema</button>
               <a href={`/m/${menu.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">🔗 Ver cardápio</a>

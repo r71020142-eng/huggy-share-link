@@ -13,6 +13,7 @@ import Dashboard from "@/pages/admin/Dashboard";
 import Orders from "@/pages/admin/Orders";
 import Menus from "@/pages/admin/Menus";
 import MenuEditor from "@/pages/admin/MenuEditor";
+import CardapioEditor from "@/pages/admin/CardapioEditor";
 import Categories from "@/pages/admin/Categories";
 import Products from "@/pages/admin/Products";
 import CRM from "@/pages/admin/CRM";
@@ -60,6 +61,7 @@ const App = () => (
                 <Route path="orders" element={<Orders />} />
                 <Route path="menus" element={<Menus />} />
                 <Route path="menus/:menuId/editor" element={<MenuEditor />} />
+                <Route path="menus/:menuId" element={<CardapioEditor />} />
                 <Route path="categories" element={<Categories />} />
                 <Route path="products" element={<Products />} />
                 <Route path="neighborhoods" element={<Neighborhoods />} />
