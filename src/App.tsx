@@ -21,6 +21,7 @@ import Reports from "@/pages/admin/Reports";
 import Settings from "@/pages/admin/Settings";
 import Plans from "@/pages/admin/Plans";
 import Neighborhoods from "@/pages/admin/Neighborhoods";
+import SuperAdminLogin from "@/pages/superadmin/Login";
 import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
 import SuperAdminKeys from "@/pages/superadmin/Keys";
 import SuperAdminStores from "@/pages/superadmin/Stores";
@@ -70,6 +71,7 @@ const App = () => (
                 <Route path="settings" element={<Settings />} />
                 <Route path="plans" element={<Plans />} />
               </Route>
+              <Route path="/superadmin/login" element={<SuperAdminLogin />} />
               <Route path="/superadmin" element={<SuperAdminLayout />}>
                 <Route index element={<SuperAdminDashboard />} />
                 <Route path="keys" element={<SuperAdminKeys />} />
