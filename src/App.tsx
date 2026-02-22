@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { StoreProvider } from "@/hooks/useStore";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { SuperAdminLayout } from "@/components/admin/SuperAdminLayout";
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Dashboard from "@/pages/admin/Dashboard";
@@ -18,7 +19,9 @@ import Reports from "@/pages/admin/Reports";
 import Settings from "@/pages/admin/Settings";
 import Plans from "@/pages/admin/Plans";
 import Neighborhoods from "@/pages/admin/Neighborhoods";
-import SuperAdmin from "@/pages/admin/SuperAdmin";
+import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
+import SuperAdminKeys from "@/pages/superadmin/Keys";
+import SuperAdminStores from "@/pages/superadmin/Stores";
 import PublicMenu from "@/pages/public/PublicMenu";
 import NotFound from "@/pages/NotFound";
 
@@ -62,7 +65,11 @@ const App = () => (
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="plans" element={<Plans />} />
-                <Route path="superadmin" element={<SuperAdmin />} />
+              </Route>
+              <Route path="/superadmin" element={<SuperAdminLayout />}>
+                <Route index element={<SuperAdminDashboard />} />
+                <Route path="keys" element={<SuperAdminKeys />} />
+                <Route path="stores" element={<SuperAdminStores />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
