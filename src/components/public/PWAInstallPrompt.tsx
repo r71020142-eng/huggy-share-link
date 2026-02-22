@@ -31,22 +31,28 @@ export function PWAInstallPrompt({ isPro, themeColor, storeName, slug, logoUrl }
       if (themeMeta) themeMeta.content = themeColor;
 
       // Register global service worker (handles manifest + caching for all /m/ routes)
-      if ("serviceWorker" in navigator) {
+    if ("serviceWorker" in navigator) {
         try {
+          // Unregister any old SW first to ensure fresh manifest
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const r of regs) {
+            if (r.active?.scriptURL?.includes("store-sw.js")) {
+              await r.update();
+            }
+          }
+
           const reg = await navigator.serviceWorker.register("/store-sw.js", { scope: "/" });
 
           // Wait for SW to be controlling the page
           if (!navigator.serviceWorker.controller) {
             await new Promise<void>((resolve) => {
               navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true });
-              // Also resolve if SW activates
               const sw = reg.installing || reg.waiting;
               if (sw) {
                 sw.addEventListener("statechange", () => {
                   if (sw.state === "activated") resolve();
                 });
               }
-              // Timeout fallback
               setTimeout(resolve, 3000);
             });
           }
@@ -74,6 +80,16 @@ export function PWAInstallPrompt({ isPro, themeColor, storeName, slug, logoUrl }
       manifestLink.rel = "manifest";
       manifestLink.href = `/m/${slug}/manifest.json?${params.toString()}`;
       document.head.appendChild(manifestLink);
+
+      // Update apple-touch-icon for iOS
+      const iconUrl = logoUrl || "/favicon.ico";
+      let appleIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement | null;
+      if (!appleIcon) {
+        appleIcon = document.createElement("link");
+        appleIcon.rel = "apple-touch-icon";
+        document.head.appendChild(appleIcon);
+      }
+      appleIcon.href = iconUrl;
     };
 
     setup();

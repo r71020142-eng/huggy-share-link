@@ -24,6 +24,16 @@ self.addEventListener('fetch', (event) => {
     const icon = url.searchParams.get('icon') || '/favicon.ico';
     const isExternal = icon.startsWith('http');
 
+    const icons = isExternal
+      ? [
+          { src: icon, sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: icon, sizes: '512x512', type: 'image/png', purpose: 'any' }
+        ]
+      : [
+          { src: '/pwa-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }
+        ];
+
     const manifest = {
       name,
       short_name: shortName,
@@ -34,15 +44,7 @@ self.addEventListener('fetch', (event) => {
       orientation: 'portrait',
       background_color: '#ffffff',
       theme_color: themeColor,
-      icons: isExternal
-        ? [
-            { src: icon, sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: icon, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-          ]
-        : [
-            { src: '/pwa-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-            { src: '/pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-          ]
+      icons
     };
 
     event.respondWith(
