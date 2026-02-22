@@ -7,8 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, Star, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, ChevronDown, ChevronUp, Check, Copy } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -46,6 +53,12 @@ export default function Products() {
   const [addIsRequired, setAddIsRequired] = useState(false);
   const [addIsActive, setAddIsActive] = useState(true);
   const [editingAdditionalId, setEditingAdditionalId] = useState<string | null>(null);
+
+  // Copy additionals
+  const [showCopyDialog, setShowCopyDialog] = useState(false);
+  const [copyTargetProductId, setCopyTargetProductId] = useState<string | null>(null);
+  const [selectedSourceProductId, setSelectedSourceProductId] = useState<string>("");
+  const [copySearchQuery, setCopySearchQuery] = useState("");
 
   useEffect(() => {
     if (store) {
@@ -241,7 +254,81 @@ export default function Products() {
     await fetchAdditionals(expandedAdditionals);
   };
 
-  // Group additionals by category
+  // --- Copy additionals ---
+  const openCopyDialog = (targetProductId: string) => {
+    setCopyTargetProductId(targetProductId);
+    setSelectedSourceProductId("");
+    setCopySearchQuery("");
+    setShowCopyDialog(true);
+  };
+
+  const handleCopyAdditionals = async (mode: "replace" | "append") => {
+    if (!store || !copyTargetProductId || !selectedSourceProductId) return;
+
+    // Fetch source additionals
+    const { data: sourceAdds } = await supabase
+      .from("product_additionals")
+      .select("*")
+      .eq("product_id", selectedSourceProductId)
+      .order("sort_order");
+
+    if (!sourceAdds || sourceAdds.length === 0) {
+      toast.error("O produto selecionado não tem adicionais.");
+      return;
+    }
+
+    // If replace, delete current additionals
+    if (mode === "replace") {
+      await supabase.from("product_additionals").delete().eq("product_id", copyTargetProductId);
+    }
+
+    // Get current count for sort_order offset
+    let sortOffset = 0;
+    if (mode === "append") {
+      const { data: existing } = await supabase
+        .from("product_additionals")
+        .select("id")
+        .eq("product_id", copyTargetProductId);
+      sortOffset = existing?.length || 0;
+    }
+
+    // Create new records (not referencing originals)
+    const newAdds = sourceAdds.map((a, i) => ({
+      name: a.name,
+      category: a.category || "geral",
+      price: a.price ?? 0,
+      max_qty: a.max_qty ?? 1,
+      min_qty: a.min_qty ?? 0,
+      is_required: a.is_required ?? false,
+      is_active: a.is_active ?? true,
+      sort_order: sortOffset + i,
+      product_id: copyTargetProductId,
+      store_id: store.id,
+    }));
+
+    const { error } = await supabase.from("product_additionals").insert(newAdds);
+    if (error) {
+      toast.error("Erro ao copiar: " + error.message);
+      return;
+    }
+
+    toast.success(`${sourceAdds.length} adicionais copiados com sucesso!`);
+    setShowCopyDialog(false);
+    setCopyTargetProductId(null);
+
+    // Refresh if expanded
+    if (expandedAdditionals === copyTargetProductId) {
+      await fetchAdditionals(copyTargetProductId);
+    }
+  };
+
+  const filteredCopyProducts = products.filter(
+    (p) =>
+      p.id !== copyTargetProductId &&
+      (copySearchQuery === "" || p.name.toLowerCase().includes(copySearchQuery.toLowerCase()))
+  );
+
+
   const groupedAdditionals = additionals.reduce<Record<string, Additional[]>>((acc, a) => {
     const cat = (a as any).category || "geral";
     if (!acc[cat]) acc[cat] = [];
@@ -336,9 +423,14 @@ export default function Products() {
             <h3 className="font-bold">Adicionais</h3>
             <p className="text-sm text-muted-foreground">{product.name}</p>
           </div>
-          <Button variant="outline" size="sm" onClick={openAddAdditional}>
-            <Plus className="mr-1 h-4 w-4" /> Adicionar
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => openCopyDialog(product.id)}>
+              <Copy className="mr-1 h-4 w-4" /> Copiar de outro
+            </Button>
+            <Button variant="outline" size="sm" onClick={openAddAdditional}>
+              <Plus className="mr-1 h-4 w-4" /> Adicionar
+            </Button>
+          </div>
         </div>
 
         {showAddForm && (
@@ -481,6 +573,64 @@ export default function Products() {
           <div className="py-12 text-center text-muted-foreground">Nenhum produto criado ainda.</div>
         )}
       </div>
+
+      {/* Copy Additionals Dialog */}
+      <Dialog open={showCopyDialog} onOpenChange={setShowCopyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Copiar adicionais de outro produto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Buscar produto..."
+              value={copySearchQuery}
+              onChange={(e) => setCopySearchQuery(e.target.value)}
+            />
+            <div className="max-h-64 overflow-y-auto space-y-1">
+              {filteredCopyProducts.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedSourceProductId(p.id)}
+                  className={`flex items-center gap-3 w-full rounded-lg border p-3 text-left transition-colors ${
+                    selectedSourceProductId === p.id
+                      ? "border-primary bg-primary/10"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="h-10 w-10 rounded-lg object-cover" />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-sm">📦</div>
+                  )}
+                  <div>
+                    <p className="font-medium text-sm">{p.name}</p>
+                    <p className="text-xs text-muted-foreground">{getCategoryName(p.category_id)}</p>
+                  </div>
+                </button>
+              ))}
+              {filteredCopyProducts.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground py-4">Nenhum produto encontrado.</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            {additionals.length > 0 && selectedSourceProductId ? (
+              <>
+                <Button variant="outline" onClick={() => handleCopyAdditionals("append")} disabled={!selectedSourceProductId}>
+                  Adicionar aos existentes
+                </Button>
+                <Button variant="destructive" onClick={() => handleCopyAdditionals("replace")} disabled={!selectedSourceProductId}>
+                  Substituir existentes
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => handleCopyAdditionals("replace")} disabled={!selectedSourceProductId}>
+                Copiar adicionais
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
