@@ -276,35 +276,69 @@ export default function PublicMenu() {
         </div>
       )}
 
-      {/* Products */}
-      <div className="mt-4 space-y-3 px-4">
-        {filteredProducts.map((product) => (
-          <div key={product.id} className="flex gap-3 rounded-xl border bg-card p-3 shadow-sm">
-            {product.image_url ? (
-              <img src={product.image_url} alt={product.name} className="h-24 w-24 shrink-0 rounded-lg object-cover" />
-            ) : (
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg bg-muted text-3xl">📦</div>
-            )}
-            <div className="flex flex-1 flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{product.name}</span>
-                  {product.badge && <Badge variant="secondary" className="text-[10px]">{product.badge}</Badge>}
-                </div>
-                {product.description && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{product.description}</p>}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="font-bold" style={{ color: themeColor }}>{formatBRL(product.price)}</span>
-                <Button size="sm" onClick={() => addToCart(product)} style={{ backgroundColor: themeColor }}>
-                  <Plus className="mr-1 h-4 w-4" /> Adicionar
-                </Button>
-              </div>
+      {/* Destaques (Featured) */}
+      {(() => {
+        const featuredProducts = filteredProducts.filter((p) => p.is_featured);
+        if (featuredProducts.length === 0) return null;
+        return (
+          <div className="mt-6 px-4">
+            <h2 className="flex items-center gap-2 text-lg font-bold mb-3">
+              <span>⭐</span> Destaques
+            </h2>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {featuredProducts.map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => addToCart(product)}
+                  className="shrink-0 w-[140px] text-left"
+                >
+                  <div className="relative overflow-hidden rounded-xl">
+                    {product.image_url ? (
+                      <img src={product.image_url} alt={product.name} className="h-[140px] w-[140px] object-cover" />
+                    ) : (
+                      <div className="flex h-[140px] w-[140px] items-center justify-center bg-muted text-4xl">📦</div>
+                    )}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                      <span className="text-sm font-bold text-white">{formatBRL(product.price)}</span>
+                    </div>
+                  </div>
+                  <p className="mt-1.5 text-sm font-medium line-clamp-1">{product.name}</p>
+                </button>
+              ))}
             </div>
           </div>
-        ))}
-        {filteredProducts.length === 0 && (
-          <div className="py-12 text-center text-muted-foreground">Nenhum produto encontrado.</div>
-        )}
+        );
+      })()}
+
+      {/* Cardápio */}
+      <div className="mt-6 px-4">
+        <h2 className="text-lg font-bold mb-3">Cardápio</h2>
+        <div className="space-y-3">
+          {filteredProducts.map((product) => (
+            <div key={product.id} className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+              {product.image_url ? (
+                <img src={product.image_url} alt={product.name} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-muted text-2xl">📦</div>
+              )}
+              <div className="flex flex-1 flex-col min-w-0">
+                <span className="font-semibold text-sm line-clamp-1">{product.name}</span>
+                {product.description && <p className="text-xs text-muted-foreground line-clamp-1">{product.description}</p>}
+                <span className="text-sm font-bold mt-0.5" style={{ color: themeColor }}>{formatBRL(product.price)}</span>
+              </div>
+              <button
+                onClick={() => addToCart(product)}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-md"
+                style={{ backgroundColor: themeColor }}
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
+          ))}
+          {filteredProducts.length === 0 && (
+            <div className="py-12 text-center text-muted-foreground">Nenhum produto encontrado.</div>
+          )}
+        </div>
       </div>
 
       {/* Floating cart button */}
