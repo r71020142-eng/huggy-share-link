@@ -2,15 +2,18 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, MapPin, Phone, CreditCard } from "lucide-react";
+import { Search, Eye, CheckCircle, XCircle, MapPin, Phone, CreditCard, Clock, Truck, Store as StoreIcon } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
+type OrderItem = Database["public"]["Tables"]["order_items"]["Row"];
 type OrderStatus = Database["public"]["Enums"]["order_status"];
+
+interface OrderWithItems extends Order {
+  order_items: OrderItem[];
+}
 
 const statusLabels: Record<OrderStatus, string> = {
   pending: "Pendente",
@@ -21,20 +24,37 @@ const statusLabels: Record<OrderStatus, string> = {
   cancelled: "Cancelado",
 };
 
-const statusColors: Record<OrderStatus, string> = {
-  pending: "bg-orange-100 text-orange-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  preparing: "bg-yellow-100 text-yellow-700",
-  delivering: "bg-cyan-100 text-cyan-700",
-  completed: "bg-green-100 text-green-700",
-  cancelled: "bg-red-100 text-red-700",
+const filterLabels: Record<string, string> = {
+  all: "Todos",
+  pending: "Pendentes",
+  confirmed: "Confirmados",
+  preparing: "Preparando",
+  delivering: "Entregando",
+  completed: "Concluídos",
+  cancelled: "Cancelados",
+};
+
+const statusBadgeStyles: Record<OrderStatus, string> = {
+  pending: "text-orange-600 bg-orange-50 border-orange-200",
+  confirmed: "text-blue-600 bg-blue-50 border-blue-200",
+  preparing: "text-yellow-600 bg-yellow-50 border-yellow-200",
+  delivering: "text-cyan-600 bg-cyan-50 border-cyan-200",
+  completed: "text-green-600 bg-green-50 border-green-200",
+  cancelled: "text-red-600 bg-red-50 border-red-200",
 };
 
 const statusFilters: (OrderStatus | "all")[] = ["all", "pending", "confirmed", "preparing", "delivering", "completed", "cancelled"];
 
+const paymentIcons: Record<string, string> = {
+  pix: "💎 Pix",
+  cash: "💵 Dinheiro",
+  credit: "💳 Crédito",
+  debit: "💳 Débito",
+};
+
 export default function Orders() {
   const { store } = useStore();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [search, setSearch] = useState("");
@@ -43,7 +63,6 @@ export default function Orders() {
     if (!store) return;
     fetchOrders();
 
-    // Realtime subscription
     const channel = supabase
       .channel("orders-realtime")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${store.id}` }, () => {
@@ -58,10 +77,10 @@ export default function Orders() {
     if (!store) return;
     const { data } = await supabase
       .from("orders")
-      .select("*")
+      .select("*, order_items(*)")
       .eq("store_id", store.id)
       .order("created_at", { ascending: false });
-    setOrders(data || []);
+    setOrders((data as OrderWithItems[]) || []);
     setLoading(false);
   };
 
@@ -82,30 +101,56 @@ export default function Orders() {
 
   const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("pt-BR") + ", " + d.toLocaleTimeString("pt-BR");
+  };
+
+  const getItemsSummary = (items: OrderItem[]) => {
+    if (!items || items.length === 0) return "";
+    return items.map(item => `${item.quantity}x ${item.product_name}`).join(", ");
+  };
+
+  const getPaymentDisplay = (method: string | null) => {
+    if (!method) return paymentIcons["cash"];
+    return paymentIcons[method] || method;
+  };
+
   if (!store) return null;
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">Pedidos</h2>
-        <p className="text-sm text-muted-foreground">✦ Painel Premium — atualização automática</p>
+        <p className="text-sm text-muted-foreground">✨ Painel Premium — atualização automática</p>
       </div>
 
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {[
-          { label: "Pendentes", value: pendingCount, className: "text-orange-600" },
-          { label: "Pedidos hoje", value: todayOrders.length },
-          { label: "Faturamento hoje", value: formatBRL(todayRevenue), className: "text-primary" },
-          { label: "Total pedidos", value: orders.length },
-        ].map((s, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <p className="text-sm text-muted-foreground">{s.label}</p>
-              <p className={`text-2xl font-bold ${s.className || ""}`}>{s.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+        <Card className="border-purple-200">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Pendentes</p>
+            <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Pedidos hoje</p>
+            <p className="text-2xl font-bold">{todayOrders.length}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Faturamento hoje</p>
+            <p className="text-2xl font-bold text-green-600">{formatBRL(todayRevenue)}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-purple-200">
+          <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Total pedidos</p>
+            <p className="text-2xl font-bold">{orders.length}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Search */}
@@ -129,7 +174,7 @@ export default function Orders() {
               filter === s ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
-            {s === "all" ? "Todos" : statusLabels[s]}
+            {filterLabels[s]}
           </button>
         ))}
       </div>
@@ -137,57 +182,101 @@ export default function Orders() {
       {/* Order list */}
       <div className="space-y-3">
         {loading
-          ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)
+          ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full rounded-xl" />)
           : filtered.map((order) => (
-              <Card key={order.id}>
-                <CardContent className="p-4">
+              <Card key={order.id} className="border-purple-100 rounded-xl">
+                <CardContent className="p-5">
+                  {/* Header row: name + status + total */}
                   <div className="flex items-start justify-between">
-                    <div>
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold">{order.customer_name}</span>
-                        <Badge className={statusColors[order.status]}>{statusLabels[order.status]}</Badge>
+                        <span className="text-base font-bold">{order.customer_name}</span>
+                        <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusBadgeStyles[order.status]}`}>
+                          <Clock className="h-3 w-3" />
+                          {statusLabels[order.status]}
+                        </span>
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {new Date(order.created_at).toLocaleString("pt-BR")} • 🚚 {order.order_type === "delivery" ? "Entrega" : "Retirada"}
+                      {/* Date + order type */}
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        {formatDate(order.created_at)} •{" "}
+                        {order.order_type === "delivery" ? (
+                          <><Truck className="h-3.5 w-3.5 inline text-purple-500" /> Entrega</>
+                        ) : (
+                          <><StoreIcon className="h-3.5 w-3.5 inline text-purple-500" /> Retirada</>
+                        )}
                       </p>
-                      {order.customer_address && (
-                        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                      {/* Address for delivery */}
+                      {order.order_type === "delivery" && order.customer_address && (
+                        <p className="text-xs text-red-500 flex items-center gap-1">
                           <MapPin className="h-3 w-3" /> {order.customer_address}
                         </p>
                       )}
+                      {/* Items summary */}
+                      <p className="text-sm text-foreground/80">{getItemsSummary(order.order_items)}</p>
                     </div>
-                    <p className="text-lg font-bold text-primary">{formatBRL(Number(order.total))}</p>
+                    <p className="text-lg font-bold text-green-600 whitespace-nowrap">{formatBRL(Number(order.total))}</p>
                   </div>
 
+                  {/* Action buttons */}
                   <div className="mt-3 flex items-center gap-2 flex-wrap">
-                    <Button size="sm" variant="outline">⊕ Detalhes</Button>
+                    <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                      <Eye className="h-3.5 w-3.5" /> Detalhes
+                    </button>
                     {order.status === "pending" && (
                       <>
-                        <Button size="sm" onClick={() => updateStatus(order.id, "confirmed")} className="bg-green-600 hover:bg-green-700 text-white">
-                          ✓ Confirmado
-                        </Button>
-                        <Button size="sm" variant="destructive" onClick={() => updateStatus(order.id, "cancelled")}>
-                          ✕ Cancelar
-                        </Button>
+                        <button
+                          onClick={() => updateStatus(order.id, "confirmed")}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" /> Confirmado
+                        </button>
+                        <button
+                          onClick={() => updateStatus(order.id, "cancelled")}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-orange-300 bg-white px-3 py-1.5 text-xs font-medium text-orange-500 hover:bg-orange-50"
+                        >
+                          <XCircle className="h-3.5 w-3.5" /> Cancelar
+                        </button>
                       </>
                     )}
                     {order.status === "confirmed" && (
-                      <Button size="sm" onClick={() => updateStatus(order.id, "preparing")}>Preparando</Button>
+                      <button
+                        onClick={() => updateStatus(order.id, "preparing")}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-yellow-600"
+                      >
+                        Preparando
+                      </button>
                     )}
                     {order.status === "preparing" && (
-                      <Button size="sm" onClick={() => updateStatus(order.id, "delivering")}>Entregando</Button>
+                      <button
+                        onClick={() => updateStatus(order.id, "delivering")}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-cyan-600"
+                      >
+                        Entregando
+                      </button>
                     )}
                     {order.status === "delivering" && (
-                      <Button size="sm" onClick={() => updateStatus(order.id, "completed")}>Concluído</Button>
+                      <button
+                        onClick={() => updateStatus(order.id, "completed")}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-green-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-700"
+                      >
+                        Concluído
+                      </button>
                     )}
-                    <Button size="sm" variant="outline" className="text-red-500 border-red-200">📍 Link rastreio</Button>
+                    <button className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">
+                      <MapPin className="h-3.5 w-3.5" /> Link rastreio
+                    </button>
                   </div>
 
-                  <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                  {/* Phone + Payment */}
+                  <div className="mt-2.5 flex items-center gap-3 text-xs text-muted-foreground">
                     {order.customer_phone && (
-                      <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{order.customer_phone}</span>
+                      <span className="flex items-center gap-1">
+                        <Phone className="h-3 w-3" /> {order.customer_phone}
+                      </span>
                     )}
-                    <span className="flex items-center gap-1"><CreditCard className="h-3 w-3" />{order.payment_method || "Dinheiro"}</span>
+                    <span className="flex items-center gap-1">
+                      <CreditCard className="h-3 w-3" /> {getPaymentDisplay(order.payment_method)}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
