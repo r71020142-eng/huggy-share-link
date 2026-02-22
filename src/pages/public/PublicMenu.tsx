@@ -4,13 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ShoppingCart, Plus, Minus, MapPin, Phone, Clock, X, Store, Search } from "lucide-react";
+import { ShoppingCart, Plus, MapPin, Phone, Clock, Store, Search } from "lucide-react";
 import { toast } from "sonner";
 import { ProductDetailModal } from "@/components/public/ProductDetailModal";
+import { CartDrawer } from "@/components/public/CartDrawer";
+import { CheckoutScreen } from "@/components/public/CheckoutScreen";
+import { OrderTrackingScreen } from "@/components/public/OrderTrackingScreen";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -38,15 +37,9 @@ export default function PublicMenu() {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  // Checkout fields
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [orderType, setOrderType] = useState("delivery");
-  const [customerAddress, setCustomerAddress] = useState("");
-  const [neighborhoodId, setNeighborhoodId] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [notes, setNotes] = useState("");
+  const [trackingOpen, setTrackingOpen] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
+  const [lastTrackingCode, setLastTrackingCode] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -106,19 +99,23 @@ export default function PublicMenu() {
     setSelectedProduct(null);
   };
 
-  const updateQty = (productId: string, delta: number) => {
-    setCart((prev) => prev.map((i) => {
-      if (i.product.id !== productId) return i;
-      const newQty = i.quantity + delta;
-      return newQty <= 0 ? null : { ...i, quantity: newQty };
+  const updateCartQty = (index: number, delta: number) => {
+    setCart((prev) => prev.map((item, i) => {
+      if (i !== index) return item;
+      const newQty = item.quantity + delta;
+      return newQty <= 0 ? null : { ...item, quantity: newQty };
     }).filter(Boolean) as CartItem[]);
   };
 
-  const cartTotal = cart.reduce((s, i) => s + i.product.price * i.quantity, 0);
+  const removeCartItem = (index: number) => {
+    setCart((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const cartTotal = cart.reduce((s, i) => {
+    const addTotal = (i.additionals || []).reduce((a, ad) => a + ad.price * ad.quantity, 0);
+    return s + (i.product.price + addTotal) * i.quantity;
+  }, 0);
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
-  const selectedNeighborhood = neighborhoods.find((n) => n.id === neighborhoodId);
-  const deliveryFee = orderType === "delivery" ? Number(selectedNeighborhood?.delivery_fee || 0) : 0;
-  const orderTotal = cartTotal + deliveryFee;
 
   const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
@@ -128,12 +125,15 @@ export default function PublicMenu() {
     return true;
   });
 
-  const handleCheckout = async () => {
-    if (!store || !customerName.trim()) return;
-    if (orderType === "delivery" && !customerAddress.trim()) {
-      toast.error("Informe o endereço de entrega");
-      return;
-    }
+  const handleCheckout = async (data: {
+    customerName: string; customerPhone: string; orderType: string;
+    customerAddress: string; neighborhoodId: string; paymentMethod: string; notes: string;
+  }) => {
+    if (!store) return;
+    const selectedNeighborhood = neighborhoods.find((n) => n.id === data.neighborhoodId);
+    const deliveryFee = data.orderType === "delivery" ? Number(selectedNeighborhood?.delivery_fee || 0) : 0;
+    const orderTotal = cartTotal + deliveryFee;
+
     if (store.min_order && cartTotal < store.min_order) {
       toast.error(`Pedido mínimo: ${formatBRL(store.min_order)}`);
       return;
@@ -141,20 +141,21 @@ export default function PublicMenu() {
 
     setSubmitting(true);
 
-    // If store is Pro, create order in DB
     if (store.plan_type === "pro") {
+      const trackingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       const { data: order, error } = await supabase.from("orders").insert({
         store_id: store.id,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        order_type: orderType,
-        customer_address: orderType === "delivery" ? customerAddress : null,
-        neighborhood_id: orderType === "delivery" && neighborhoodId ? neighborhoodId : null,
+        customer_name: data.customerName,
+        customer_phone: data.customerPhone,
+        order_type: data.orderType,
+        customer_address: data.orderType === "delivery" ? data.customerAddress : null,
+        neighborhood_id: data.orderType === "delivery" && data.neighborhoodId ? data.neighborhoodId : null,
         delivery_fee: deliveryFee,
         subtotal: cartTotal,
         total: orderTotal,
-        payment_method: paymentMethod,
-        notes,
+        payment_method: data.paymentMethod,
+        notes: data.notes,
+        tracking_code: trackingCode,
       }).select().single();
 
       if (error) {
@@ -163,7 +164,6 @@ export default function PublicMenu() {
         return;
       }
 
-      // Insert order items
       if (order) {
         await supabase.from("order_items").insert(
           cart.map((item) => ({
@@ -173,18 +173,21 @@ export default function PublicMenu() {
             quantity: item.quantity,
             unit_price: item.product.price,
             subtotal: item.product.price * item.quantity,
+            additionals: item.additionals ? JSON.stringify(item.additionals) : null,
           }))
         );
+        setLastOrderId(order.id);
+        setLastTrackingCode(trackingCode);
       }
 
-      toast.success("Pedido enviado com sucesso! 🎉");
       setCart([]);
       setCheckoutOpen(false);
       setCartOpen(false);
+      setTrackingOpen(true);
+      toast.success("Pedido enviado com sucesso! 🎉");
     } else {
-      // Basic plan: send via WhatsApp
       const items = cart.map((i) => `• ${i.quantity}x ${i.product.name} - ${formatBRL(i.product.price * i.quantity)}`).join("\n");
-      const msg = `🛒 *Novo Pedido*\n\n👤 ${customerName}\n📱 ${customerPhone}\n${orderType === "delivery" ? `📍 ${customerAddress}\n` : "🏪 Retirada\n"}\n${items}\n\n💰 Subtotal: ${formatBRL(cartTotal)}${deliveryFee > 0 ? `\n🚚 Entrega: ${formatBRL(deliveryFee)}` : ""}\n💵 *Total: ${formatBRL(orderTotal)}*\n💳 ${paymentMethod === "cash" ? "Dinheiro" : paymentMethod === "pix" ? "Pix" : "Cartão"}${notes ? `\n📝 ${notes}` : ""}`;
+      const msg = `🛒 *Novo Pedido*\n\n👤 ${data.customerName}\n📱 ${data.customerPhone}\n${data.orderType === "delivery" ? `📍 ${data.customerAddress}\n` : "🏪 Retirada\n"}\n${items}\n\n💰 Subtotal: ${formatBRL(cartTotal)}${deliveryFee > 0 ? `\n🚚 Entrega: ${formatBRL(deliveryFee)}` : ""}\n💵 *Total: ${formatBRL(orderTotal)}*\n💳 ${data.paymentMethod === "cash" ? "Dinheiro" : data.paymentMethod === "pix" ? "Pix" : "Cartão"}${data.notes ? `\n📝 ${data.notes}` : ""}`;
 
       const phone = (store.whatsapp || "").replace(/\D/g, "");
       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
@@ -373,128 +376,40 @@ export default function PublicMenu() {
         </div>
       )}
 
-      {/* Cart Dialog */}
-      <Dialog open={cartOpen} onOpenChange={setCartOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Carrinho ({cartCount} itens)</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
-            {cart.map((item) => (
-              <div key={item.product.id} className="flex items-center justify-between rounded-lg border p-3">
-                <div>
-                  <p className="font-medium">{item.product.name}</p>
-                  <p className="text-sm" style={{ color: themeColor }}>{formatBRL(item.product.price * item.quantity)}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQty(item.product.id, -1)}>
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="w-6 text-center font-medium">{item.quantity}</span>
-                  <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => updateQty(item.product.id, 1)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="border-t pt-3">
-            <div className="flex justify-between text-lg font-bold">
-              <span>Total</span>
-              <span style={{ color: themeColor }}>{formatBRL(cartTotal)}</span>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCartOpen(false)}>Continuar comprando</Button>
-            <Button onClick={() => { setCartOpen(false); setCheckoutOpen(true); }} style={{ backgroundColor: themeColor }}>
-              Finalizar pedido
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Cart Drawer */}
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        cart={cart}
+        onUpdateQty={updateCartQty}
+        onRemove={removeCartItem}
+        onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }}
+        themeColor={themeColor}
+        formatBRL={formatBRL}
+      />
 
-      {/* Checkout Dialog */}
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Finalizar Pedido</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Nome *</Label>
-              <Input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Seu nome" />
-            </div>
-            <div className="space-y-2">
-              <Label>WhatsApp</Label>
-              <Input value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="(31) 99999-9999" />
-            </div>
-            <div className="space-y-2">
-              <Label>Tipo do pedido</Label>
-              <Select value={orderType} onValueChange={setOrderType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {store?.delivery_enabled && <SelectItem value="delivery">🚚 Entrega</SelectItem>}
-                  {store?.pickup_enabled && <SelectItem value="pickup">🏪 Retirada</SelectItem>}
-                </SelectContent>
-              </Select>
-            </div>
-            {orderType === "delivery" && (
-              <>
-                <div className="space-y-2">
-                  <Label>Endereço *</Label>
-                  <Input value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} placeholder="Rua, número, bairro" />
-                </div>
-                {neighborhoods.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Bairro (taxa de entrega)</Label>
-                    <Select value={neighborhoodId} onValueChange={setNeighborhoodId}>
-                      <SelectTrigger><SelectValue placeholder="Selecione o bairro" /></SelectTrigger>
-                      <SelectContent>
-                        {neighborhoods.map((n) => (
-                          <SelectItem key={n.id} value={n.id}>
-                            {n.name} — {formatBRL(Number(n.delivery_fee))}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </>
-            )}
-            <div className="space-y-2">
-              <Label>Pagamento</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">💵 Dinheiro</SelectItem>
-                  <SelectItem value="pix">📱 Pix</SelectItem>
-                  <SelectItem value="card">💳 Cartão</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Observações</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Alguma observação?" rows={2} />
-            </div>
+      {/* Checkout Screen */}
+      <CheckoutScreen
+        open={checkoutOpen}
+        onBack={() => { setCheckoutOpen(false); setCartOpen(true); }}
+        cart={cart}
+        store={store}
+        neighborhoods={neighborhoods}
+        onSubmit={handleCheckout}
+        submitting={submitting}
+        themeColor={themeColor}
+        formatBRL={formatBRL}
+      />
 
-            {/* Summary */}
-            <div className="rounded-lg bg-muted p-3 space-y-1 text-sm">
-              <div className="flex justify-between"><span>Subtotal</span><span>{formatBRL(cartTotal)}</span></div>
-              {deliveryFee > 0 && <div className="flex justify-between"><span>Entrega</span><span>{formatBRL(deliveryFee)}</span></div>}
-              <div className="flex justify-between font-bold text-base border-t pt-1">
-                <span>Total</span>
-                <span style={{ color: themeColor }}>{formatBRL(orderTotal)}</span>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCheckoutOpen(false)}>Voltar</Button>
-            <Button onClick={handleCheckout} disabled={submitting} style={{ backgroundColor: themeColor }}>
-              {submitting ? "Enviando..." : store?.plan_type === "pro" ? "Confirmar Pedido" : "Enviar via WhatsApp"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Order Tracking */}
+      <OrderTrackingScreen
+        open={trackingOpen}
+        orderId={lastOrderId}
+        trackingCode={lastTrackingCode}
+        onClose={() => setTrackingOpen(false)}
+        themeColor={themeColor}
+      />
+
       <ProductDetailModal
         product={selectedProduct}
         open={!!selectedProduct}
