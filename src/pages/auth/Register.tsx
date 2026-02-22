@@ -1,0 +1,124 @@
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Store } from "lucide-react";
+import { toast } from "sonner";
+
+export default function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { display_name: storeName },
+      },
+    });
+
+    if (authError) {
+      toast.error("Erro ao criar conta: " + authError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (authData.user) {
+      // Create the store
+      const slug = storeName
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+
+      const { error: storeError } = await supabase.from("stores").insert({
+        name: storeName,
+        slug,
+        owner_id: authData.user.id,
+      });
+
+      if (storeError) {
+        toast.error("Erro ao criar loja: " + storeError.message);
+      } else {
+        toast.success("Conta criada com sucesso! 🎉");
+        navigate("/admin");
+      }
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-muted p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+            <Store className="h-6 w-6 text-primary-foreground" />
+          </div>
+          <CardTitle className="text-2xl">Criar Conta</CardTitle>
+          <CardDescription>Comece a vender online agora</CardDescription>
+        </CardHeader>
+        <form onSubmit={handleRegister}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="storeName">Nome da loja</Label>
+              <Input
+                id="storeName"
+                placeholder="Minha Açaíteria"
+                value={storeName}
+                onChange={(e) => setStoreName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-3">
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Criando..." : "Criar conta grátis"}
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              Já tem conta?{" "}
+              <Link to="/login" className="text-primary hover:underline">
+                Entrar
+              </Link>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  );
+}
