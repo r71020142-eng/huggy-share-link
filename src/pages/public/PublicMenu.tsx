@@ -467,6 +467,8 @@ export default function PublicMenu() {
         isPro={isPro}
         themeColor={themeColor}
         storeName={store?.name || ""}
+        slug={slug || ""}
+        logoUrl={menu?.logo_url || store?.logo_url}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Download, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -6,33 +6,94 @@ interface PWAInstallPromptProps {
   isPro: boolean;
   themeColor: string;
   storeName: string;
+  slug: string;
+  logoUrl?: string | null;
 }
 
-export function PWAInstallPrompt({ isPro, themeColor, storeName }: PWAInstallPromptProps) {
+export function PWAInstallPrompt({ isPro, themeColor, storeName, slug, logoUrl }: PWAInstallPromptProps) {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showBanner, setShowBanner] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
-    // Check if already in standalone
     const standalone = window.matchMedia("(display-mode: standalone)").matches
       || (window.navigator as any).standalone === true;
     setIsStandalone(standalone);
 
-    if (!isPro || standalone) return;
+    if (!isPro || standalone || !slug) return;
+
+    let manifestLink: HTMLLinkElement | null = null;
+    let cancelled = false;
+
+    const setup = async () => {
+      // Update theme-color meta
+      const themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+      if (themeMeta) themeMeta.content = themeColor;
+
+      // Register global service worker (handles manifest + caching for all /m/ routes)
+      if ("serviceWorker" in navigator) {
+        try {
+          const reg = await navigator.serviceWorker.register("/store-sw.js", { scope: "/" });
+
+          // Wait for SW to be controlling the page
+          if (!navigator.serviceWorker.controller) {
+            await new Promise<void>((resolve) => {
+              navigator.serviceWorker.addEventListener("controllerchange", () => resolve(), { once: true });
+              // Also resolve if SW activates
+              const sw = reg.installing || reg.waiting;
+              if (sw) {
+                sw.addEventListener("statechange", () => {
+                  if (sw.state === "activated") resolve();
+                });
+              }
+              // Timeout fallback
+              setTimeout(resolve, 3000);
+            });
+          }
+        } catch (err) {
+          console.warn("SW registration failed:", err);
+        }
+      }
+
+      if (cancelled) return;
+
+      // Build manifest URL that the SW will intercept
+      const params = new URLSearchParams({
+        name: storeName,
+        short_name: storeName.substring(0, 12),
+        slug,
+        theme_color: themeColor,
+        icon: logoUrl || "/favicon.ico",
+      });
+
+      // Remove any existing manifest link
+      const existing = document.querySelector('link[rel="manifest"]');
+      if (existing) existing.remove();
+
+      manifestLink = document.createElement("link");
+      manifestLink.rel = "manifest";
+      manifestLink.href = `/m/${slug}/manifest.json?${params.toString()}`;
+      document.head.appendChild(manifestLink);
+    };
+
+    setup();
 
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show banner after a short delay
       setTimeout(() => setShowBanner(true), 2000);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, [isPro]);
 
-  const handleInstall = async () => {
+    return () => {
+      cancelled = true;
+      window.removeEventListener("beforeinstallprompt", handler);
+      if (manifestLink) manifestLink.remove();
+    };
+  }, [isPro, slug, themeColor, storeName, logoUrl]);
+
+  const handleInstall = useCallback(async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -40,9 +101,8 @@ export function PWAInstallPrompt({ isPro, themeColor, storeName }: PWAInstallPro
       setShowBanner(false);
     }
     setDeferredPrompt(null);
-  };
+  }, [deferredPrompt]);
 
-  // Don't show for Basic plan or if already installed
   if (!isPro || isStandalone) return null;
 
   return (
