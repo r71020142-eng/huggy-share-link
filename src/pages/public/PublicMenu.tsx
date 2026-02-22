@@ -201,33 +201,34 @@ export default function PublicMenu() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <div className="relative">
-        {(menu?.banner_url || store?.banner_url) && (
-          <img src={menu?.banner_url || store?.banner_url} alt="" className="h-48 w-full object-cover" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-        <div className="relative -mt-12 px-4">
-          <div className="flex items-end gap-4">
-            {(menu?.logo_url || store?.logo_url) ? (
-              <img src={menu?.logo_url || store?.logo_url} alt={store?.name} className="h-20 w-20 rounded-2xl border-4 border-background object-cover shadow-lg" />
-            ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-background shadow-lg text-3xl" style={{ backgroundColor: themeColor, color: "white" }}>
-                🍨
-              </div>
-            )}
-            <div className="pb-1">
-              <h1 className="text-2xl font-bold">{store?.name}</h1>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                {store?.is_open ? (
-                  <Badge className="bg-success text-success-foreground">Aberto</Badge>
-                ) : (
-                  <Badge variant="secondary">Fechado</Badge>
-                )}
-                {store?.estimated_time && (
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {store.estimated_time}</span>
-                )}
-              </div>
+      {(menu?.banner_url || store?.banner_url) && (
+        <img src={menu?.banner_url || store?.banner_url} alt="" className="h-48 w-full object-cover" />
+      )}
+
+      {/* Store info bar */}
+      <div className="px-4 py-3" style={{ backgroundColor: themeColor }}>
+        <div className="flex items-center gap-3">
+          {(menu?.logo_url || store?.logo_url) ? (
+            <img src={menu?.logo_url || store?.logo_url} alt={store?.name} className="h-14 w-14 rounded-full border-2 border-white/30 object-cover" />
+          ) : (
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white/30 text-2xl" style={{ backgroundColor: "rgba(255,255,255,0.2)" }}>
+              🍨
             </div>
+          )}
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-white">{store?.name}</h1>
+              {store?.is_open ? (
+                <Badge className="bg-green-500 text-white text-[10px] px-2 py-0.5">● ABERTO</Badge>
+              ) : (
+                <Badge className="bg-white/20 text-white text-[10px] px-2 py-0.5">FECHADO</Badge>
+              )}
+            </div>
+            {store?.estimated_time && (
+              <span className="flex items-center gap-1 text-xs text-white/80 mt-0.5">
+                <Clock className="h-3 w-3" /> {store.estimated_time}
+              </span>
+            )}
           </div>
         </div>
       </div>
