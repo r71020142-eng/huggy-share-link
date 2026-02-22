@@ -1,28 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>Lovable App</title>
-    <meta name="description" content="Lovable Generated Project">
-    <meta name="author" content="Lovable" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#7c3aed" />
+    <title>Açaí Lab - Cardápio Digital</title>
+    <meta name="description" content="Cardápio digital e gestão de pedidos para sua loja">
+    <meta name="author" content="Açaí Lab" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/favicon.ico" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    
-    
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f87266c-96ca-44e6-99f4-cfa3b9ec2868/id-preview-83383e6d--601af6c1-b92f-4a8c-a229-77390f6c36d0.lovable.app-1771737074506.png">
-
+    <meta property="og:title" content="Açaí Lab - Cardápio Digital" />
+    <meta property="og:description" content="Cardápio digital e gestão de pedidos para sua loja" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/5f87266c-96ca-44e6-99f4-cfa3b9ec2868/id-preview-83383e6d--601af6c1-b92f-4a8c-a229-77390f6c36d0.lovable.app-1771737074506.png">
-    <meta property="og:title" content="Lovable App">
-  <meta name="twitter:title" content="Lovable App">
-  <meta property="og:description" content="Lovable Generated Project">
-  <meta name="twitter:description" content="Lovable Generated Project">
-</head>
-
+    <meta name="twitter:title" content="Açaí Lab - Cardápio Digital" />
+    <meta name="twitter:description" content="Cardápio digital e gestão de pedidos para sua loja" />
+    <style>
+      /* Safe area support for iOS notch */
+      body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      }
+    </style>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
