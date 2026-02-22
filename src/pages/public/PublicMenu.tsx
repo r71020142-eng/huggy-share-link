@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ShoppingCart, Plus, Minus, MapPin, Phone, Clock, X, Store, Search } from "lucide-react";
 import { toast } from "sonner";
+import { ProductDetailModal } from "@/components/public/ProductDetailModal";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -19,6 +20,7 @@ type Neighborhood = Database["public"]["Tables"]["neighborhoods"]["Row"];
 interface CartItem {
   product: Product;
   quantity: number;
+  additionals?: { name: string; price: number; quantity: number }[];
 }
 
 export default function PublicMenu() {
@@ -35,6 +37,7 @@ export default function PublicMenu() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   // Checkout fields
   const [customerName, setCustomerName] = useState("");
@@ -80,13 +83,27 @@ export default function PublicMenu() {
     setLoading(false);
   };
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, qty = 1, additionals?: { name: string; price: number; quantity: number }[]) => {
     setCart((prev) => {
-      const existing = prev.find((i) => i.product.id === product.id);
-      if (existing) return prev.map((i) => i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { product, quantity: 1 }];
+      // If has additionals, always add as new item
+      if (additionals && additionals.length > 0) {
+        return [...prev, { product, quantity: qty, additionals }];
+      }
+      const existing = prev.find((i) => i.product.id === product.id && !i.additionals?.length);
+      if (existing) return prev.map((i) => i.product.id === product.id && !i.additionals?.length ? { ...i, quantity: i.quantity + qty } : i);
+      return [...prev, { product, quantity: qty }];
     });
     toast.success(`${product.name} adicionado!`);
+  };
+
+  const handleProductAdd = (product: Product, quantity: number, selectedAdditionals: any[]) => {
+    const adds = selectedAdditionals.map((s) => ({
+      name: s.additional.name,
+      price: Number(s.additional.price) || 0,
+      quantity: s.quantity,
+    }));
+    addToCart(product, quantity, adds);
+    setSelectedProduct(null);
   };
 
   const updateQty = (productId: string, delta: number) => {
@@ -290,7 +307,7 @@ export default function PublicMenu() {
               {featuredProducts.map((product) => (
                 <button
                   key={product.id}
-                  onClick={() => addToCart(product)}
+                  onClick={() => setSelectedProduct(product)}
                   className="shrink-0 w-[140px] text-left"
                 >
                   <div className="relative overflow-hidden rounded-xl">
@@ -316,7 +333,7 @@ export default function PublicMenu() {
         <h2 className="text-lg font-bold mb-3">Cardápio</h2>
         <div className="space-y-3">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm">
+            <div key={product.id} onClick={() => setSelectedProduct(product)} className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors">
               {product.image_url ? (
                 <img src={product.image_url} alt={product.name} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
               ) : (
@@ -328,7 +345,7 @@ export default function PublicMenu() {
                 <span className="text-sm font-bold mt-0.5" style={{ color: themeColor }}>{formatBRL(product.price)}</span>
               </div>
               <button
-                onClick={() => addToCart(product)}
+                onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-md"
                 style={{ backgroundColor: themeColor }}
               >
@@ -478,6 +495,13 @@ export default function PublicMenu() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ProductDetailModal
+        product={selectedProduct}
+        open={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAdd={handleProductAdd}
+        themeColor={themeColor}
+      />
     </div>
   );
 }
