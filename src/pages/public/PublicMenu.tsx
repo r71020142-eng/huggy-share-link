@@ -10,6 +10,9 @@ import { ProductDetailModal } from "@/components/public/ProductDetailModal";
 import { CartDrawer } from "@/components/public/CartDrawer";
 import { CheckoutScreen } from "@/components/public/CheckoutScreen";
 import { OrderTrackingScreen } from "@/components/public/OrderTrackingScreen";
+import { OrderConfirmationAnimation } from "@/components/public/OrderConfirmationAnimation";
+import { PWAInstallPrompt } from "@/components/public/PWAInstallPrompt";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Database } from "@/integrations/supabase/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -41,6 +44,7 @@ export default function PublicMenu() {
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
   const [lastTrackingCode, setLastTrackingCode] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     if (slug) fetchMenu();
@@ -48,20 +52,13 @@ export default function PublicMenu() {
 
   const fetchMenu = async () => {
     const { data: menuData } = await supabase
-      .from("menus")
-      .select("*")
-      .eq("slug", slug!)
-      .eq("is_published", true)
-      .single();
+      .from("menus").select("*").eq("slug", slug!).eq("is_published", true).single();
 
     if (!menuData) { setNotFound(true); setLoading(false); return; }
     setMenu(menuData);
 
     const { data: storeData } = await supabase
-      .from("stores")
-      .select("*")
-      .eq("id", menuData.store_id)
-      .single();
+      .from("stores").select("*").eq("id", menuData.store_id).single();
     setStore(storeData);
 
     const [{ data: prods }, { data: cats }, { data: hoods }] = await Promise.all([
@@ -78,7 +75,6 @@ export default function PublicMenu() {
 
   const addToCart = (product: Product, qty = 1, additionals?: { name: string; price: number; quantity: number }[]) => {
     setCart((prev) => {
-      // If has additionals, always add as new item
       if (additionals && additionals.length > 0) {
         return [...prev, { product, quantity: qty, additionals }];
       }
@@ -125,6 +121,8 @@ export default function PublicMenu() {
     return true;
   });
 
+  const isPro = store?.plan_type === "pro";
+
   const handleCheckout = async (data: {
     customerName: string; customerPhone: string; orderType: string;
     customerAddress: string; neighborhoodId: string; paymentMethod: string; notes: string;
@@ -141,7 +139,7 @@ export default function PublicMenu() {
 
     setSubmitting(true);
 
-    if (store.plan_type === "pro") {
+    if (isPro) {
       const trackingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       const { data: order, error } = await supabase.from("orders").insert({
         store_id: store.id,
@@ -183,9 +181,9 @@ export default function PublicMenu() {
       setCart([]);
       setCheckoutOpen(false);
       setCartOpen(false);
-      setTrackingOpen(true);
-      toast.success("Pedido enviado com sucesso! 🎉");
+      setShowConfirmation(true);
     } else {
+      // Basic plan - WhatsApp flow
       const items = cart.map((i) => `• ${i.quantity}x ${i.product.name} - ${formatBRL(i.product.price * i.quantity)}`).join("\n");
       const msg = `🛒 *Novo Pedido*\n\n👤 ${data.customerName}\n📱 ${data.customerPhone}\n${data.orderType === "delivery" ? `📍 ${data.customerAddress}\n` : "🏪 Retirada\n"}\n${items}\n\n💰 Subtotal: ${formatBRL(cartTotal)}${deliveryFee > 0 ? `\n🚚 Entrega: ${formatBRL(deliveryFee)}` : ""}\n💵 *Total: ${formatBRL(orderTotal)}*\n💳 ${data.paymentMethod === "cash" ? "Dinheiro" : data.paymentMethod === "pix" ? "Pix" : "Cartão"}${data.notes ? `\n📝 ${data.notes}` : ""}`;
 
@@ -194,14 +192,18 @@ export default function PublicMenu() {
       setCart([]);
       setCheckoutOpen(false);
       setCartOpen(false);
+      toast.success("Pedido enviado via WhatsApp! ✅");
     }
     setSubmitting(false);
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          <p className="text-sm text-muted-foreground">Carregando cardápio...</p>
+        </div>
       </div>
     );
   }
@@ -219,10 +221,16 @@ export default function PublicMenu() {
   const themeColor = menu?.theme_color || store?.theme_color || "#7c3aed";
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
+    <div className="min-h-screen bg-background pb-24" style={{ paddingBottom: "env(safe-area-inset-bottom, 24px)" }}>
+      {/* Header banner */}
       {(menu?.banner_url || store?.banner_url) && (
-        <img src={menu?.banner_url || store?.banner_url} alt="" className="h-48 w-full object-cover" />
+        <motion.img
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          src={menu?.banner_url || store?.banner_url}
+          alt=""
+          className="h-48 w-full object-cover"
+        />
       )}
 
       {/* Store info bar */}
@@ -243,6 +251,9 @@ export default function PublicMenu() {
               ) : (
                 <Badge className="bg-white/20 text-white text-[10px] px-2 py-0.5">FECHADO</Badge>
               )}
+              {isPro && (
+                <Badge className="bg-white/20 text-white text-[10px] px-2 py-0.5 border-0">✦ PRO</Badge>
+              )}
             </div>
             {store?.estimated_time && (
               <span className="flex items-center gap-1 text-xs text-white/80 mt-0.5">
@@ -255,9 +266,14 @@ export default function PublicMenu() {
 
       {/* Promo banner */}
       {store?.promo_banner && (
-        <div className="mx-4 mt-4 rounded-lg p-3 text-center text-sm font-medium" style={{ backgroundColor: `${themeColor}15`, color: themeColor }}>
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-4 mt-4 rounded-xl p-3 text-center text-sm font-medium"
+          style={{ backgroundColor: `${themeColor}15`, color: themeColor }}
+        >
           {store.promo_banner}
-        </div>
+        </motion.div>
       )}
 
       {/* Store info */}
@@ -271,7 +287,7 @@ export default function PublicMenu() {
       {/* Search */}
       <div className="mx-4 mt-4 relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input placeholder="Buscar produto..." className="pl-10" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <Input placeholder="Buscar produto..." className="pl-10 rounded-xl" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       {/* Categories */}
@@ -279,7 +295,7 @@ export default function PublicMenu() {
         <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide">
           <button
             onClick={() => setActiveCategory(null)}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${!activeCategory ? "text-white" : "bg-muted text-muted-foreground"}`}
+            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!activeCategory ? "text-white shadow-md" : "bg-muted text-muted-foreground"}`}
             style={!activeCategory ? { backgroundColor: themeColor } : {}}
           >
             Todos
@@ -288,7 +304,7 @@ export default function PublicMenu() {
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${activeCategory === cat.id ? "text-white" : "bg-muted text-muted-foreground"}`}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${activeCategory === cat.id ? "text-white shadow-md" : "bg-muted text-muted-foreground"}`}
               style={activeCategory === cat.id ? { backgroundColor: themeColor } : {}}
             >
               {cat.icon} {cat.name}
@@ -307,9 +323,12 @@ export default function PublicMenu() {
               <span>⭐</span> Destaques
             </h2>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-              {featuredProducts.map((product) => (
-                <button
+              {featuredProducts.map((product, i) => (
+                <motion.button
                   key={product.id}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
                   onClick={() => setSelectedProduct(product)}
                   className="shrink-0 w-[140px] text-left"
                 >
@@ -317,14 +336,14 @@ export default function PublicMenu() {
                     {product.image_url ? (
                       <img src={product.image_url} alt={product.name} className="h-[140px] w-[140px] object-cover" />
                     ) : (
-                      <div className="flex h-[140px] w-[140px] items-center justify-center bg-muted text-4xl">📦</div>
+                      <div className="flex h-[140px] w-[140px] items-center justify-center bg-muted text-4xl rounded-xl">📦</div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
                       <span className="text-sm font-bold text-white">{formatBRL(product.price)}</span>
                     </div>
                   </div>
                   <p className="mt-1.5 text-sm font-medium line-clamp-1">{product.name}</p>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -335,8 +354,15 @@ export default function PublicMenu() {
       <div className="mt-6 px-4">
         <h2 className="text-lg font-bold mb-3">Cardápio</h2>
         <div className="space-y-3">
-          {filteredProducts.map((product) => (
-            <div key={product.id} onClick={() => setSelectedProduct(product)} className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors">
+          {filteredProducts.map((product, i) => (
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.03 }}
+              onClick={() => setSelectedProduct(product)}
+              className="flex items-center gap-3 rounded-xl border bg-card p-3 shadow-sm cursor-pointer hover:bg-muted/50 transition-colors active:scale-[0.98]"
+            >
               {product.image_url ? (
                 <img src={product.image_url} alt={product.name} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
               ) : (
@@ -349,12 +375,12 @@ export default function PublicMenu() {
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-md"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white shadow-md active:scale-90 transition-transform"
                 style={{ backgroundColor: themeColor }}
               >
                 <Plus className="h-5 w-5" />
               </button>
-            </div>
+            </motion.div>
           ))}
           {filteredProducts.length === 0 && (
             <div className="py-12 text-center text-muted-foreground">Nenhum produto encontrado.</div>
@@ -363,18 +389,26 @@ export default function PublicMenu() {
       </div>
 
       {/* Floating cart button */}
-      {cartCount > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent">
-          <Button
-            onClick={() => setCartOpen(true)}
-            className="w-full h-14 text-base font-bold shadow-xl rounded-xl"
-            style={{ backgroundColor: themeColor }}
+      <AnimatePresence>
+        {cartCount > 0 && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent"
+            style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
           >
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            Ver carrinho • {cartCount} {cartCount === 1 ? "item" : "itens"} • {formatBRL(cartTotal)}
-          </Button>
-        </div>
-      )}
+            <Button
+              onClick={() => setCartOpen(true)}
+              className="w-full h-14 text-base font-bold shadow-xl rounded-xl transition-transform active:scale-[0.98]"
+              style={{ backgroundColor: themeColor }}
+            >
+              <ShoppingCart className="mr-2 h-5 w-5" />
+              Ver carrinho • {cartCount} {cartCount === 1 ? "item" : "itens"} • {formatBRL(cartTotal)}
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Cart Drawer */}
       <CartDrawer
@@ -401,7 +435,17 @@ export default function PublicMenu() {
         formatBRL={formatBRL}
       />
 
-      {/* Order Tracking */}
+      {/* Order Confirmation Animation (Pro only) */}
+      <OrderConfirmationAnimation
+        show={showConfirmation}
+        onComplete={() => {
+          setShowConfirmation(false);
+          setTrackingOpen(true);
+        }}
+        themeColor={themeColor}
+      />
+
+      {/* Order Tracking (Pro only) */}
       <OrderTrackingScreen
         open={trackingOpen}
         orderId={lastOrderId}
@@ -416,6 +460,13 @@ export default function PublicMenu() {
         onClose={() => setSelectedProduct(null)}
         onAdd={handleProductAdd}
         themeColor={themeColor}
+      />
+
+      {/* PWA Install Prompt - Pro only */}
+      <PWAInstallPrompt
+        isPro={isPro}
+        themeColor={themeColor}
+        storeName={store?.name || ""}
       />
     </div>
   );
