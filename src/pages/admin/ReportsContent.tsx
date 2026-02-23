@@ -7,10 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download, CalendarDays, Package, Users } from "lucide-react";
+import { Download, CalendarDays, Package, Users, CreditCard } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PeriodReport { date: string; orders: number; revenue: number; avgTicket: number; }
+interface PaymentMethodReport { method: string; label: string; total: number; count: number; }
 
 export default function ReportsContent() {
   const { store, isPro } = useStore();
@@ -18,6 +19,7 @@ export default function ReportsContent() {
   const [tab, setTab] = useState("period");
   const [loading, setLoading] = useState(true);
   const [periodData, setPeriodData] = useState<PeriodReport[]>([]);
+  const [paymentData, setPaymentData] = useState<PaymentMethodReport[]>([]);
   const [totals, setTotals] = useState({ orders: 0, revenue: 0, avgTicket: 0, uniqueCustomers: 0 });
 
   useEffect(() => { if (store) fetchReports(); }, [store, period]);
@@ -46,6 +48,35 @@ export default function ReportsContent() {
     const totalRevenue = orders.reduce((s, o) => s + Number(o.total), 0);
     setPeriodData(reportData);
     setTotals({ orders: orders.length, revenue: totalRevenue, avgTicket: orders.length > 0 ? totalRevenue / orders.length : 0, uniqueCustomers: customerSet.size });
+
+    // Fetch payment method breakdown from order_payments
+    const orderIds = orders.map(o => o.id);
+    const methodLabels: Record<string, string> = { pix: "💎 Pix", cash: "💵 Dinheiro", credit: "💳 Crédito", debit: "💳 Débito" };
+    if (orderIds.length > 0) {
+      const { data: opData } = await supabase.from("order_payments").select("payment_method, amount").eq("store_id", store.id).in("order_id", orderIds);
+      if (opData && opData.length > 0) {
+        const pmMap: Record<string, { total: number; count: number }> = {};
+        opData.forEach((p: any) => {
+          if (!pmMap[p.payment_method]) pmMap[p.payment_method] = { total: 0, count: 0 };
+          pmMap[p.payment_method].total += Number(p.amount);
+          pmMap[p.payment_method].count++;
+        });
+        setPaymentData(Object.entries(pmMap).map(([method, d]) => ({ method, label: methodLabels[method] || method, total: d.total, count: d.count })));
+      } else {
+        // Fallback: use legacy payment_method from orders
+        const pmMap: Record<string, { total: number; count: number }> = {};
+        orders.forEach(o => {
+          const m = o.payment_method || "cash";
+          if (!pmMap[m]) pmMap[m] = { total: 0, count: 0 };
+          pmMap[m].total += Number(o.total);
+          pmMap[m].count++;
+        });
+        setPaymentData(Object.entries(pmMap).map(([method, d]) => ({ method, label: methodLabels[method] || method, total: d.total, count: d.count })));
+      }
+    } else {
+      setPaymentData([]);
+    }
+
     setLoading(false);
   };
 
@@ -86,6 +117,7 @@ export default function ReportsContent() {
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="period"><CalendarDays className="mr-1 h-4 w-4" /> Por período</TabsTrigger>
+          <TabsTrigger value="payment"><CreditCard className="mr-1 h-4 w-4" /> Por pagamento</TabsTrigger>
           <TabsTrigger value="product"><Package className="mr-1 h-4 w-4" /> Por produto</TabsTrigger>
           <TabsTrigger value="customer"><Users className="mr-1 h-4 w-4" /> Por cliente</TabsTrigger>
         </TabsList>
@@ -111,6 +143,28 @@ export default function ReportsContent() {
                   <TableCell className="text-center">{totals.orders}</TableCell>
                   <TableCell className="text-center text-primary">{formatBRL(totals.revenue)}</TableCell>
                   <TableCell className="text-right">{formatBRL(totals.avgTicket)}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          )}
+        </TabsContent>
+        <TabsContent value="payment" className="space-y-4">
+          <p className="font-medium">💳 Relatório por forma de pagamento</p>
+          {loading ? <Skeleton className="h-64" /> : (
+            <Table>
+              <TableHeader><TableRow><TableHead>Método</TableHead><TableHead className="text-center">Transações</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {paymentData.map((row) => (
+                  <TableRow key={row.method}>
+                    <TableCell>{row.label}</TableCell>
+                    <TableCell className="text-center">{row.count}</TableCell>
+                    <TableCell className="text-right text-primary font-medium">{formatBRL(row.total)}</TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="font-bold">
+                  <TableCell>Total</TableCell>
+                  <TableCell className="text-center">{paymentData.reduce((s, r) => s + r.count, 0)}</TableCell>
+                  <TableCell className="text-right text-primary">{formatBRL(paymentData.reduce((s, r) => s + r.total, 0))}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
