@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
+import { useCashSession } from "@/hooks/useCashSession";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   Search, Plus, Minus, Trash2, ArrowLeft, ArrowRight, User, ShoppingCart,
-  CreditCard, MapPin, Phone, Store as StoreIcon, Truck, X
+  CreditCard, MapPin, Phone, Store as StoreIcon, Truck, X, Lock
 } from "lucide-react";
 
 // ── Types ───────────────────────────────────────────────────
@@ -73,6 +74,7 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
   onOrderCreated?: () => void;
 }) {
   const { store } = useStore();
+  const { activeSession, loading: cashLoading } = useCashSession();
   const [step, setStep] = useState(1); // 1=customer, 2=products, 3=payment
 
   // Step 1 – Customer
@@ -288,13 +290,13 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
 
       // 4. Create order_payments (only real amounts, change is NOT stored)
       const paymentRecords = payments.map(p => {
-        // For cash with change, only store the actual order portion
         const isLastCash = p.method === "cash" && change > 0;
         return {
           order_id: order.id,
           store_id: store.id,
           payment_method: p.method,
           amount: isLastCash ? Math.round((p.amount - change) * 100) / 100 : p.amount,
+          cash_session_id: activeSession?.id || null,
         };
       }).filter(p => p.amount > 0);
       await supabase.from("order_payments").insert(paymentRecords);
@@ -316,6 +318,18 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        {/* Block if no cash session */}
+        {!cashLoading && !activeSession ? (
+          <div className="p-8 text-center space-y-4">
+            <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
+            <p className="font-bold text-lg">Caixa não está aberto</p>
+            <p className="text-sm text-muted-foreground">
+              Abra o caixa antes de criar pedidos manuais.
+            </p>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+          </div>
+        ) : (
+          <>
         <DialogHeader className="p-4 pb-0">
           <DialogTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
@@ -565,6 +579,8 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
             </Button>
           )}
         </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
