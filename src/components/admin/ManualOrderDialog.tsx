@@ -237,20 +237,19 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
     if (!store || !canFinalize) return;
     setSubmitting(true);
     try {
-      // 1. Upsert customer
+      // 1. Upsert customer (last_order_at is updated by DB trigger automatically)
       let customerId: string | null = null;
       if (customer) {
         customerId = customer.id;
         await supabase.from("customers").update({
           name: custName, address: custAddress || null, bairro: custBairro || null,
-          complemento: custComplemento || null, observations: custObs || null, last_order_at: new Date().toISOString(),
+          complemento: custComplemento || null, observations: custObs || null,
         }).eq("id", customer.id);
       } else {
         const { data: newCust } = await supabase.from("customers").insert({
           store_id: store.id, name: custName, phone: custPhone,
           address: custAddress || null, bairro: custBairro || null,
           complemento: custComplemento || null, observations: custObs || null,
-          last_order_at: new Date().toISOString(),
         }).select("id").single();
         customerId = newCust?.id || null;
       }
@@ -287,13 +286,17 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
       }));
       await supabase.from("order_items").insert(items);
 
-      // 4. Create order_payments
-      const paymentRecords = payments.map(p => ({
-        order_id: order.id,
-        store_id: store.id,
-        payment_method: p.method,
-        amount: p.amount,
-      }));
+      // 4. Create order_payments (only real amounts, change is NOT stored)
+      const paymentRecords = payments.map(p => {
+        // For cash with change, only store the actual order portion
+        const isLastCash = p.method === "cash" && change > 0;
+        return {
+          order_id: order.id,
+          store_id: store.id,
+          payment_method: p.method,
+          amount: isLastCash ? Math.round((p.amount - change) * 100) / 100 : p.amount,
+        };
+      }).filter(p => p.amount > 0);
       await supabase.from("order_payments").insert(paymentRecords);
 
       toast.success("Pedido manual criado com sucesso!");
