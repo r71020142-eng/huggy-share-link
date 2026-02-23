@@ -3,8 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Eye, CheckCircle, XCircle, MapPin, Phone, CreditCard, Clock, Truck, Store as StoreIcon } from "lucide-react";
+import { Search, Eye, CheckCircle, XCircle, MapPin, Phone, CreditCard, Clock, Truck, Store as StoreIcon, Plus } from "lucide-react";
+import ManualOrderDialog from "@/components/admin/ManualOrderDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
@@ -58,6 +60,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [search, setSearch] = useState("");
+  const [manualOrderOpen, setManualOrderOpen] = useState(false);
 
   useEffect(() => {
     if (!store) return;
@@ -120,10 +123,17 @@ export default function Orders() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Pedidos</h2>
-        <p className="text-sm text-muted-foreground">✨ Painel Premium — atualização automática</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Pedidos</h2>
+          <p className="text-sm text-muted-foreground">✨ Painel Premium — atualização automática</p>
+        </div>
+        <Button onClick={() => setManualOrderOpen(true)}>
+          <Plus className="h-4 w-4 mr-1" /> Novo Pedido Manual
+        </Button>
       </div>
+
+      <ManualOrderDialog open={manualOrderOpen} onOpenChange={setManualOrderOpen} onOrderCreated={fetchOrders} />
 
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-4">

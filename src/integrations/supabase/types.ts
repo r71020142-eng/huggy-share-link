@@ -141,6 +141,53 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          bairro: string | null
+          complemento: string | null
+          created_at: string
+          id: string
+          last_order_at: string | null
+          name: string
+          observations: string | null
+          phone: string
+          store_id: string
+        }
+        Insert: {
+          address?: string | null
+          bairro?: string | null
+          complemento?: string | null
+          created_at?: string
+          id?: string
+          last_order_at?: string | null
+          name: string
+          observations?: string | null
+          phone: string
+          store_id: string
+        }
+        Update: {
+          address?: string | null
+          bairro?: string | null
+          complemento?: string | null
+          created_at?: string
+          id?: string
+          last_order_at?: string | null
+          name?: string
+          observations?: string | null
+          phone?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_products: {
         Row: {
           created_at: string
@@ -340,14 +387,58 @@ export type Database = {
           },
         ]
       }
+      order_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          order_id: string
+          payment_method: string
+          store_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          order_id: string
+          payment_method: string
+          store_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          order_id?: string
+          payment_method?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           created_at: string
           customer_address: string | null
+          customer_id: string | null
           customer_name: string
           customer_phone: string | null
           delivery_fee: number | null
           id: string
+          is_manual: boolean | null
           neighborhood_id: string | null
           notes: string | null
           order_type: string | null
@@ -362,10 +453,12 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_address?: string | null
+          customer_id?: string | null
           customer_name: string
           customer_phone?: string | null
           delivery_fee?: number | null
           id?: string
+          is_manual?: boolean | null
           neighborhood_id?: string | null
           notes?: string | null
           order_type?: string | null
@@ -380,10 +473,12 @@ export type Database = {
         Update: {
           created_at?: string
           customer_address?: string | null
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string | null
           delivery_fee?: number | null
           id?: string
+          is_manual?: boolean | null
           neighborhood_id?: string | null
           notes?: string | null
           order_type?: string | null
@@ -396,6 +491,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_neighborhood_id_fkey"
             columns: ["neighborhood_id"]
