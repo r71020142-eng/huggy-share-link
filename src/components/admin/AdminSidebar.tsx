@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Store,
   MapPin,
+  Wallet,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useStore } from "@/hooks/useStore";
@@ -43,6 +44,7 @@ const navItems = [
   { title: "Categorias", url: "/admin/categories", icon: Tag, proOnly: false },
   { title: "Produtos", url: "/admin/products", icon: Package, proOnly: false },
   { title: "Bairros", url: "/admin/neighborhoods", icon: MapPin, proOnly: false },
+  { title: "Caixa", url: "/admin/cash-register", icon: Wallet, proOnly: false },
   { title: "CRM", url: "/admin/crm", icon: Users, proOnly: true },
   { title: "Relatórios", url: "/admin/reports", icon: BarChart3, proOnly: true },
   { title: "Configurações", url: "/admin/settings", icon: Settings, proOnly: false },

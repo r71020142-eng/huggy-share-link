@@ -97,6 +97,59 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_sessions: {
+        Row: {
+          cash_difference: number | null
+          closed_at: string | null
+          created_at: string
+          expected_cash_amount: number | null
+          final_cash_amount: number | null
+          id: string
+          initial_cash_amount: number
+          notes: string | null
+          opened_at: string
+          opened_by: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          cash_difference?: number | null
+          closed_at?: string | null
+          created_at?: string
+          expected_cash_amount?: number | null
+          final_cash_amount?: number | null
+          id?: string
+          initial_cash_amount?: number
+          notes?: string | null
+          opened_at?: string
+          opened_by: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          cash_difference?: number | null
+          closed_at?: string | null
+          created_at?: string
+          expected_cash_amount?: number | null
+          final_cash_amount?: number | null
+          id?: string
+          initial_cash_amount?: number
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_sessions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -390,6 +443,7 @@ export type Database = {
       order_payments: {
         Row: {
           amount: number
+          cash_session_id: string | null
           created_at: string
           id: string
           order_id: string
@@ -398,6 +452,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          cash_session_id?: string | null
           created_at?: string
           id?: string
           order_id: string
@@ -406,6 +461,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          cash_session_id?: string | null
           created_at?: string
           id?: string
           order_id?: string
@@ -413,6 +469,13 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "order_payments_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_payments_order_id_fkey"
             columns: ["order_id"]
