@@ -140,7 +140,6 @@ export default function PublicMenu() {
     setSubmitting(true);
 
     if (isPro) {
-      const trackingCode = Math.random().toString(36).substring(2, 10).toUpperCase();
       const { data: order, error } = await supabase.from("orders").insert({
         store_id: store.id,
         customer_name: data.customerName,
@@ -153,7 +152,6 @@ export default function PublicMenu() {
         total: orderTotal,
         payment_method: data.paymentMethod,
         notes: data.notes,
-        tracking_code: trackingCode,
       }).select().single();
 
       if (error) {
@@ -175,7 +173,7 @@ export default function PublicMenu() {
           }))
         );
         setLastOrderId(order.id);
-        setLastTrackingCode(trackingCode);
+        setLastTrackingCode(order.tracking_code);
       }
 
       setCart([]);
