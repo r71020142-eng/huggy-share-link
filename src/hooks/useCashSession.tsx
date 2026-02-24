@@ -6,14 +6,32 @@ export interface CashSession {
   id: string;
   store_id: string;
   opened_by: string;
+  closed_by: string | null;
   opened_at: string;
   closed_at: string | null;
   initial_cash_amount: number;
   final_cash_amount: number | null;
   expected_cash_amount: number | null;
   cash_difference: number | null;
+  total_sales_amount: number | null;
+  total_cash_amount: number | null;
+  total_pix_amount: number | null;
+  total_card_amount: number | null;
+  total_sangrias: number | null;
+  total_suprimentos: number | null;
   status: string;
   notes: string | null;
+}
+
+export interface CashMovement {
+  id: string;
+  store_id: string;
+  cash_session_id: string;
+  type: "sangria" | "suprimento";
+  amount: number;
+  description: string | null;
+  created_by: string;
+  created_at: string;
 }
 
 export function useCashSession() {
@@ -60,33 +78,24 @@ export function useCashSession() {
     return data;
   };
 
+  // Close session via atomic RPC function
   const closeSession = async (finalCashAmount: number, notes?: string) => {
     if (!activeSession || !store) throw new Error("Nenhum caixa aberto");
+    const { data: user } = await supabase.auth.getUser();
 
-    // Calculate expected cash: initial + cash payments during session
-    const { data: cashPayments } = await supabase
-      .from("order_payments")
-      .select("amount")
-      .eq("cash_session_id", activeSession.id)
-      .eq("payment_method", "cash");
-
-    const cashSalesTotal = (cashPayments || []).reduce((s, p) => s + Number(p.amount), 0);
-    const expectedCash = Number(activeSession.initial_cash_amount) + cashSalesTotal;
-    const difference = Math.round((finalCashAmount - expectedCash) * 100) / 100;
-
-    const { error } = await supabase.from("cash_sessions").update({
-      status: "closed",
-      closed_at: new Date().toISOString(),
-      final_cash_amount: finalCashAmount,
-      expected_cash_amount: Math.round(expectedCash * 100) / 100,
-      cash_difference: difference,
-      notes: notes || null,
-    }).eq("id", activeSession.id);
+    const { data, error } = await supabase.rpc("close_cash_session", {
+      p_session_id: activeSession.id,
+      p_closing_amount: finalCashAmount,
+      p_closed_by: user.user?.id!,
+      p_notes: notes || null,
+    });
 
     if (error) throw error;
     setActiveSession(null);
+    return data;
   };
 
+  // Get live summary during session
   const getSessionSummary = async (sessionId: string) => {
     const { data: payments } = await supabase
       .from("order_payments")
@@ -104,5 +113,41 @@ export function useCashSession() {
     return { byMethod: summary, grandTotal };
   };
 
-  return { activeSession, loading, openSession, closeSession, getSessionSummary, refresh: fetchActive };
+  // Cash movements (sangria / suprimento)
+  const addCashMovement = async (type: "sangria" | "suprimento", amount: number, description?: string) => {
+    if (!activeSession || !store) throw new Error("Nenhum caixa aberto");
+    const { data: user } = await supabase.auth.getUser();
+
+    const { data, error } = await supabase.from("cash_movements").insert({
+      store_id: store.id,
+      cash_session_id: activeSession.id,
+      type,
+      amount,
+      description: description || null,
+      created_by: user.user?.id!,
+    }).select("*").single();
+
+    if (error) throw error;
+    return data as CashMovement;
+  };
+
+  const getSessionMovements = async (sessionId: string) => {
+    const { data } = await supabase
+      .from("cash_movements")
+      .select("*")
+      .eq("cash_session_id", sessionId)
+      .order("created_at", { ascending: false });
+    return (data as CashMovement[]) || [];
+  };
+
+  return {
+    activeSession,
+    loading,
+    openSession,
+    closeSession,
+    getSessionSummary,
+    addCashMovement,
+    getSessionMovements,
+    refresh: fetchActive,
+  };
 }
