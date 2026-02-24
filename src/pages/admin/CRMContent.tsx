@@ -113,6 +113,17 @@ export default function CRMContent() {
     window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
+  const sendWhatsAppBulk = () => {
+    const withPhone = filtered.filter((c) => c.phone);
+    if (withPhone.length === 0) return;
+    // Open first one immediately, rest with delay to avoid popup blocker
+    withPhone.forEach((c, i) => {
+      setTimeout(() => {
+        sendWhatsApp(c);
+      }, i * 1500);
+    });
+  };
+
   const exportCSV = () => {
     const headers = ["Nome", "Telefone", "Status", "Pedidos", "Total Gasto", "Último Pedido", "Primeiro Pedido", "Bairro"];
     const rows = filtered.map((c) => [
@@ -147,9 +158,19 @@ export default function CRMContent() {
             {stats.total} clientes · {stats.totalOrders} pedidos · {formatBRL(stats.totalRevenue)} total
           </p>
         </div>
-        <Button variant="outline" onClick={exportCSV}>
-          <Download className="mr-2 h-4 w-4" /> Exportar CSV
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={sendWhatsAppBulk}
+            disabled={filtered.filter((c) => c.phone).length === 0}
+            className="text-green-600 border-green-200 hover:bg-green-50"
+          >
+            <MessageCircle className="mr-2 h-4 w-4" /> Enviar para todos ({filtered.filter((c) => c.phone).length})
+          </Button>
+          <Button variant="outline" onClick={exportCSV}>
+            <Download className="mr-2 h-4 w-4" /> Exportar CSV
+          </Button>
+        </div>
       </div>
 
       {/* KPIs */}
