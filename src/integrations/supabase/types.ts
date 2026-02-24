@@ -269,36 +269,48 @@ export type Database = {
           bairro: string | null
           complemento: string | null
           created_at: string
+          crm_status: string
+          first_order_at: string | null
           id: string
           last_order_at: string | null
           name: string
           observations: string | null
           phone: string
           store_id: string
+          total_orders: number
+          total_spent: number
         }
         Insert: {
           address?: string | null
           bairro?: string | null
           complemento?: string | null
           created_at?: string
+          crm_status?: string
+          first_order_at?: string | null
           id?: string
           last_order_at?: string | null
           name: string
           observations?: string | null
           phone: string
           store_id: string
+          total_orders?: number
+          total_spent?: number
         }
         Update: {
           address?: string | null
           bairro?: string | null
           complemento?: string | null
           created_at?: string
+          crm_status?: string
+          first_order_at?: string | null
           id?: string
           last_order_at?: string | null
           name?: string
           observations?: string | null
           phone?: string
           store_id?: string
+          total_orders?: number
+          total_spent?: number
         }
         Relationships: [
           {
@@ -891,6 +903,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      classify_customer_crm_status: {
+        Args: { p_customer_id: string }
+        Returns: undefined
+      }
       close_cash_session: {
         Args: {
           p_closed_by: string
@@ -910,6 +926,10 @@ export type Database = {
       is_store_owner: {
         Args: { _store_id: string; _user_id: string }
         Returns: boolean
+      }
+      reclassify_all_customers: {
+        Args: { p_store_id?: string }
+        Returns: number
       }
     }
     Enums: {
