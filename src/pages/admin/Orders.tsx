@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Eye, CheckCircle, XCircle, MapPin, Phone, CreditCard, Clock, Truck, Store as StoreIcon, Plus } from "lucide-react";
+import { Search, Eye, CheckCircle, XCircle, MapPin, Phone, CreditCard, Clock, Truck, Store as StoreIcon, Plus, Bell, BellOff } from "lucide-react";
 import ManualOrderDialog from "@/components/admin/ManualOrderDialog";
+import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
@@ -54,6 +55,39 @@ const paymentIcons: Record<string, string> = {
   debit: "💳 Débito",
 };
 
+// Notification sound using Web Audio API
+function playNotificationSound() {
+  try {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // First beep
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.frequency.value = 880;
+    osc1.type = "sine";
+    gain1.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+    osc1.start(audioCtx.currentTime);
+    osc1.stop(audioCtx.currentTime + 0.3);
+
+    // Second beep
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+    osc2.frequency.value = 1100;
+    osc2.type = "sine";
+    gain2.gain.setValueAtTime(0.3, audioCtx.currentTime + 0.35);
+    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.65);
+    osc2.start(audioCtx.currentTime + 0.35);
+    osc2.stop(audioCtx.currentTime + 0.65);
+  } catch (e) {
+    console.warn("Could not play notification sound", e);
+  }
+}
+
 export default function Orders() {
   const { store } = useStore();
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -61,6 +95,10 @@ export default function Orders() {
   const [filter, setFilter] = useState<OrderStatus | "all">("all");
   const [search, setSearch] = useState("");
   const [manualOrderOpen, setManualOrderOpen] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { toast } = useToast();
+  const isFirstLoad = useRef(true);
+  const knownOrderIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!store) return;
@@ -68,13 +106,32 @@ export default function Orders() {
 
     const channel = supabase
       .channel("orders-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders", filter: `store_id=eq.${store.id}` }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders", filter: `store_id=eq.${store.id}` }, (payload) => {
+        const newOrder = payload.new as Order;
+        
+        // Only notify for truly new orders (not already known)
+        if (!isFirstLoad.current && !knownOrderIds.current.has(newOrder.id)) {
+          knownOrderIds.current.add(newOrder.id);
+          
+          if (soundEnabled) {
+            playNotificationSound();
+          }
+          
+          toast({
+            title: "🔔 Novo pedido!",
+            description: `${newOrder.customer_name} — R$ ${Number(newOrder.total).toFixed(2).replace(".", ",")}`,
+          });
+        }
+        
+        fetchOrders();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `store_id=eq.${store.id}` }, () => {
         fetchOrders();
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [store]);
+  }, [store, soundEnabled]);
 
   const fetchOrders = async () => {
     if (!store) return;
@@ -83,7 +140,16 @@ export default function Orders() {
       .select("*, order_items(*)")
       .eq("store_id", store.id)
       .order("created_at", { ascending: false });
-    setOrders((data as OrderWithItems[]) || []);
+    
+    const fetched = (data as OrderWithItems[]) || [];
+    
+    // Track known IDs on first load
+    if (isFirstLoad.current) {
+      fetched.forEach(o => knownOrderIds.current.add(o.id));
+      isFirstLoad.current = false;
+    }
+    
+    setOrders(fetched);
     setLoading(false);
   };
 
@@ -128,9 +194,19 @@ export default function Orders() {
           <h2 className="text-2xl font-bold">Pedidos</h2>
           <p className="text-sm text-muted-foreground">✨ Painel Premium — atualização automática</p>
         </div>
-        <Button onClick={() => setManualOrderOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Novo Pedido Manual
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title={soundEnabled ? "Desativar som" : "Ativar som"}
+          >
+            {soundEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+          </Button>
+          <Button onClick={() => setManualOrderOpen(true)}>
+            <Plus className="h-4 w-4 mr-1" /> Novo Pedido Manual
+          </Button>
+        </div>
       </div>
 
       <ManualOrderDialog open={manualOrderOpen} onOpenChange={setManualOrderOpen} onOrderCreated={fetchOrders} />
