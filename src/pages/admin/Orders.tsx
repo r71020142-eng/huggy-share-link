@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Eye, CheckCircle, XCircle, MapPin, Phone, CreditCard, Clock, Truck, Store as StoreIcon, Plus, Bell, BellOff } from "lucide-react";
 import ManualOrderDialog from "@/components/admin/ManualOrderDialog";
+import OrderDetailDialog from "@/components/admin/OrderDetailDialog";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -96,6 +97,8 @@ export default function Orders() {
   const [search, setSearch] = useState("");
   const [manualOrderOpen, setManualOrderOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<OrderWithItems | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
   const soundEnabledRef = useRef(true);
   const { toast } = useToast();
   const isFirstLoad = useRef(true);
@@ -165,6 +168,24 @@ export default function Orders() {
     fetchOrders();
   };
 
+  const openDetail = (order: OrderWithItems) => {
+    setSelectedOrder(order);
+    setDetailOpen(true);
+  };
+
+  const copyTrackingLink = (order: Order) => {
+    if (!order.tracking_code || !store) {
+      toast({ title: "Sem código de rastreio", description: "Este pedido não possui código de rastreio.", variant: "destructive" });
+      return;
+    }
+    const url = `${window.location.origin}/${store.slug}?tracking=${order.tracking_code}`;
+    navigator.clipboard.writeText(url).then(() => {
+      toast({ title: "✅ Link copiado!", description: "Link de rastreio copiado para a área de transferência." });
+    }).catch(() => {
+      toast({ title: "Erro", description: "Não foi possível copiar o link.", variant: "destructive" });
+    });
+  };
+
   const filtered = orders.filter((o) => {
     if (filter !== "all" && o.status !== filter) return false;
     if (search && !o.customer_name.toLowerCase().includes(search.toLowerCase()) && !o.customer_phone?.includes(search) && !o.id.includes(search)) return false;
@@ -217,6 +238,7 @@ export default function Orders() {
       </div>
 
       <ManualOrderDialog open={manualOrderOpen} onOpenChange={setManualOrderOpen} onOrderCreated={fetchOrders} />
+      <OrderDetailDialog order={selectedOrder} open={detailOpen} onOpenChange={setDetailOpen} />
 
       {/* Summary cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -312,7 +334,7 @@ export default function Orders() {
 
                   {/* Action buttons */}
                   <div className="mt-3 flex items-center gap-2 flex-wrap">
-                    <button className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
+                    <button onClick={() => openDetail(order)} className="inline-flex items-center gap-1.5 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
                       <Eye className="h-3.5 w-3.5" /> Detalhes
                     </button>
                     {order.status === "pending" && (
@@ -355,7 +377,7 @@ export default function Orders() {
                         Concluído
                       </button>
                     )}
-                    <button className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">
+                    <button onClick={() => copyTrackingLink(order)} className="inline-flex items-center gap-1.5 rounded-full border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50">
                       <MapPin className="h-3.5 w-3.5" /> Link rastreio
                     </button>
                   </div>
