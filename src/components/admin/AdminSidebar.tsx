@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -10,13 +11,19 @@ import {
   Sparkles,
   LogOut,
   ChevronDown,
+  ChevronRight,
   Store,
   MapPin,
   Wallet,
+  Clock,
+  ArrowUpDown,
+  Lock,
+  History,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useStore } from "@/hooks/useStore";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -28,6 +35,11 @@ import {
   SidebarFooter,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,16 +56,25 @@ const navItems = [
   { title: "Categorias", url: "/admin/categories", icon: Tag, proOnly: false },
   { title: "Produtos", url: "/admin/products", icon: Package, proOnly: false },
   { title: "Bairros", url: "/admin/neighborhoods", icon: MapPin, proOnly: false },
-  { title: "Caixa", url: "/admin/cash-register", icon: Wallet, proOnly: false },
   { title: "CRM", url: "/admin/crm", icon: Users, proOnly: true },
   { title: "Relatórios", url: "/admin/reports", icon: BarChart3, proOnly: true },
   { title: "Configurações", url: "/admin/settings", icon: Settings, proOnly: false },
   { title: "Planos", url: "/admin/plans", icon: Sparkles, proOnly: false },
 ];
 
+const cashSubItems = [
+  { title: "Sessão Atual", url: "/admin/cash/session", icon: Clock },
+  { title: "Sangria / Suprimento", url: "/admin/cash/movements", icon: ArrowUpDown },
+  { title: "Fechamento", url: "/admin/cash/close", icon: Lock },
+  { title: "Histórico", url: "/admin/cash/history", icon: History },
+];
+
 export function AdminSidebar() {
   const { store, stores, switchStore, isPro } = useStore();
   const { signOut } = useAuth();
+  const location = useLocation();
+  const isCashActive = location.pathname.startsWith("/admin/cash");
+  const [cashOpen, setCashOpen] = useState(isCashActive);
 
   return (
     <Sidebar className="border-r-0">
@@ -113,6 +134,35 @@ export function AdminSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+
+              {/* Caixa collapsible */}
+              <SidebarMenuItem>
+                <Collapsible open={cashOpen} onOpenChange={setCashOpen}>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className={`w-full text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${isCashActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""}`}>
+                      <Wallet className="h-4 w-4" />
+                      <span className="flex-1 text-left">Caixa</span>
+                      <ChevronRight className={`h-3 w-3 transition-transform ${cashOpen ? "rotate-90" : ""}`} />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="ml-4 border-l border-sidebar-accent pl-2 mt-1 space-y-0.5">
+                      {cashSubItems.map((sub) => (
+                        <SidebarMenuButton key={sub.url} asChild className="h-8">
+                          <NavLink
+                            to={sub.url}
+                            className="text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-xs"
+                            activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          >
+                            <sub.icon className="h-3.5 w-3.5" />
+                            <span>{sub.title}</span>
+                          </NavLink>
+                        </SidebarMenuButton>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -21,7 +21,10 @@ import Reports from "@/pages/admin/Reports";
 import Settings from "@/pages/admin/Settings";
 import Plans from "@/pages/admin/Plans";
 import Neighborhoods from "@/pages/admin/Neighborhoods";
-import CashRegisterPage from "@/pages/admin/CashRegister";
+import CashSessionPage from "@/pages/admin/cash/CashSessionPage";
+import CashMovementsPage from "@/pages/admin/cash/CashMovementsPage";
+import CashClosePage from "@/pages/admin/cash/CashClosePage";
+import CashHistoryPage from "@/pages/admin/cash/CashHistoryPage";
 import SuperAdminLogin from "@/pages/superadmin/Login";
 import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
 import SuperAdminKeys from "@/pages/superadmin/Keys";
@@ -69,7 +72,10 @@ const App = () => (
                 <Route path="categories" element={<Categories />} />
                 <Route path="products" element={<Products />} />
                 <Route path="neighborhoods" element={<Neighborhoods />} />
-                <Route path="cash-register" element={<CashRegisterPage />} />
+                <Route path="cash/session" element={<CashSessionPage />} />
+                <Route path="cash/movements" element={<CashMovementsPage />} />
+                <Route path="cash/close" element={<CashClosePage />} />
+                <Route path="cash/history" element={<CashHistoryPage />} />
                 <Route path="crm" element={<CRM />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
