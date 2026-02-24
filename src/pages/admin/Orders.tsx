@@ -96,9 +96,16 @@ export default function Orders() {
   const [search, setSearch] = useState("");
   const [manualOrderOpen, setManualOrderOpen] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const soundEnabledRef = useRef(true);
   const { toast } = useToast();
   const isFirstLoad = useRef(true);
   const knownOrderIds = useRef<Set<string>>(new Set());
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    soundEnabledRef.current = next;
+  };
 
   useEffect(() => {
     if (!store) return;
@@ -113,7 +120,7 @@ export default function Orders() {
         if (!isFirstLoad.current && !knownOrderIds.current.has(newOrder.id)) {
           knownOrderIds.current.add(newOrder.id);
           
-          if (soundEnabled) {
+          if (soundEnabledRef.current) {
             playNotificationSound();
           }
           
@@ -131,7 +138,7 @@ export default function Orders() {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [store, soundEnabled]);
+  }, [store]);
 
   const fetchOrders = async () => {
     if (!store) return;
@@ -198,7 +205,7 @@ export default function Orders() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setSoundEnabled(!soundEnabled)}
+            onClick={toggleSound}
             title={soundEnabled ? "Desativar som" : "Ativar som"}
           >
             {soundEnabled ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
