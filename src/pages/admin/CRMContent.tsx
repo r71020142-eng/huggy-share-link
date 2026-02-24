@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, MessageCircle, Phone, ShoppingBag, Calendar, Filter, Users, TrendingUp, AlertTriangle, UserX } from "lucide-react";
+import { Search, Download, MessageCircle, Phone, ShoppingBag, Calendar, Filter, Users, TrendingUp, AlertTriangle, UserX, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomerRow {
@@ -42,6 +42,7 @@ export default function CRMContent() {
   const [sortBy, setSortBy] = useState("spent");
   const [minSpent, setMinSpent] = useState("");
   const [minOrders, setMinOrders] = useState("");
+  const [inactivityDays, setInactivityDays] = useState("all");
   const [whatsappMsg, setWhatsappMsg] = useState("Olá {nome}, sentimos sua falta! 🎉 Volte e aproveite nossas novidades!");
 
   useEffect(() => {
@@ -85,6 +86,18 @@ export default function CRMContent() {
       if (!isNaN(v)) list = list.filter((c) => c.total_orders >= v);
     }
 
+    if (inactivityDays !== "all") {
+      const days = parseInt(inactivityDays);
+      if (!isNaN(days)) {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+        list = list.filter((c) => {
+          if (!c.last_order_at) return true; // never ordered = inactive
+          return new Date(c.last_order_at) <= cutoff;
+        });
+      }
+    }
+
     list = [...list].sort((a, b) =>
       sortBy === "spent" ? b.total_spent - a.total_spent :
       sortBy === "orders" ? b.total_orders - a.total_orders :
@@ -92,7 +105,7 @@ export default function CRMContent() {
     );
 
     return list;
-  }, [customers, search, statusFilter, sortBy, minSpent, minOrders]);
+  }, [customers, search, statusFilter, sortBy, minSpent, minOrders, inactivityDays]);
 
   const stats = useMemo(() => {
     const byStatus: Record<string, number> = {};
@@ -233,6 +246,15 @@ export default function CRMContent() {
         </Select>
         <Input type="number" placeholder="Min. gasto (R$)" className="w-36" value={minSpent} onChange={(e) => setMinSpent(e.target.value)} />
         <Input type="number" placeholder="Min. pedidos" className="w-32" value={minOrders} onChange={(e) => setMinOrders(e.target.value)} />
+        <Select value={inactivityDays} onValueChange={setInactivityDays}>
+          <SelectTrigger className="w-44"><Clock className="h-4 w-4 mr-1" /><SelectValue placeholder="Inatividade" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Qualquer período</SelectItem>
+            <SelectItem value="10">Sem pedido há 10+ dias</SelectItem>
+            <SelectItem value="30">Sem pedido há 30+ dias</SelectItem>
+            <SelectItem value="60">Sem pedido há 60+ dias</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
