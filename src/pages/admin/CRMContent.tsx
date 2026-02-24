@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Download, MessageCircle, Phone, ShoppingBag, Calendar, Filter, Users, TrendingUp, AlertTriangle, UserX, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import CustomerDetailDialog from "@/components/admin/CustomerDetailDialog";
 
 interface CustomerRow {
   id: string;
@@ -43,6 +44,7 @@ export default function CRMContent() {
   const [minSpent, setMinSpent] = useState("");
   const [minOrders, setMinOrders] = useState("");
   const [inactivityDays, setInactivityDays] = useState("all");
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRow | null>(null);
   const [whatsappMsg, setWhatsappMsg] = useState("Olá {nome}, sentimos sua falta! 🎉 Volte e aproveite nossas novidades!");
 
   useEffect(() => {
@@ -289,7 +291,7 @@ export default function CRMContent() {
                             {c.name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-medium text-sm">{c.name}</p>
+                            <p className="font-medium text-sm cursor-pointer hover:underline text-primary" onClick={() => setSelectedCustomer(c)}>{c.name}</p>
                             {c.phone && <p className="flex items-center gap-1 text-xs text-muted-foreground"><Phone className="h-3 w-3" />{c.phone}</p>}
                           </div>
                         </div>
@@ -330,6 +332,12 @@ export default function CRMContent() {
       <p className="text-xs text-muted-foreground text-center">
         Status atualizado automaticamente pelo banco de dados · Ativo ≤10d · Morno ≤30d · Inativo ≤60d · Perdido &gt;60d
       </p>
+
+      <CustomerDetailDialog
+        open={!!selectedCustomer}
+        onOpenChange={(open) => !open && setSelectedCustomer(null)}
+        customer={selectedCustomer}
+      />
     </div>
   );
 }
