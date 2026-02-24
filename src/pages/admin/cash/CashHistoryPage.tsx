@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { History } from "lucide-react";
+import { History, Printer } from "lucide-react";
 
 const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
@@ -107,7 +107,7 @@ export default function CashHistoryPage() {
             <DialogTitle>Relatório do Turno</DialogTitle>
           </DialogHeader>
           {reportSession && (
-            <div className="space-y-4">
+            <div className="space-y-4" id="shift-report-content">
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-xs text-muted-foreground">Abertura</p>
@@ -161,6 +161,39 @@ export default function CashHistoryPage() {
                   <p className="text-sm">{reportSession.notes}</p>
                 </div>
               )}
+
+              <Button className="w-full no-print" variant="outline" onClick={() => {
+                const content = document.getElementById("shift-report-content");
+                if (!content) return;
+                const printWindow = window.open("", "_blank");
+                if (!printWindow) return;
+                printWindow.document.write(`
+                  <html><head><title>Relatório de Turno</title>
+                  <style>
+                    body { font-family: sans-serif; padding: 24px; max-width: 400px; margin: 0 auto; }
+                    .flex { display: flex; } .justify-between { justify-content: space-between; }
+                    .font-bold { font-weight: bold; } .font-medium { font-weight: 500; }
+                    .text-sm { font-size: 14px; } .text-xs { font-size: 12px; }
+                    .space-y-2 > * + * { margin-top: 8px; } .space-y-4 > * + * { margin-top: 16px; }
+                    .border-t { border-top: 1px solid #ddd; padding-top: 4px; }
+                    .rounded-lg { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+                    .bg-muted { background: #f5f5f5; } .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+                    .text-green-600 { color: #16a34a; } .text-blue-600, .text-blue-700 { color: #2563eb; }
+                    .text-red-600 { color: #dc2626; } .text-orange-600, .text-orange-700 { color: #ea580c; }
+                    .text-primary { color: #7c3aed; }
+                    h1 { font-size: 18px; text-align: center; margin-bottom: 16px; }
+                    .no-print { display: none; }
+                    @media print { .no-print { display: none; } }
+                  </style></head><body>
+                  <h1>Relatório de Turno</h1>
+                  ${content.innerHTML}
+                  </body></html>
+                `);
+                printWindow.document.close();
+                printWindow.print();
+              }}>
+                <Printer className="h-4 w-4 mr-2" /> Imprimir / Exportar PDF
+              </Button>
             </div>
           )}
         </DialogContent>
