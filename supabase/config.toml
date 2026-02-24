@@ -1,1 +1,4 @@
 project_id = "ejmgpxrypogmhgoqpilf"
+
+[functions.reclassify-customers]
+verify_jwt = false
