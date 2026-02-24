@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useStore } from "@/hooks/useStore";
+import { useCashSession } from "@/hooks/useCashSession";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import {
@@ -71,6 +72,7 @@ const cashSubItems = [
 
 export function AdminSidebar() {
   const { store, stores, switchStore, isPro } = useStore();
+  const { activeSession } = useCashSession();
   const { signOut } = useAuth();
   const location = useLocation();
   const isCashActive = location.pathname.startsWith("/admin/cash");
@@ -142,6 +144,7 @@ export function AdminSidebar() {
                     <SidebarMenuButton className={`w-full text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${isCashActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : ""}`}>
                       <Wallet className="h-4 w-4" />
                       <span className="flex-1 text-left">Caixa</span>
+                      <span className={`h-2 w-2 rounded-full ${activeSession ? "bg-green-500" : "bg-red-500"}`} title={activeSession ? "Caixa aberto" : "Caixa fechado"} />
                       <ChevronRight className={`h-3 w-3 transition-transform ${cashOpen ? "rotate-90" : ""}`} />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
