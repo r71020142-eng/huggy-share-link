@@ -97,10 +97,59 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_movements: {
+        Row: {
+          amount: number
+          cash_session_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          store_id: string
+          type: string
+        }
+        Insert: {
+          amount: number
+          cash_session_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          store_id: string
+          type: string
+        }
+        Update: {
+          amount?: number
+          cash_session_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_movements_cash_session_id_fkey"
+            columns: ["cash_session_id"]
+            isOneToOne: false
+            referencedRelation: "cash_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_movements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_sessions: {
         Row: {
           cash_difference: number | null
           closed_at: string | null
+          closed_by: string | null
           created_at: string
           expected_cash_amount: number | null
           final_cash_amount: number | null
@@ -111,10 +160,17 @@ export type Database = {
           opened_by: string
           status: string
           store_id: string
+          total_card_amount: number | null
+          total_cash_amount: number | null
+          total_pix_amount: number | null
+          total_sales_amount: number | null
+          total_sangrias: number | null
+          total_suprimentos: number | null
         }
         Insert: {
           cash_difference?: number | null
           closed_at?: string | null
+          closed_by?: string | null
           created_at?: string
           expected_cash_amount?: number | null
           final_cash_amount?: number | null
@@ -125,10 +181,17 @@ export type Database = {
           opened_by: string
           status?: string
           store_id: string
+          total_card_amount?: number | null
+          total_cash_amount?: number | null
+          total_pix_amount?: number | null
+          total_sales_amount?: number | null
+          total_sangrias?: number | null
+          total_suprimentos?: number | null
         }
         Update: {
           cash_difference?: number | null
           closed_at?: string | null
+          closed_by?: string | null
           created_at?: string
           expected_cash_amount?: number | null
           final_cash_amount?: number | null
@@ -139,6 +202,12 @@ export type Database = {
           opened_by?: string
           status?: string
           store_id?: string
+          total_card_amount?: number | null
+          total_cash_amount?: number | null
+          total_pix_amount?: number | null
+          total_sales_amount?: number | null
+          total_sangrias?: number | null
+          total_suprimentos?: number | null
         }
         Relationships: [
           {
@@ -822,6 +891,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      close_cash_session: {
+        Args: {
+          p_closed_by: string
+          p_closing_amount: number
+          p_notes?: string
+          p_session_id: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
