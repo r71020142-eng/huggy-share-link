@@ -31,24 +31,28 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, them
   const [orderStatus, setOrderStatus] = useState("pending");
 
   useEffect(() => {
-    if (!orderId || !open) return;
+    if (!open || (!orderId && !trackingCode)) return;
 
-    // Fetch initial status
+    // Fetch initial status via RPC (bypasses RLS safely)
     const fetchStatus = async () => {
-      const { data } = await supabase.from("orders").select("status").eq("id", orderId).single();
-      if (data) setOrderStatus(data.status);
+      if (trackingCode) {
+        const { data } = await supabase.rpc("get_order_by_tracking", { p_tracking_code: trackingCode });
+        if (data) setOrderStatus((data as any).status);
+      }
     };
     fetchStatus();
 
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel(`order-${orderId}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` }, (payload) => {
-        if (payload.new?.status) setOrderStatus(payload.new.status as string);
-      })
-      .subscribe();
+    // Subscribe to realtime updates (realtime doesn't need RLS for listening)
+    if (orderId) {
+      const channel = supabase
+        .channel(`order-${orderId}`)
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` }, (payload) => {
+          if (payload.new?.status) setOrderStatus(payload.new.status as string);
+        })
+        .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+      return () => { supabase.removeChannel(channel); };
+    }
   }, [orderId, open]);
 
   if (!open) return null;
