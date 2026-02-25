@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('electronAPI', {
+const bridge = {
   // Secure store
   storeGet: (key, defaultVal) => ipcRenderer.invoke('store-get', key, defaultVal),
   storeSet: (key, val) => ipcRenderer.invoke('store-set', key, val),
@@ -16,4 +16,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Tray events
   onTrayTestPrint: (callback) => ipcRenderer.on('tray-test-print', callback),
   onTrayAutoPrintChanged: (callback) => ipcRenderer.on('tray-auto-print-changed', (_event, val) => callback(val)),
-});
+};
+
+// Backward compatibility: some renderer builds still use window.api
+contextBridge.exposeInMainWorld('electronAPI', bridge);
+contextBridge.exposeInMainWorld('api', bridge);
