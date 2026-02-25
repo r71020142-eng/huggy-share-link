@@ -1,67 +1,104 @@
+/**
+ * Açaí Lab Print Agent — Renderer Process
+ * Secure: uses contextBridge (preload.js) instead of nodeIntegration.
+ */
+
+const { SUPABASE_URL, SUPABASE_ANON_KEY, FUNCTIONS_URL } = require('../lib/supabase');
+const { buildReceiptCommands, buildTestReceiptCommands } = require('../lib/printer-commands');
 const { createClient } = require('@supabase/supabase-js');
-const Store = require('electron-store');
-const os = require('os');
-const { ipcRenderer } = require('electron');
-
-const config = new Store({ encryptionKey: 'acailab-secure-key-2024' });
-
-// CHANGE THIS to your Supabase URL and anon key
-const SUPABASE_URL = 'https://ejmgpxrypogmhgoqpilf.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqbWdweHJ5cG9nbWhnb3FwaWxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MjM1ODgsImV4cCI6MjA4NzI5OTU4OH0.TK2PdUu4h8DizGUmFko0WJ2kMg4OkBZM6Z3G7xntXqc';
-const FUNCTIONS_URL = `${SUPABASE_URL}/functions/v1`;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const api = window.electronAPI;
 
+// ── State ──────────────────────────────────────────────
 let storeId = null;
 let token = null;
 let agentId = null;
 let heartbeatInterval = null;
 let realtimeChannel = null;
 let printedOrderIds = new Set();
+let autoPrint = true;
+let printMode = 'both';
+let copies = 1;
 let printers = [];
-let autoPrint = config.get('autoPrint', true);
 
-// DOM elements
-const screenConnect = document.getElementById('screen-connect');
-const screenMain = document.getElementById('screen-main');
-const btnConnect = document.getElementById('btnConnect');
-const btnDisconnect = document.getElementById('btnDisconnect');
-const btnTestPrint = document.getElementById('btnTestPrint');
-const connectError = document.getElementById('connectError');
-const printLog = document.getElementById('printLog');
-const statusDot = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
-const machineInfo = document.getElementById('machineInfo');
+// ── DOM ────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
 
-// Check saved credentials
-const saved = config.get('credentials');
-if (saved) {
-  document.getElementById('storeId').value = saved.storeId;
-  document.getElementById('token').value = saved.token;
-}
+const screenConnect = $('screen-connect');
+const screenMain = $('screen-main');
+const btnConnect = $('btnConnect');
+const btnDisconnect = $('btnDisconnect');
+const btnTestPrint = $('btnTestPrint');
+const btnDetectUsb = $('btnDetectUsb');
+const btnAddNetwork = $('btnAddNetwork');
+const connectError = $('connectError');
+const printLog = $('printLog');
+const statusDot = $('statusDot');
+const statusText = $('statusText');
+const machineInfo = $('machineInfo');
+const lastSeenText = $('lastSeenText');
+const chkAutoPrint = $('chkAutoPrint');
+const selPrintMode = $('selPrintMode');
+const selCopies = $('selCopies');
+const printerList = $('printerList');
 
+// Network modal
+const modalNetwork = $('modalNetwork');
+const btnSaveNetwork = $('btnSaveNetwork');
+const btnCancelNetwork = $('btnCancelNetwork');
+
+// ── Init: load saved config ────────────────────────────
+(async function init() {
+  const saved = await api.storeGet('credentials');
+  if (saved) {
+    $('inputStoreId').value = saved.storeId || '';
+    $('inputToken').value = saved.token || '';
+  }
+
+  autoPrint = await api.storeGet('autoPrint', true);
+  printMode = await api.storeGet('printMode', 'both');
+  copies = await api.storeGet('copies', 1);
+  printers = await api.storeGet('printers', []);
+
+  chkAutoPrint.checked = autoPrint;
+  selPrintMode.value = printMode;
+  selCopies.value = String(copies);
+
+  renderPrinters();
+})();
+
+// ── Logging ────────────────────────────────────────────
 function log(msg) {
-  const time = new Date().toLocaleTimeString();
+  const time = new Date().toLocaleTimeString('pt-BR');
   printLog.innerHTML += `\n[${time}] ${msg}`;
   printLog.scrollTop = printLog.scrollHeight;
 }
 
-// Connect
+// ── Connect ────────────────────────────────────────────
 btnConnect.addEventListener('click', async () => {
-  storeId = document.getElementById('storeId').value.trim();
-  token = document.getElementById('token').value.trim();
-  if (!storeId || !token) { connectError.textContent = 'Preencha todos os campos'; return; }
+  storeId = $('inputStoreId').value.trim();
+  token = $('inputToken').value.trim();
+
+  if (!storeId || !token) {
+    showError('Preencha Store ID e Token');
+    return;
+  }
 
   btnConnect.disabled = true;
-  connectError.textContent = 'Conectando...';
+  showError('Conectando...');
 
   try {
+    const hostname = await api.getHostname();
+
     const res = await fetch(`${FUNCTIONS_URL}/print-agent-auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
       body: JSON.stringify({
-        store_id: storeId, token, action: 'connect',
-        machine_name: os.hostname(),
+        store_id: storeId,
+        token,
+        action: 'connect',
+        machine_name: hostname,
         agent_version: '1.0.0',
       }),
     });
@@ -70,9 +107,11 @@ btnConnect.addEventListener('click', async () => {
     if (!res.ok) throw new Error(data.error || 'Falha na conexão');
 
     agentId = data.agent_id;
-    config.set('credentials', { storeId, token });
 
-    machineInfo.textContent = `Máquina: ${os.hostname()} | Store: ${storeId.substring(0, 8)}...`;
+    // Save credentials securely
+    await api.storeSet('credentials', { storeId, token });
+
+    machineInfo.textContent = `Máquina: ${hostname} | Loja: ${storeId.substring(0, 8)}...`;
     screenConnect.classList.add('hidden');
     screenMain.classList.remove('hidden');
 
@@ -80,37 +119,58 @@ btnConnect.addEventListener('click', async () => {
     startRealtime();
     log('✅ Conectado com sucesso');
   } catch (e) {
-    connectError.textContent = e.message;
+    showError(e.message);
   } finally {
     btnConnect.disabled = false;
   }
 });
 
-// Heartbeat
-function startHeartbeat() {
-  heartbeatInterval = setInterval(async () => {
-    try {
-      const res = await fetch(`${FUNCTIONS_URL}/print-agent-auth`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-        body: JSON.stringify({ store_id: storeId, token, action: 'heartbeat' }),
-      });
-      const data = await res.json();
-      if (!data.is_active) {
-        log('⚠️ Token revogado! Desconectando...');
-        disconnect();
-      }
-    } catch {
-      statusDot.className = 'dot offline';
-      statusText.textContent = 'Offline - tentando reconectar...';
-    }
-  }, 30000);
+function showError(msg) {
+  connectError.textContent = msg;
+  connectError.classList.remove('hidden');
 }
 
-// Realtime — listen only to this store's orders
+// ── Heartbeat ──────────────────────────────────────────
+function startHeartbeat() {
+  // Immediate first beat
+  sendHeartbeat();
+
+  heartbeatInterval = setInterval(sendHeartbeat, 30000);
+}
+
+async function sendHeartbeat() {
+  try {
+    const res = await fetch(`${FUNCTIONS_URL}/print-agent-auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+      body: JSON.stringify({ store_id: storeId, token, action: 'heartbeat' }),
+    });
+    const data = await res.json();
+
+    if (data.is_active === false) {
+      log('⚠️ Token revogado pelo painel! Desconectando...');
+      disconnect();
+      return;
+    }
+
+    statusDot.className = 'dot online';
+    statusText.textContent = 'Online';
+    lastSeenText.textContent = `Último heartbeat: ${new Date().toLocaleTimeString('pt-BR')}`;
+  } catch {
+    statusDot.className = 'dot offline';
+    statusText.textContent = 'Offline - tentando reconectar...';
+    log('⚠️ Falha no heartbeat, tentando reconectar...');
+  }
+}
+
+// ── Realtime ───────────────────────────────────────────
 function startRealtime() {
+  if (realtimeChannel) {
+    supabase.removeChannel(realtimeChannel);
+  }
+
   realtimeChannel = supabase
-    .channel(`orders-${storeId}`)
+    .channel(`print-orders-${storeId}`)
     .on('postgres_changes', {
       event: 'INSERT',
       schema: 'public',
@@ -118,143 +178,242 @@ function startRealtime() {
       filter: `store_id=eq.${storeId}`,
     }, async (payload) => {
       const order = payload.new;
-      if (printedOrderIds.has(order.id)) return; // dedup
+
+      // Deduplication
+      if (printedOrderIds.has(order.id)) return;
       printedOrderIds.add(order.id);
 
-      log(`📦 Novo pedido #${order.tracking_code || order.id.substring(0, 8)}`);
+      const code = order.tracking_code || order.id.substring(0, 8);
+      log(`📦 Novo pedido #${code}`);
 
       if (autoPrint) {
-        // Fetch order items
-        const { data: items } = await supabase
-          .from('order_items')
-          .select('*')
-          .eq('order_id', order.id);
-
-        printOrder(order, items || []);
+        await printOrder(order);
       }
     })
-    .subscribe();
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        log('📡 Realtime conectado - escutando pedidos');
+      } else if (status === 'CLOSED') {
+        log('⚠️ Realtime desconectado - reconectando...');
+        setTimeout(() => startRealtime(), 5000);
+      }
+    });
 }
 
-// ESC/POS thermal print (58mm)
-function printOrder(order, items) {
+// ── Print Order ────────────────────────────────────────
+async function printOrder(order) {
   try {
-    const escpos = require('escpos');
+    // Fetch items
+    const { data: items, error } = await supabase
+      .from('order_items')
+      .select('*')
+      .eq('order_id', order.id);
 
-    // Try each active printer
-    const activePrinters = config.get('printers', []).filter(p => p.active);
+    if (error) throw error;
+
+    // Fetch store info
+    const { data: storeData } = await supabase
+      .from('stores')
+      .select('name, address, whatsapp')
+      .eq('id', storeId)
+      .single();
+
+    const storeInfo = {
+      name: storeData?.name || 'ACAI LAB',
+      address: storeData?.address || '',
+      city: '',
+      phone: storeData?.whatsapp || '',
+    };
+
+    const commands = buildReceiptCommands(order, items || [], storeInfo, {
+      copies,
+      mode: printMode,
+    });
+
+    // Send to all active printers matching the mode
+    const activePrinters = printers.filter(p => p.active);
+
     if (activePrinters.length === 0) {
       log('⚠️ Nenhuma impressora ativa configurada');
       return;
     }
 
     for (const printer of activePrinters) {
-      let device;
-      if (printer.type === 'usb') {
-        const USB = require('escpos-usb');
-        device = new USB();
-      } else if (printer.type === 'network') {
-        const Network = require('escpos-network');
-        device = new Network(printer.ip, printer.port || 9100);
+      // Filter by role if needed
+      if (printMode !== 'both' && printer.role !== 'both' && printer.role !== printMode) {
+        continue;
       }
 
-      if (!device) continue;
-
-      const p = new escpos.Printer(device);
-
-      device.open(() => {
-        p.font('a')
-          .align('ct')
-          .style('b')
-          .size(1, 1)
-          .text('ACAI LAB')
-          .style('normal')
-          .text('NAO E DOCUMENTO FISCAL')
-          .text('--------------------------------')
-          .align('lt')
-          .text(`Pedido: ${order.tracking_code || '---'}`)
-          .text(`Data: ${new Date(order.created_at).toLocaleString('pt-BR')}`)
-          .text(`Tipo: ${order.order_type === 'delivery' ? 'TELE-ENTREGA' : 'RETIRADA'}`)
-          .text('--------------------------------')
-          .text(`Cliente: ${order.customer_name}`)
-          .text(`Tel: ${order.customer_phone || '---'}`)
-          .text(`End: ${order.customer_address || '---'}`)
-          .text('--------------------------------')
-          .text('ITEM              QTD    VALOR');
-
-        for (const item of items) {
-          const name = item.product_name.substring(0, 18).padEnd(18);
-          const qty = String(item.quantity).padStart(3);
-          const val = item.subtotal.toFixed(2).padStart(8);
-          p.text(`${name}${qty}${val}`);
-
-          if (item.additionals) {
-            try {
-              const adds = typeof item.additionals === 'string'
-                ? JSON.parse(item.additionals)
-                : item.additionals;
-              if (Array.isArray(adds)) {
-                adds.forEach(a => p.text(`  + ${a.name || a}`));
-              }
-            } catch {}
-          }
-        }
-
-        p.text('--------------------------------')
-          .text(`Subtotal:      R$ ${order.subtotal.toFixed(2)}`)
-          .text(`Taxa entrega:  R$ ${(order.delivery_fee || 0).toFixed(2)}`)
-          .text('--------------------------------')
-          .style('b')
-          .size(1, 1)
-          .text(`TOTAL: R$ ${order.total.toFixed(2)}`)
-          .style('normal')
-          .size(0, 0)
-          .text('--------------------------------')
-          .text(`Pagamento: ${order.payment_method || '---'}`)
-          .text('')
-          .cut()
-          .close();
-
-        log(`✅ Impresso em ${printer.name}`);
-      });
+      const result = await api.printEscpos(printer, commands);
+      if (result.success) {
+        log(`✅ Impresso em "${printer.name}"`);
+      } else {
+        log(`❌ Erro em "${printer.name}": ${result.error}`);
+      }
     }
   } catch (e) {
     log(`❌ Erro ao imprimir: ${e.message}`);
   }
 }
 
-// Disconnect
+// ── Printers ───────────────────────────────────────────
+function renderPrinters() {
+  printerList.innerHTML = '';
+
+  if (printers.length === 0) {
+    printerList.innerHTML = '<p style="font-size:11px;color:#666;text-align:center;padding:8px;">Nenhuma impressora configurada</p>';
+    return;
+  }
+
+  for (let i = 0; i < printers.length; i++) {
+    const p = printers[i];
+    const div = document.createElement('div');
+    div.className = 'printer-item';
+    div.innerHTML = `
+      <div class="info">
+        <div class="name">${p.name} ${p.active ? '<span class="badge online">Ativa</span>' : '<span class="badge offline">Inativa</span>'}</div>
+        <div class="meta">${p.type.toUpperCase()} ${p.ip ? `| ${p.ip}:${p.port}` : ''} | ${p.role}</div>
+      </div>
+      <div class="actions">
+        <button class="btn-sm btn-secondary" onclick="togglePrinter(${i})">${p.active ? 'Desativar' : 'Ativar'}</button>
+        <button class="btn-sm btn-danger" onclick="removePrinter(${i})">✕</button>
+      </div>
+    `;
+    printerList.appendChild(div);
+  }
+}
+
+window.togglePrinter = async (idx) => {
+  printers[idx].active = !printers[idx].active;
+  await api.storeSet('printers', printers);
+  renderPrinters();
+};
+
+window.removePrinter = async (idx) => {
+  printers.splice(idx, 1);
+  await api.storeSet('printers', printers);
+  renderPrinters();
+};
+
+// Detect USB
+btnDetectUsb.addEventListener('click', async () => {
+  log('🔍 Detectando impressoras USB...');
+  const found = await api.detectUsbPrinters();
+
+  if (found.length === 0) {
+    log('⚠️ Nenhuma impressora USB encontrada');
+    return;
+  }
+
+  for (const device of found) {
+    const exists = printers.some(p => p.type === 'usb' && p.vendorId === device.vendorId);
+    if (!exists) {
+      printers.push({
+        name: device.name || 'USB Printer',
+        type: 'usb',
+        vendorId: device.vendorId,
+        productId: device.productId,
+        role: 'both',
+        active: true,
+      });
+    }
+  }
+
+  await api.storeSet('printers', printers);
+  renderPrinters();
+  log(`✅ ${found.length} impressora(s) USB detectada(s)`);
+});
+
+// Network printer modal
+btnAddNetwork.addEventListener('click', () => {
+  modalNetwork.classList.remove('hidden');
+});
+
+btnCancelNetwork.addEventListener('click', () => {
+  modalNetwork.classList.add('hidden');
+});
+
+btnSaveNetwork.addEventListener('click', async () => {
+  const name = $('netName').value.trim() || 'Impressora Rede';
+  const ip = $('netIp').value.trim();
+  const port = parseInt($('netPort').value) || 9100;
+  const role = $('netRole').value;
+
+  if (!ip) return;
+
+  printers.push({ name, type: 'network', ip, port, role, active: true });
+  await api.storeSet('printers', printers);
+  renderPrinters();
+  modalNetwork.classList.add('hidden');
+  log(`✅ Impressora de rede adicionada: ${name} (${ip}:${port})`);
+});
+
+// ── Settings ───────────────────────────────────────────
+chkAutoPrint.addEventListener('change', async () => {
+  autoPrint = chkAutoPrint.checked;
+  await api.storeSet('autoPrint', autoPrint);
+  log(`Auto print: ${autoPrint ? 'ON' : 'OFF'}`);
+});
+
+selPrintMode.addEventListener('change', async () => {
+  printMode = selPrintMode.value;
+  await api.storeSet('printMode', printMode);
+  log(`Modo: ${printMode}`);
+});
+
+selCopies.addEventListener('change', async () => {
+  copies = parseInt(selCopies.value);
+  await api.storeSet('copies', copies);
+  log(`Vias: ${copies}`);
+});
+
+// ── Test Print ─────────────────────────────────────────
+btnTestPrint.addEventListener('click', async () => {
+  const activePrinters = printers.filter(p => p.active);
+  if (activePrinters.length === 0) {
+    log('⚠️ Adicione e ative uma impressora primeiro');
+    return;
+  }
+
+  const commands = buildTestReceiptCommands();
+
+  for (const printer of activePrinters) {
+    log(`🖨️ Testando em "${printer.name}"...`);
+    const result = await api.printEscpos(printer, commands);
+    if (result.success) {
+      log(`✅ Teste OK em "${printer.name}"`);
+    } else {
+      log(`❌ Falha em "${printer.name}": ${result.error}`);
+    }
+  }
+});
+
+// ── Disconnect ─────────────────────────────────────────
 function disconnect() {
   if (heartbeatInterval) clearInterval(heartbeatInterval);
   if (realtimeChannel) supabase.removeChannel(realtimeChannel);
-  config.delete('credentials');
+  heartbeatInterval = null;
+  realtimeChannel = null;
+
+  api.storeDelete('credentials');
+
   screenMain.classList.add('hidden');
   screenConnect.classList.remove('hidden');
+
   storeId = null;
   token = null;
+  agentId = null;
+  printedOrderIds.clear();
+
+  log('🔌 Desconectado');
 }
 
 btnDisconnect.addEventListener('click', disconnect);
 
-btnTestPrint.addEventListener('click', () => {
-  const testOrder = {
-    tracking_code: 'TESTE001',
-    created_at: new Date().toISOString(),
-    order_type: 'delivery',
-    customer_name: 'Cliente Teste',
-    customer_phone: '(00) 00000-0000',
-    customer_address: 'Rua Teste, 123',
-    subtotal: 35.90,
-    delivery_fee: 5.00,
-    total: 40.90,
-    payment_method: 'Dinheiro',
-  };
-  const testItems = [
-    { product_name: 'Açaí 500ml', quantity: 2, subtotal: 35.90, additionals: null },
-  ];
-  printOrder(testOrder, testItems);
+// ── Tray Events ────────────────────────────────────────
+api.onTrayTestPrint(() => btnTestPrint.click());
+api.onTrayAutoPrintChanged((val) => {
+  autoPrint = val;
+  chkAutoPrint.checked = val;
+  log(`Auto print (tray): ${val ? 'ON' : 'OFF'}`);
 });
-
-// IPC from tray
-ipcRenderer.on('test-print', () => btnTestPrint.click());
-ipcRenderer.on('auto-print-changed', (_, val) => { autoPrint = val; log(`Auto print: ${val ? 'ON' : 'OFF'}`); });

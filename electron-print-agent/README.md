@@ -1,42 +1,79 @@
-# Açaí Lab Print Agent - Desktop (Electron)
+# Açaí Lab Print Agent — Desktop (Electron)
 
-## Descrição
-Aplicativo desktop Windows para impressão automática de comandas via impressoras térmicas 58mm.
+Aplicativo desktop Windows para impressão automática de comandas térmicas 58mm via ESC/POS.
 
 ## Stack
-- Electron
-- Node.js
-- node-escpos (USB/Bluetooth/Network)
-- @supabase/supabase-js (Realtime)
 
-## Instalação para desenvolvimento
+- **Electron** 28 + **electron-builder** (instalador Windows .exe)
+- **node-escpos** (USB / Rede TCP)
+- **@supabase/supabase-js** (Realtime para novos pedidos)
+- **electron-store** (armazenamento criptografado de credenciais)
+
+## Estrutura
+
+```
+electron-print-agent/
+├── main.js              # Processo principal (janela, tray, IPC)
+├── preload.js           # Context bridge seguro
+├── lib/
+│   ├── supabase.js      # Configuração do Supabase
+│   └── printer-commands.js  # Gerador de comandos ESC/POS 58mm
+├── renderer/
+│   ├── index.html       # Interface do agente
+│   └── app.js           # Lógica do renderer (conexão, realtime, impressão)
+├── assets/
+│   └── icon.png         # Ícone do app (coloque aqui)
+└── package.json
+```
+
+## Instalação
 
 ```bash
 cd electron-print-agent
 npm install
+```
+
+## Desenvolvimento
+
+```bash
 npm start
 ```
 
-## Build para distribuição
+## Build (Instalador Windows)
 
 ```bash
 npm run build
 ```
 
-Gera instalador Windows em `dist/`.
+Gera instalador `.exe` em `dist/`.
 
-## Configuração
+## Como Usar
 
-1. Abra o aplicativo
-2. Informe o **Store ID** (disponível no painel admin > Impressão)
-3. Informe o **Token** gerado no painel
-4. Clique em "Conectar"
+1. Acesse o painel admin → **Impressão**
+2. Copie o **Store ID** e gere um **Token**
+3. Abra o Print Agent
+4. Cole Store ID e Token → **Conectar**
+5. Configure impressoras (USB ou Rede)
+6. Pedidos novos serão impressos automaticamente!
 
-## Arquitetura
+## Funcionalidades
 
-- `main.js` — Processo principal Electron (system tray, janela)
-- `renderer/` — Interface HTML do agente
-- `lib/printer.js` — Lógica ESC/POS para impressão térmica 58mm
-- `lib/supabase.js` — Cliente Supabase com Realtime
-- `lib/heartbeat.js` — Heartbeat a cada 30s
-- `lib/store.js` — Persistência local segura de credenciais
+| Feature | Descrição |
+|---------|-----------|
+| 🔗 Conexão segura | Token SHA-256 validado via Edge Function |
+| 💓 Heartbeat | A cada 30s atualiza `last_seen_at` |
+| 📡 Realtime | Escuta apenas pedidos da loja conectada |
+| 🖨️ ESC/POS 58mm | Layout profissional de comanda |
+| 🔄 Deduplicação | Controle por `order_id` — nunca imprime duplicado |
+| 📋 1 ou 2 vias | Cozinha / Balcão / Ambas |
+| 🔒 Multi-tenant | Isolamento total por `store_id` |
+| 🖥️ System Tray | Minimiza para bandeja do Windows |
+| 💾 Criptografia | Credenciais salvas com `electron-store` |
+
+## Segurança
+
+- Nunca usa `service_role` no client
+- Token validado contra hash no banco
+- Revogação imediata pelo painel admin
+- Filtro por `store_id` no Realtime — isolamento absoluto
+- `contextIsolation: true` + `preload.js` (sem `nodeIntegration`)

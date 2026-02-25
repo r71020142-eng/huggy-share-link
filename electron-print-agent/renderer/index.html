@@ -5,74 +5,203 @@
   <title>Açaí Lab Print Agent</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; padding: 24px; }
-    h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
-    .subtitle { text-align: center; color: #888; font-size: 12px; margin-bottom: 24px; }
-    .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-    .card h2 { font-size: 14px; color: #0f3460; margin-bottom: 12px; color: #7ec8e3; }
-    label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
-    input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #0f3460; color: #fff; font-size: 14px; }
-    button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 12px; font-weight: 600; }
+    body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; padding: 20px; min-height: 100vh; }
+    h1 { font-size: 20px; text-align: center; margin-bottom: 2px; }
+    .subtitle { text-align: center; color: #888; font-size: 12px; margin-bottom: 20px; }
+    .card { background: #16213e; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .card h2 { font-size: 13px; color: #7ec8e3; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; margin-top: 10px; }
+    input, select {
+      width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid #333;
+      background: #0f3460; color: #fff; font-size: 13px; outline: none;
+    }
+    input:focus, select:focus { border-color: #7ec8e3; }
+    button {
+      width: 100%; padding: 10px; border: none; border-radius: 8px;
+      font-size: 13px; cursor: pointer; margin-top: 10px; font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-primary { background: #e94560; color: #fff; }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary { background: #0f3460; color: #7ec8e3; }
+    .btn-secondary { background: #0f3460; color: #7ec8e3; border: 1px solid #333; }
     .btn-danger { background: #c0392b; color: #fff; }
-    .status { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot.online { background: #2ecc71; }
+    .btn-sm { padding: 6px 12px; font-size: 11px; width: auto; margin-top: 6px; }
+
+    .status-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot.online { background: #2ecc71; box-shadow: 0 0 6px #2ecc71; }
     .dot.offline { background: #e74c3c; }
-    .hidden { display: none; }
-    .printer-item { background: #0f3460; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
-    .printer-item .name { font-weight: 600; }
-    .printer-item .meta { font-size: 11px; color: #888; }
-    .log { background: #0a0a1a; border-radius: 8px; padding: 12px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 11px; color: #7ec8e3; }
+
+    .hidden { display: none !important; }
+
+    .printer-item {
+      background: #0f3460; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .printer-item .info .name { font-weight: 600; font-size: 13px; }
+    .printer-item .info .meta { font-size: 10px; color: #888; }
+    .printer-item .actions { display: flex; gap: 4px; }
+
+    .log {
+      background: #0a0a1a; border-radius: 8px; padding: 10px; max-height: 140px;
+      overflow-y: auto; font-family: 'Consolas', monospace; font-size: 11px;
+      color: #7ec8e3; line-height: 1.5;
+    }
+
+    .settings-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid #1a1a2e;
+    }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row label { margin: 0; font-size: 12px; }
+    .settings-row select, .settings-row input[type="number"] {
+      width: 120px; padding: 4px 8px; font-size: 12px; margin-top: 0;
+    }
+
+    .toggle {
+      position: relative; width: 40px; height: 22px; cursor: pointer;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle .slider {
+      position: absolute; inset: 0; background: #333; border-radius: 22px;
+      transition: 0.3s;
+    }
+    .toggle .slider:before {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
+      transition: 0.3s;
+    }
+    .toggle input:checked + .slider { background: #2ecc71; }
+    .toggle input:checked + .slider:before { transform: translateX(18px); }
+
+    .error-text { color: #e74c3c; font-size: 12px; margin-top: 6px; }
+    .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .badge.online { background: #2ecc71; color: #fff; }
+    .badge.offline { background: #e74c3c; color: #fff; }
+
+    .flex-row { display: flex; gap: 6px; }
+    .flex-row > * { flex: 1; }
+
+    /* Network printer dialog */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal { background: #16213e; border-radius: 12px; padding: 20px; width: 320px; }
+    .modal h3 { font-size: 14px; margin-bottom: 12px; color: #7ec8e3; }
   </style>
 </head>
 <body>
-  <!-- SCREEN 1: Connection -->
+
+  <!-- SCREEN: Connection -->
   <div id="screen-connect">
     <h1>🍇 Açaí Lab Print Agent</h1>
-    <p class="subtitle">Impressão térmica automática</p>
+    <p class="subtitle">Impressão térmica automática v1.0</p>
 
     <div class="card">
-      <h2>🔗 Conexão</h2>
+      <h2>🔗 Conexão com a Loja</h2>
       <label>Store ID</label>
-      <input type="text" id="storeId" placeholder="Cole o Store ID aqui" />
+      <input type="text" id="inputStoreId" placeholder="Cole o Store ID aqui" />
       <label>Token</label>
-      <input type="password" id="token" placeholder="Cole o Token aqui" />
+      <input type="password" id="inputToken" placeholder="Cole o Token gerado no painel" />
       <button class="btn-primary" id="btnConnect">Conectar</button>
-      <p id="connectError" style="color:#e74c3c;font-size:12px;margin-top:8px;"></p>
+      <p class="error-text hidden" id="connectError"></p>
+    </div>
+
+    <div class="card" style="font-size:11px; color:#888;">
+      <p>💡 Obtenha o Store ID e Token no painel Admin → Impressão</p>
     </div>
   </div>
 
-  <!-- SCREEN 2: Connected -->
+  <!-- SCREEN: Main -->
   <div id="screen-main" class="hidden">
     <h1>🍇 Açaí Lab Print Agent</h1>
-    <p class="subtitle">Conectado</p>
+    <p class="subtitle" id="machineInfo">Conectado</p>
 
+    <!-- Status -->
     <div class="card">
-      <h2>📡 Status</h2>
-      <div class="status">
+      <h2>📡 Status da Conexão</h2>
+      <div class="status-bar">
         <span class="dot online" id="statusDot"></span>
-        <span id="statusText">Online</span>
+        <span id="statusText" style="font-size:13px;">Online</span>
       </div>
-      <p style="font-size:11px;color:#888;" id="machineInfo"></p>
+      <p style="font-size:10px;color:#666;" id="lastSeenText"></p>
     </div>
 
+    <!-- Printers -->
     <div class="card">
       <h2>🖨️ Impressoras</h2>
       <div id="printerList"></div>
-      <button class="btn-secondary" id="btnDetectUsb">Detectar USB</button>
-      <button class="btn-secondary" id="btnAddNetwork" style="margin-top:8px;">Adicionar Rede (IP)</button>
-      <button class="btn-secondary" id="btnTestPrint" style="margin-top:8px;">Testar Impressão</button>
+      <div class="flex-row">
+        <button class="btn-secondary" id="btnDetectUsb">Detectar USB</button>
+        <button class="btn-secondary" id="btnAddNetwork">Adicionar Rede</button>
+      </div>
     </div>
 
+    <!-- Settings -->
+    <div class="card">
+      <h2>⚙️ Configurações</h2>
+      <div class="settings-row">
+        <label>Impressão automática</label>
+        <label class="toggle">
+          <input type="checkbox" id="chkAutoPrint" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <label>Modo de impressão</label>
+        <select id="selPrintMode">
+          <option value="both">Cozinha + Balcão</option>
+          <option value="kitchen">Apenas Cozinha</option>
+          <option value="counter">Apenas Balcão</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <label>Número de vias</label>
+        <select id="selCopies">
+          <option value="1">1 via</option>
+          <option value="2">2 vias</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <div class="flex-row">
+        <button class="btn-secondary" id="btnTestPrint">🖨️ Testar Impressão</button>
+        <button class="btn-danger" id="btnDisconnect">Desconectar</button>
+      </div>
+    </div>
+
+    <!-- Log -->
     <div class="card">
       <h2>📋 Log de Impressão</h2>
       <div class="log" id="printLog">Aguardando pedidos...</div>
     </div>
+  </div>
 
-    <button class="btn-danger" id="btnDisconnect">Desconectar</button>
+  <!-- Modal: Add Network Printer -->
+  <div id="modalNetwork" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Impressora de Rede</h3>
+      <label>Nome</label>
+      <input type="text" id="netName" placeholder="Ex: Cozinha" />
+      <label>IP</label>
+      <input type="text" id="netIp" placeholder="192.168.1.100" />
+      <label>Porta</label>
+      <input type="number" id="netPort" value="9100" />
+      <label>Função</label>
+      <select id="netRole">
+        <option value="both">Cozinha + Balcão</option>
+        <option value="kitchen">Cozinha</option>
+        <option value="counter">Balcão</option>
+      </select>
+      <div class="flex-row" style="margin-top:12px;">
+        <button class="btn-primary" id="btnSaveNetwork">Salvar</button>
+        <button class="btn-secondary" id="btnCancelNetwork">Cancelar</button>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

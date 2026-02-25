@@ -1,0 +1,19 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  // Secure store
+  storeGet: (key, defaultVal) => ipcRenderer.invoke('store-get', key, defaultVal),
+  storeSet: (key, val) => ipcRenderer.invoke('store-set', key, val),
+  storeDelete: (key) => ipcRenderer.invoke('store-delete', key),
+
+  // System
+  getHostname: () => ipcRenderer.invoke('get-hostname'),
+
+  // Printing
+  printEscpos: (printerConfig, commands) => ipcRenderer.invoke('print-escpos', { printerConfig, commands }),
+  detectUsbPrinters: () => ipcRenderer.invoke('detect-usb-printers'),
+
+  // Tray events
+  onTrayTestPrint: (callback) => ipcRenderer.on('tray-test-print', callback),
+  onTrayAutoPrintChanged: (_, callback) => ipcRenderer.on('tray-auto-print-changed', (_, val) => callback(val)),
+});
