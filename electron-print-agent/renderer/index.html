@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Açaí Lab Print Agent</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; padding: 24px; }
+    h1 { font-size: 20px; text-align: center; margin-bottom: 4px; }
+    .subtitle { text-align: center; color: #888; font-size: 12px; margin-bottom: 24px; }
+    .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .card h2 { font-size: 14px; color: #0f3460; margin-bottom: 12px; color: #7ec8e3; }
+    label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; margin-top: 12px; }
+    input, select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #0f3460; color: #fff; font-size: 14px; }
+    button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; margin-top: 12px; font-weight: 600; }
+    .btn-primary { background: #e94560; color: #fff; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: #0f3460; color: #7ec8e3; }
+    .btn-danger { background: #c0392b; color: #fff; }
+    .status { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.online { background: #2ecc71; }
+    .dot.offline { background: #e74c3c; }
+    .hidden { display: none; }
+    .printer-item { background: #0f3460; border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+    .printer-item .name { font-weight: 600; }
+    .printer-item .meta { font-size: 11px; color: #888; }
+    .log { background: #0a0a1a; border-radius: 8px; padding: 12px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 11px; color: #7ec8e3; }
+  </style>
+</head>
+<body>
+  <!-- SCREEN 1: Connection -->
+  <div id="screen-connect">
+    <h1>🍇 Açaí Lab Print Agent</h1>
+    <p class="subtitle">Impressão térmica automática</p>
+
+    <div class="card">
+      <h2>🔗 Conexão</h2>
+      <label>Store ID</label>
+      <input type="text" id="storeId" placeholder="Cole o Store ID aqui" />
+      <label>Token</label>
+      <input type="password" id="token" placeholder="Cole o Token aqui" />
+      <button class="btn-primary" id="btnConnect">Conectar</button>
+      <p id="connectError" style="color:#e74c3c;font-size:12px;margin-top:8px;"></p>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Connected -->
+  <div id="screen-main" class="hidden">
+    <h1>🍇 Açaí Lab Print Agent</h1>
+    <p class="subtitle">Conectado</p>
+
+    <div class="card">
+      <h2>📡 Status</h2>
+      <div class="status">
+        <span class="dot online" id="statusDot"></span>
+        <span id="statusText">Online</span>
+      </div>
+      <p style="font-size:11px;color:#888;" id="machineInfo"></p>
+    </div>
+
+    <div class="card">
+      <h2>🖨️ Impressoras</h2>
+      <div id="printerList"></div>
+      <button class="btn-secondary" id="btnDetectUsb">Detectar USB</button>
+      <button class="btn-secondary" id="btnAddNetwork" style="margin-top:8px;">Adicionar Rede (IP)</button>
+      <button class="btn-secondary" id="btnTestPrint" style="margin-top:8px;">Testar Impressão</button>
+    </div>
+
+    <div class="card">
+      <h2>📋 Log de Impressão</h2>
+      <div class="log" id="printLog">Aguardando pedidos...</div>
+    </div>
+
+    <button class="btn-danger" id="btnDisconnect">Desconectar</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

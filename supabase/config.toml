@@ -2,3 +2,9 @@ project_id = "ejmgpxrypogmhgoqpilf"
 
 [functions.reclassify-customers]
 verify_jwt = false
+
+[functions.print-agent-token]
+verify_jwt = false
+
+[functions.print-agent-auth]
+verify_jwt = false

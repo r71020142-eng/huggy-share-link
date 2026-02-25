@@ -21,6 +21,7 @@ import Reports from "@/pages/admin/Reports";
 import Settings from "@/pages/admin/Settings";
 import Plans from "@/pages/admin/Plans";
 import Neighborhoods from "@/pages/admin/Neighborhoods";
+import Printing from "@/pages/admin/Printing";
 import CashSessionPage from "@/pages/admin/cash/CashSessionPage";
 import CashMovementsPage from "@/pages/admin/cash/CashMovementsPage";
 import CashClosePage from "@/pages/admin/cash/CashClosePage";
@@ -76,6 +77,7 @@ const App = () => (
                 <Route path="cash/movements" element={<CashMovementsPage />} />
                 <Route path="cash/close" element={<CashClosePage />} />
                 <Route path="cash/history" element={<CashHistoryPage />} />
+                <Route path="printing" element={<Printing />} />
                 <Route path="crm" element={<CRM />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />

@@ -19,6 +19,7 @@ import {
   ArrowUpDown,
   Lock,
   History,
+  Printer,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useStore } from "@/hooks/useStore";
@@ -59,6 +60,7 @@ const navItems = [
   { title: "Bairros", url: "/admin/neighborhoods", icon: MapPin, proOnly: false },
   { title: "CRM", url: "/admin/crm", icon: Users, proOnly: true },
   { title: "Relatórios", url: "/admin/reports", icon: BarChart3, proOnly: true },
+  { title: "Impressão", url: "/admin/printing", icon: Printer, proOnly: false },
   { title: "Configurações", url: "/admin/settings", icon: Settings, proOnly: false },
   { title: "Planos", url: "/admin/plans", icon: Sparkles, proOnly: false },
 ];
