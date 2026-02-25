@@ -3,12 +3,20 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function jsonResponse(body: Record<string, unknown>, status: number) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 Deno.serve(async (req) => {
+  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -16,13 +24,23 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { store_id, token, action, machine_name, agent_version } = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = await req.json();
+    } catch {
+      return jsonResponse({ error: "Invalid JSON body" }, 400);
+    }
+
+    const { store_id, token, action, machine_name, agent_version } = body as {
+      store_id?: string;
+      token?: string;
+      action?: string;
+      machine_name?: string;
+      agent_version?: string;
+    };
 
     if (!store_id || !token) {
-      return new Response(JSON.stringify({ error: "Missing store_id or token" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Missing store_id or token" }, 400);
     }
 
     // Hash the provided token
@@ -42,14 +60,11 @@ Deno.serve(async (req) => {
       .single();
 
     if (error || !agent) {
-      return new Response(JSON.stringify({ error: "Invalid token or agent revoked" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.log("Auth failed:", { store_id, error: error?.message, hasAgent: !!agent });
+      return jsonResponse({ error: "Invalid token or agent revoked" }, 401);
     }
 
     if (action === "connect") {
-      // Register connection
       const updates: Record<string, unknown> = { last_seen_at: new Date().toISOString() };
       if (machine_name) updates.machine_name = machine_name;
       if (agent_version) updates.agent_version = agent_version;
@@ -63,10 +78,8 @@ Deno.serve(async (req) => {
         .eq("store_id", store_id)
         .maybeSingle();
 
-      return new Response(
-        JSON.stringify({ success: true, agent_id: agent.id, settings }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.log("Agent connected:", { agent_id: agent.id, store_id });
+      return jsonResponse({ success: true, agent_id: agent.id, settings }, 200);
     }
 
     if (action === "heartbeat") {
@@ -75,27 +88,18 @@ Deno.serve(async (req) => {
         .update({ last_seen_at: new Date().toISOString() })
         .eq("id", agent.id);
 
-      // Check if still active
       const { data: check } = await adminClient
         .from("print_agents")
         .select("is_active")
         .eq("id", agent.id)
         .single();
 
-      return new Response(
-        JSON.stringify({ success: true, is_active: check?.is_active ?? false }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ success: true, is_active: check?.is_active ?? false }, 200);
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: "Invalid action. Expected 'connect' or 'heartbeat'" }, 400);
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("print-agent-auth error:", e);
+    return jsonResponse({ error: e.message || "Internal server error" }, 500);
   }
 });
