@@ -204,6 +204,39 @@
     </div>
   </div>
 
+  <!-- Error screen (hidden by default, shown on JS crash) -->
+  <div id="error-screen" style="display:none;position:fixed;inset:0;background:#1a1a2e;z-index:9999;padding:40px 20px;text-align:center;">
+    <div style="max-width:400px;margin:60px auto;">
+      <div style="font-size:48px;margin-bottom:16px;">⚠️</div>
+      <h2 style="color:#e94560;font-size:18px;margin-bottom:12px;">Erro ao iniciar o Print Agent</h2>
+      <p style="color:#aaa;font-size:13px;margin-bottom:16px;">Algo deu errado ao carregar a aplicação. Veja os detalhes abaixo:</p>
+      <pre id="error-details" style="background:#0a0a1a;color:#e74c3c;padding:16px;border-radius:8px;font-size:11px;text-align:left;overflow-x:auto;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;"></pre>
+      <p style="color:#666;font-size:11px;margin-top:16px;">Tente fechar e reabrir o aplicativo. Se persistir, reinstale o Print Agent.</p>
+      <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#e94560;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">Recarregar</button>
+    </div>
+  </div>
+
+  <!-- Global error handler — catches any crash and shows friendly screen -->
+  <script>
+    window.onerror = function(msg, src, line, col, err) {
+      var el = document.getElementById('error-screen');
+      var det = document.getElementById('error-details');
+      if (el && det) {
+        det.textContent = msg + '\n\nArquivo: ' + (src || '?') + '\nLinha: ' + line + ', Col: ' + col + (err && err.stack ? '\n\nStack:\n' + err.stack : '');
+        el.style.display = 'block';
+      }
+    };
+    window.addEventListener('unhandledrejection', function(e) {
+      var el = document.getElementById('error-screen');
+      var det = document.getElementById('error-details');
+      if (el && det) {
+        var reason = e.reason || {};
+        det.textContent = 'Promise rejeitada: ' + (reason.message || reason || 'Erro desconhecido') + (reason.stack ? '\n\nStack:\n' + reason.stack : '');
+        el.style.display = 'block';
+      }
+    });
+  </script>
+
   <!-- Load Supabase via CDN (no require() needed) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="app.js"></script>
