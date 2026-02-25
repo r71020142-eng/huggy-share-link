@@ -246,13 +246,11 @@ export default function Printing() {
           <CardDescription>Baixe e instale o aplicativo de impressão no computador da loja.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button className="gap-2" asChild>
-            <a href="https://github.com/AcaiLab/print-agent/releases/latest/download/AcaiLab-Print-Agent-Setup.exe" target="_blank" rel="noopener noreferrer">
-              <Download className="h-4 w-4" />
-              Baixar Print Agent (Windows .exe)
-            </a>
+          <Button className="gap-2" disabled>
+            <Download className="h-4 w-4" />
+            Baixar Print Agent (Windows)
           </Button>
-          <p className="text-xs text-muted-foreground">Versão mais recente do instalador Windows. Requer Windows 10+.</p>
+          <p className="text-xs text-muted-foreground">O instalador estará disponível em breve para download.</p>
 
           <Separator />
 
