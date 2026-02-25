@@ -1,183 +1,35 @@
-import { useState, useEffect } from "react";
 import { useStore } from "@/hooks/useStore";
-import { supabase } from "@/integrations/supabase/client";
+import { useWebPrinter } from "@/hooks/useWebPrinter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
 import {
   Printer,
   Wifi,
   WifiOff,
-  Download,
-  RefreshCw,
-  Copy,
-  Trash2,
-  Monitor,
-  Clock,
-  Shield,
-  Settings,
+  Usb,
+  Unplug,
+  TestTube,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
-interface PrintAgent {
-  id: string;
-  store_id: string;
-  token_hash: string;
-  machine_name: string | null;
-  agent_version: string | null;
-  last_seen_at: string | null;
-  is_active: boolean;
-  created_at: string;
-}
-
-interface PrintSettings {
-  id: string;
-  store_id: string;
-  auto_print: boolean;
-  print_mode: string;
-}
 
 export default function Printing() {
   const { store } = useStore();
-  const [agent, setAgent] = useState<PrintAgent | null>(null);
-  const [settings, setSettings] = useState<PrintSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [generatingToken, setGeneratingToken] = useState(false);
-  const [newToken, setNewToken] = useState<string | null>(null);
-
-  const fetchData = async () => {
-    if (!store) return;
-    setLoading(true);
-
-    const [agentRes, settingsRes] = await Promise.all([
-      supabase
-        .from("print_agents")
-        .select("*")
-        .eq("store_id", store.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("store_print_settings")
-        .select("*")
-        .eq("store_id", store.id)
-        .maybeSingle(),
-    ]);
-
-    if (agentRes.data) setAgent(agentRes.data as PrintAgent);
-    else setAgent(null);
-
-    if (settingsRes.data) setSettings(settingsRes.data as PrintSettings);
-    else setSettings(null);
-
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [store?.id]);
-
-  // Realtime subscription for agent status
-  useEffect(() => {
-    if (!store) return;
-    const channel = supabase
-      .channel(`print-agent-${store.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "print_agents",
-          filter: `store_id=eq.${store.id}`,
-        },
-        () => fetchData()
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [store?.id]);
-
-  const isOnline = agent?.last_seen_at
-    ? Date.now() - new Date(agent.last_seen_at).getTime() < 60000
-    : false;
-
-  const handleGenerateToken = async () => {
-    if (!store) return;
-    setGeneratingToken(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("print-agent-token", {
-        body: { store_id: store.id, action: "generate" },
-      });
-      if (error) throw error;
-      setNewToken(data.token);
-      toast.success("Token gerado com sucesso!");
-      fetchData();
-    } catch (e: any) {
-      toast.error("Erro ao gerar token: " + e.message);
-    } finally {
-      setGeneratingToken(false);
-    }
-  };
-
-  const handleRevokeToken = async () => {
-    if (!agent) return;
-    const { error } = await supabase
-      .from("print_agents")
-      .update({ is_active: false })
-      .eq("id", agent.id);
-    if (error) toast.error("Erro ao revogar");
-    else {
-      toast.success("Token revogado");
-      setNewToken(null);
-      fetchData();
-    }
-  };
-
-  const handleCopyToken = () => {
-    if (newToken) {
-      navigator.clipboard.writeText(newToken);
-      toast.success("Token copiado!");
-    }
-  };
-
-  const handleCopyStoreId = () => {
-    if (store) {
-      navigator.clipboard.writeText(store.id);
-      toast.success("Store ID copiado!");
-    }
-  };
-
-  const handleSaveSettings = async (updates: Partial<PrintSettings>) => {
-    if (!store) return;
-    if (settings) {
-      const { error } = await supabase
-        .from("store_print_settings")
-        .update(updates)
-        .eq("id", settings.id);
-      if (error) toast.error("Erro ao salvar");
-      else {
-        setSettings({ ...settings, ...updates });
-        toast.success("Configurações salvas");
-      }
-    } else {
-      const { data, error } = await supabase
-        .from("store_print_settings")
-        .insert({ store_id: store.id, ...updates })
-        .select()
-        .single();
-      if (error) toast.error("Erro ao salvar");
-      else {
-        setSettings(data as PrintSettings);
-        toast.success("Configurações salvas");
-      }
-    }
-  };
+  const {
+    printer,
+    autoPrint,
+    setAutoPrint,
+    printing,
+    isSupported,
+    pairPrinter,
+    disconnectPrinter,
+    testPrint,
+  } = useWebPrinter(store?.id);
 
   if (!store) return null;
 
@@ -185,175 +37,135 @@ export default function Printing() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Impressão</h1>
-        <p className="text-muted-foreground">Gerencie o Print Agent e configurações de impressão térmica.</p>
+        <p className="text-muted-foreground">Conecte sua impressora térmica USB diretamente pelo navegador.</p>
       </div>
 
-      {/* SEÇÃO 1 — STATUS DO PRINT AGENT */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Monitor className="h-5 w-5" />
-            Status do Print Agent
-          </CardTitle>
-          <CardDescription>Status de conexão do aplicativo de impressão.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {agent && agent.is_active ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                {isOnline ? (
-                  <Badge className="bg-green-500/20 text-green-700 border-green-500/30">
-                    <Wifi className="h-3 w-3 mr-1" /> Online
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="bg-red-500/20 text-red-700 border-red-500/30">
-                    <WifiOff className="h-3 w-3 mr-1" /> Offline
-                  </Badge>
-                )}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Máquina:</span>
-                  <p className="font-medium">{agent.machine_name || "—"}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Versão:</span>
-                  <p className="font-medium">{agent.agent_version || "—"}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Última conexão:</span>
-                  <p className="font-medium">
-                    {agent.last_seen_at
-                      ? format(new Date(agent.last_seen_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })
-                      : "Nunca"}
-                  </p>
-                </div>
+      {/* Compatibilidade */}
+      {!isSupported && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3 text-destructive">
+              <AlertTriangle className="h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-medium">Navegador incompatível</p>
+                <p className="text-sm text-muted-foreground">
+                  A impressão USB requer <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> no desktop. Abra este painel no Chrome para continuar.
+                </p>
               </div>
             </div>
-          ) : (
-            <p className="text-muted-foreground text-sm">Nenhum agente conectado. Gere um token e instale o Print Agent.</p>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* SEÇÃO 2 — DOWNLOAD DO PRINT AGENT */}
+      {/* Status da Impressora */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-5 w-5" />
-            Download do Print Agent
+            <Usb className="h-5 w-5" />
+            Impressora USB
           </CardTitle>
-          <CardDescription>Baixe e instale o aplicativo de impressão no computador da loja.</CardDescription>
+          <CardDescription>Conecte sua impressora térmica 58mm via USB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button className="gap-2" disabled>
-            <Download className="h-4 w-4" />
-            Baixar Print Agent (Windows)
-          </Button>
-          <p className="text-xs text-muted-foreground">O instalador estará disponível em breve para download.</p>
+          {printer ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                {printer.connected ? (
+                  <Badge className="bg-green-500/20 text-green-700 border-green-500/30 gap-1">
+                    <Wifi className="h-3 w-3" /> Conectada
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive" className="bg-red-500/20 text-red-700 border-red-500/30 gap-1">
+                    <WifiOff className="h-3 w-3" /> Desconectada
+                  </Badge>
+                )}
+                <span className="text-sm font-medium">{printer.name}</span>
+              </div>
 
-          <Separator />
+              <div className="text-xs text-muted-foreground">
+                Vendor: 0x{printer.vendorId.toString(16).padStart(4, "0")} | Product: 0x{printer.productId.toString(16).padStart(4, "0")}
+              </div>
 
-          <div className="space-y-2 text-sm">
-            <p className="font-medium">Instruções de instalação:</p>
-            <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-              <li>Baixe o instalador acima</li>
-              <li>Instale no computador da loja</li>
-              <li>Abra o aplicativo "Açaí Lab Print Agent"</li>
-              <li>Informe o <strong>Store ID</strong> e o <strong>Token</strong> gerados abaixo</li>
-              <li>Clique em "Conectar"</li>
-            </ol>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* SEÇÃO 3 — TOKEN DE CONEXÃO */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Token de Conexão
-          </CardTitle>
-          <CardDescription>Gere um token seguro para conectar o Print Agent.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Label className="text-sm text-muted-foreground">Store ID:</Label>
-            <code className="bg-muted px-2 py-1 rounded text-xs font-mono">{store.id}</code>
-            <Button variant="ghost" size="sm" onClick={handleCopyStoreId}>
-              <Copy className="h-3 w-3" />
-            </Button>
-          </div>
-
-          {newToken && (
-            <div className="p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg space-y-2">
-              <p className="text-sm font-medium text-green-800 dark:text-green-200">
-                ⚠️ Copie o token agora! Ele não será exibido novamente.
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="bg-background px-3 py-1.5 rounded text-xs font-mono flex-1 break-all">{newToken}</code>
-                <Button variant="outline" size="sm" onClick={handleCopyToken}>
-                  <Copy className="h-3 w-3" />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={testPrint}
+                  disabled={!printer.connected || printing}
+                  className="gap-2"
+                >
+                  {printing ? <Loader2 className="h-4 w-4 animate-spin" /> : <TestTube className="h-4 w-4" />}
+                  Testar Impressão
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={disconnectPrinter}
+                  className="gap-2"
+                >
+                  <Unplug className="h-4 w-4" />
+                  Desconectar
                 </Button>
               </div>
             </div>
-          )}
-
-          <div className="flex gap-2">
-            <Button onClick={handleGenerateToken} disabled={generatingToken} className="gap-2">
-              <RefreshCw className={`h-4 w-4 ${generatingToken ? "animate-spin" : ""}`} />
-              {agent?.is_active ? "Regenerar Token" : "Gerar Token"}
-            </Button>
-            {agent?.is_active && (
-              <Button variant="destructive" onClick={handleRevokeToken} className="gap-2">
-                <Trash2 className="h-4 w-4" />
-                Revogar Token
+          ) : (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">Nenhuma impressora conectada.</p>
+              <Button onClick={pairPrinter} disabled={!isSupported} className="gap-2">
+                <Usb className="h-4 w-4" />
+                Conectar Impressora USB
               </Button>
-            )}
-          </div>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>📌 Certifique-se de que a impressora está ligada e conectada via USB.</p>
+                <p>📌 Use Google Chrome ou Microsoft Edge.</p>
+                <p>📌 O navegador pedirá permissão para acessar o dispositivo USB.</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* SEÇÃO 4 — CONFIGURAÇÃO PADRÃO DE IMPRESSÃO */}
+      {/* Configurações */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Configuração de Impressão
+            <Printer className="h-5 w-5" />
+            Impressão Automática
           </CardTitle>
-          <CardDescription>Defina o comportamento padrão de impressão da loja.</CardDescription>
+          <CardDescription>Quando ativada, novos pedidos são impressos automaticamente.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <Label>Imprimir automaticamente</Label>
-              <p className="text-xs text-muted-foreground">Imprimir comanda assim que o pedido chegar.</p>
+              <Label>Imprimir ao receber pedido</Label>
+              <p className="text-xs text-muted-foreground">A comanda será impressa assim que chegar um novo pedido.</p>
             </div>
-            <Switch
-              checked={settings?.auto_print ?? false}
-              onCheckedChange={(v) => handleSaveSettings({ auto_print: v })}
-            />
+            <Switch checked={autoPrint} onCheckedChange={setAutoPrint} />
           </div>
 
           <Separator />
 
-          <div className="space-y-2">
-            <Label>Modo de impressão padrão</Label>
-            <Select
-              value={settings?.print_mode ?? "both"}
-              onValueChange={(v) => handleSaveSettings({ print_mode: v })}
-            >
-              <SelectTrigger className="w-64">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="kitchen">Apenas Cozinha</SelectItem>
-                <SelectItem value="counter">Apenas Balcão</SelectItem>
-                <SelectItem value="both">Ambas</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">Define para quais impressoras o pedido será enviado.</p>
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
+            <p>
+              <strong>Importante:</strong> Mantenha esta aba do navegador aberta para que a impressão automática funcione. Se fechar a aba, os pedidos não serão impressos.
+            </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Instruções */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Como funciona?</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
+            <li>Conecte a impressora térmica 58mm ao computador via cabo USB</li>
+            <li>Clique em <strong>"Conectar Impressora USB"</strong> acima</li>
+            <li>Selecione a impressora na janela que aparecer</li>
+            <li>Faça uma <strong>impressão de teste</strong> para verificar</li>
+            <li>Ative a <strong>impressão automática</strong></li>
+            <li>Mantenha esta aba aberta — novos pedidos serão impressos automaticamente! 🖨️</li>
+          </ol>
         </CardContent>
       </Card>
     </div>
