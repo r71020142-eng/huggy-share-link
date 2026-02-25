@@ -51,13 +51,16 @@ Deno.serve(async (req) => {
       .join("");
 
     // Find active agent with matching hash and store_id
-    const { data: agent, error } = await adminClient
+    const { data: agents, error } = await adminClient
       .from("print_agents")
       .select("*")
       .eq("store_id", store_id)
       .eq("token_hash", tokenHash)
       .eq("is_active", true)
-      .single();
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    const agent = agents?.[0] ?? null;
 
     if (error || !agent) {
       console.log("Auth failed:", { store_id, error: error?.message, hasAgent: !!agent });
