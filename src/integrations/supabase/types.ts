@@ -658,6 +658,50 @@ export type Database = {
           },
         ]
       }
+      print_agents: {
+        Row: {
+          agent_version: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          last_seen_at: string | null
+          machine_name: string | null
+          store_id: string
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          agent_version?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          machine_name?: string | null
+          store_id: string
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          agent_version?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_seen_at?: string | null
+          machine_name?: string | null
+          store_id?: string
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_agents_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_additionals: {
         Row: {
           category: string | null
@@ -810,6 +854,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      store_print_settings: {
+        Row: {
+          auto_print: boolean
+          created_at: string
+          id: string
+          print_mode: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_print?: boolean
+          created_at?: string
+          id?: string
+          print_mode?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_print?: boolean
+          created_at?: string
+          id?: string
+          print_mode?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_print_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stores: {
         Row: {
