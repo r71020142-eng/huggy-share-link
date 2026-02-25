@@ -73,6 +73,25 @@ function log(msg) {
   const time = new Date().toLocaleTimeString('pt-BR');
   printLog.innerHTML += `\n[${time}] ${msg}`;
   printLog.scrollTop = printLog.scrollHeight;
+  console.log(`[PrintAgent] ${msg}`);
+}
+
+// ── Error Display ──────────────────────────────────────
+function showError(msg) {
+  connectError.textContent = msg;
+  connectError.classList.remove('hidden');
+  connectError.style.color = '#e74c3c';
+}
+
+function showInfo(msg) {
+  connectError.textContent = msg;
+  connectError.classList.remove('hidden');
+  connectError.style.color = '#f39c12';
+}
+
+function hideError() {
+  connectError.classList.add('hidden');
+  connectError.textContent = '';
 }
 
 // ── Connect ────────────────────────────────────────────
@@ -81,32 +100,81 @@ btnConnect.addEventListener('click', async () => {
   token = $('inputToken').value.trim();
 
   if (!storeId || !token) {
-    showError('Preencha Store ID e Token');
+    showError('❌ Preencha Store ID e Token');
     return;
   }
 
   btnConnect.disabled = true;
-  showError('Conectando...');
+  btnConnect.textContent = 'Conectando...';
+  showInfo('⏳ Conectando ao servidor...');
+
+  const url = `${FUNCTIONS_URL}/print-agent-auth`;
+  console.log('[PrintAgent] Connecting to:', url);
+  console.log('[PrintAgent] Store ID:', storeId);
+  console.log('[PrintAgent] Token length:', token.length);
 
   try {
     const hostname = await api.getHostname();
+    console.log('[PrintAgent] Hostname:', hostname);
 
-    const res = await fetch(`${FUNCTIONS_URL}/print-agent-auth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
-      body: JSON.stringify({
-        store_id: storeId,
-        token,
-        action: 'connect',
-        machine_name: hostname,
-        agent_version: '1.0.0',
-      }),
-    });
+    const payload = {
+      store_id: storeId,
+      token,
+      action: 'connect',
+      machine_name: hostname,
+      agent_version: '1.0.0',
+    };
+    console.log('[PrintAgent] Sending payload:', { ...payload, token: '[REDACTED]' });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Falha na conexão');
+    let res;
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (networkError) {
+      console.error('[PrintAgent] Network error:', networkError);
+      showError(`❌ Falha de rede: ${networkError.message}. Verifique sua conexão com a internet.`);
+      return;
+    }
 
+    console.log('[PrintAgent] Response status:', res.status);
+    console.log('[PrintAgent] Response headers:', Object.fromEntries(res.headers.entries()));
+
+    let data;
+    try {
+      const rawText = await res.text();
+      console.log('[PrintAgent] Raw response:', rawText);
+      data = JSON.parse(rawText);
+    } catch (parseError) {
+      console.error('[PrintAgent] JSON parse error:', parseError);
+      showError('❌ Resposta inválida do servidor. Tente novamente.');
+      return;
+    }
+
+    console.log('[PrintAgent] Parsed response:', data);
+
+    if (!res.ok) {
+      const errorMsg = data.error || `Erro HTTP ${res.status}`;
+      if (res.status === 401) {
+        showError(`❌ Token inválido ou agente revogado. Gere um novo token no painel.`);
+      } else if (res.status === 400) {
+        showError(`❌ Requisição inválida: ${errorMsg}`);
+      } else if (res.status >= 500) {
+        showError(`❌ Servidor indisponível (${res.status}). Tente novamente em alguns minutos.`);
+      } else {
+        showError(`❌ Erro: ${errorMsg}`);
+      }
+      return;
+    }
+
+    // Success!
     agentId = data.agent_id;
+    hideError();
 
     // Save credentials securely
     await api.storeSet('credentials', { storeId, token });
@@ -119,22 +187,17 @@ btnConnect.addEventListener('click', async () => {
     startRealtime();
     log('✅ Conectado com sucesso');
   } catch (e) {
-    showError(e.message);
+    console.error('[PrintAgent] Unexpected error:', e);
+    showError(`❌ Erro inesperado: ${e.message}`);
   } finally {
     btnConnect.disabled = false;
+    btnConnect.textContent = 'Conectar';
   }
 });
 
-function showError(msg) {
-  connectError.textContent = msg;
-  connectError.classList.remove('hidden');
-}
-
 // ── Heartbeat ──────────────────────────────────────────
 function startHeartbeat() {
-  // Immediate first beat
   sendHeartbeat();
-
   heartbeatInterval = setInterval(sendHeartbeat, 30000);
 }
 
@@ -156,7 +219,8 @@ async function sendHeartbeat() {
     statusDot.className = 'dot online';
     statusText.textContent = 'Online';
     lastSeenText.textContent = `Último heartbeat: ${new Date().toLocaleTimeString('pt-BR')}`;
-  } catch {
+  } catch (err) {
+    console.error('[PrintAgent] Heartbeat error:', err);
     statusDot.className = 'dot offline';
     statusText.textContent = 'Offline - tentando reconectar...';
     log('⚠️ Falha no heartbeat, tentando reconectar...');
@@ -203,7 +267,6 @@ function startRealtime() {
 // ── Print Order ────────────────────────────────────────
 async function printOrder(order) {
   try {
-    // Fetch items
     const { data: items, error } = await supabase
       .from('order_items')
       .select('*')
@@ -211,7 +274,6 @@ async function printOrder(order) {
 
     if (error) throw error;
 
-    // Fetch store info
     const { data: storeData } = await supabase
       .from('stores')
       .select('name, address, whatsapp')
@@ -230,7 +292,6 @@ async function printOrder(order) {
       mode: printMode,
     });
 
-    // Send to all active printers matching the mode
     const activePrinters = printers.filter(p => p.active);
 
     if (activePrinters.length === 0) {
@@ -239,7 +300,6 @@ async function printOrder(order) {
     }
 
     for (const printer of activePrinters) {
-      // Filter by role if needed
       if (printMode !== 'both' && printer.role !== 'both' && printer.role !== printMode) {
         continue;
       }
