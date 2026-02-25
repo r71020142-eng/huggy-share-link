@@ -15,5 +15,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Tray events
   onTrayTestPrint: (callback) => ipcRenderer.on('tray-test-print', callback),
-  onTrayAutoPrintChanged: (_, callback) => ipcRenderer.on('tray-auto-print-changed', (_, val) => callback(val)),
+  onTrayAutoPrintChanged: (callback) => ipcRenderer.on('tray-auto-print-changed', (_event, val) => callback(val)),
 });
