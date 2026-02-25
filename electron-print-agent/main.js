@@ -8,6 +8,35 @@ let mainWindow;
 let tray;
 let isQuitting = false;
 
+function buildFatalErrorHtml(title, message, details = '') {
+  const esc = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  return `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Açaí Lab Print Agent - Erro</title>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #1a1a2e; color: #eee; display: grid; place-items: center; min-height: 100vh; padding: 24px; }
+    .card { max-width: 720px; width: 100%; background: #16213e; border-radius: 12px; padding: 20px; box-shadow: 0 8px 28px rgba(0,0,0,.35); }
+    h1 { margin: 0 0 10px; font-size: 20px; color: #e94560; }
+    p { margin: 0 0 12px; color: #c8c8d8; }
+    pre { margin: 0; background: #0a0a1a; color: #ffb4b4; border-radius: 8px; padding: 12px; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow: auto; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>${esc(title)}</h1>
+    <p>${esc(message)}</p>
+    <pre>${esc(details)}</pre>
+  </div>
+</body>
+</html>`;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 680,
@@ -22,7 +51,32 @@ function createWindow() {
     title: 'Açaí Lab Print Agent',
   });
 
-  mainWindow.loadFile('renderer/index.html');
+  let fatalShown = false;
+  const showFatal = (title, message, details = '') => {
+    if (fatalShown || mainWindow.isDestroyed()) return;
+    fatalShown = true;
+    const html = buildFatalErrorHtml(title, message, details);
+    mainWindow.loadURL(`data:text/html;charset=UTF-8,${encodeURIComponent(html)}`);
+  };
+
+  const indexPath = path.join(__dirname, 'renderer', 'index.html');
+  mainWindow.loadFile(indexPath).catch((err) => {
+    showFatal('Falha ao abrir interface', 'Não foi possível carregar renderer/index.html', err?.stack || err?.message || String(err));
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    if (!isMainFrame) return;
+    showFatal('Falha no carregamento', `Erro ${errorCode}: ${errorDescription}`, `URL: ${validatedURL || 'N/A'}`);
+  });
+
+  mainWindow.webContents.on('preload-error', (_event, preloadPath, error) => {
+    showFatal('Erro no preload', 'Falha ao inicializar recursos internos', `${preloadPath}\n\n${error?.stack || error?.message || String(error)}`);
+  });
+
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    showFatal('Render process encerrado', `Motivo: ${details.reason}`, `Exit code: ${details.exitCode}`);
+  });
+
   mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on('close', (e) => {
