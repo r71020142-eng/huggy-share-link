@@ -1,5 +1,5 @@
 import { useStore } from "@/hooks/useStore";
-import { usePrintEngine } from "@/hooks/usePrintEngine";
+import { usePrintEngine } from "@/context/PrintEngineProvider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ export default function Printing() {
     retryFailed,
     usbSupported,
     serialSupported,
-  } = usePrintEngine(store?.id);
+  } = usePrintEngine();
 
   if (!store) return null;
 
