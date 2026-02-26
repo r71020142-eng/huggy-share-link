@@ -41,7 +41,6 @@ export class PrintApiClient {
       .update({
         status: "failed",
         error_message: errorMsg,
-        attempts: supabase.rpc ? undefined : 0, // attempts tracked locally
       })
       .eq("order_id", orderId)
       .eq("store_id", storeId);
@@ -72,19 +71,79 @@ export class PrintApiClient {
     return data;
   }
 
-  /** Update printer heartbeat */
+  /** Update printer heartbeat + runtime status */
   async heartbeat(storeId: string, printerType: string, printerName: string | null): Promise<void> {
-    const { error } = await supabase
+    const now = new Date().toISOString();
+
+    // Update print settings
+    const { error: settingsErr } = await supabase
       .from("store_print_settings")
       .upsert({
         store_id: storeId,
         auto_print: true,
         print_mode: printerType,
+        updated_at: now,
+      }, { onConflict: "store_id" });
+
+    if (settingsErr) {
+      console.warn("[PrintAPI] Heartbeat settings failed:", settingsErr.message);
+    }
+
+    // Update runtime status
+    const { error: runtimeErr } = await supabase
+      .from("store_runtime_status")
+      .upsert({
+        store_id: storeId,
+        last_heartbeat: now,
+        printer_status: "online",
+        printer_type: printerType,
+        printer_name: printerName,
+        updated_at: now,
+      }, { onConflict: "store_id" });
+
+    if (runtimeErr) {
+      console.warn("[PrintAPI] Heartbeat runtime failed:", runtimeErr.message);
+    }
+  }
+
+  /** Update runtime status (queue size, failed jobs, etc.) */
+  async updateRuntimeStatus(storeId: string, patch: {
+    printer_status?: string;
+    queue_size?: number;
+    failed_jobs?: number;
+    last_print_at?: string;
+    total_prints?: number;
+    total_errors?: number;
+  }): Promise<void> {
+    const { error } = await supabase
+      .from("store_runtime_status")
+      .upsert({
+        store_id: storeId,
+        ...patch,
         updated_at: new Date().toISOString(),
       }, { onConflict: "store_id" });
 
     if (error) {
-      console.warn("[PrintAPI] Heartbeat failed:", error.message);
+      console.warn("[PrintAPI] Runtime status update failed:", error.message);
+    }
+  }
+
+  /** Log a print event (success or failure) */
+  async logPrint(storeId: string, orderId: string, jobId: string | null, status: "success" | "failed", attempts: number, errorMessage?: string): Promise<void> {
+    const { error } = await supabase
+      .from("print_logs")
+      .insert({
+        store_id: storeId,
+        order_id: orderId,
+        job_id: jobId,
+        status,
+        attempts,
+        error_message: errorMessage,
+        printed_at: status === "success" ? new Date().toISOString() : null,
+      });
+
+    if (error) {
+      console.warn("[PrintAPI] Log print failed:", error.message);
     }
   }
 }

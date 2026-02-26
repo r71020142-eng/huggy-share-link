@@ -1,9 +1,9 @@
 /**
  * IndexedDB – Print Engine persistence layer
- * Single database with stores for devices, printed orders, and queue
+ * Database is namespaced per store_id for multi-tenant isolation.
  */
 
-const DB_NAME = "print-engine";
+const DB_PREFIX = "print-engine";
 const DB_VERSION = 1;
 
 export const STORES = {
@@ -12,13 +12,30 @@ export const STORES = {
   QUEUE: "queue",
 } as const;
 
-let dbPromise: Promise<IDBDatabase> | null = null;
+const dbCache: Record<string, Promise<IDBDatabase>> = {};
+
+/** Current active store_id – must be set before any DB operation */
+let activeStoreId: string | null = null;
+
+export function setActiveStoreId(storeId: string): void {
+  activeStoreId = storeId;
+}
+
+export function getActiveStoreId(): string | null {
+  return activeStoreId;
+}
+
+function getDBName(): string {
+  if (!activeStoreId) throw new Error("[PrintDB] No active store_id set. Call setActiveStoreId() first.");
+  return `${DB_PREFIX}-${activeStoreId}`;
+}
 
 export function getDB(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
+  const name = getDBName();
+  if (dbCache[name]) return dbCache[name];
 
-  dbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+  dbCache[name] = new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, DB_VERSION);
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result;
@@ -37,12 +54,12 @@ export function getDB(): Promise<IDBDatabase> {
 
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => {
-      dbPromise = null;
+      delete dbCache[name];
       reject(request.error);
     };
   });
 
-  return dbPromise;
+  return dbCache[name];
 }
 
 /** Generic IndexedDB transaction helper */

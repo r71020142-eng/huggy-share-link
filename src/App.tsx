@@ -33,6 +33,7 @@ import SuperAdminKeys from "@/pages/superadmin/Keys";
 import SuperAdminStores from "@/pages/superadmin/Stores";
 import SuperAdminUsers from "@/pages/superadmin/Users";
 import SuperAdminActivityLogs from "@/pages/superadmin/ActivityLogs";
+import SuperAdminPrintMonitoring from "@/pages/superadmin/PrintMonitoring";
 import PublicMenu from "@/pages/public/PublicMenu";
 import NotFound from "@/pages/NotFound";
 
@@ -92,6 +93,7 @@ const App = () => (
                 <Route path="stores" element={<SuperAdminStores />} />
                 <Route path="users" element={<SuperAdminUsers />} />
                 <Route path="logs" element={<SuperAdminActivityLogs />} />
+                <Route path="print-monitoring" element={<SuperAdminPrintMonitoring />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

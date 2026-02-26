@@ -756,6 +756,64 @@ export type Database = {
           },
         ]
       }
+      print_logs: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          id: string
+          job_id: string | null
+          order_id: string | null
+          printed_at: string | null
+          status: string
+          store_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string | null
+          order_id?: string | null
+          printed_at?: string | null
+          status?: string
+          store_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string | null
+          order_id?: string | null
+          printed_at?: string | null
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_logs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "print_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_additionals: {
         Row: {
           category: string | null
@@ -937,6 +995,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "store_print_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_runtime_status: {
+        Row: {
+          failed_jobs: number
+          id: string
+          last_heartbeat: string | null
+          last_print_at: string | null
+          printer_name: string | null
+          printer_status: string
+          printer_type: string | null
+          queue_size: number
+          store_id: string
+          total_errors: number
+          total_prints: number
+          updated_at: string
+        }
+        Insert: {
+          failed_jobs?: number
+          id?: string
+          last_heartbeat?: string | null
+          last_print_at?: string | null
+          printer_name?: string | null
+          printer_status?: string
+          printer_type?: string | null
+          queue_size?: number
+          store_id: string
+          total_errors?: number
+          total_prints?: number
+          updated_at?: string
+        }
+        Update: {
+          failed_jobs?: number
+          id?: string
+          last_heartbeat?: string | null
+          last_print_at?: string | null
+          printer_name?: string | null
+          printer_status?: string
+          printer_type?: string | null
+          queue_size?: number
+          store_id?: string
+          total_errors?: number
+          total_prints?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_runtime_status_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: true
             referencedRelation: "stores"

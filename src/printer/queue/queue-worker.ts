@@ -1,6 +1,7 @@
 /**
  * Queue Worker – Sequentially processes print jobs with retry and backoff
  * One job at a time. Locked processing to prevent concurrent prints.
+ * Logs every print attempt to the backend for observability.
  */
 
 import { PrintQueue } from "./print-queue";
@@ -16,6 +17,7 @@ export class QueueWorker {
   private printer: PrinterManager;
   private api: PrintApiClient;
   private printed: PrintedOrdersStorage;
+  private storeId: string;
   private running = false;
   private locked = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -26,27 +28,26 @@ export class QueueWorker {
     queue: PrintQueue,
     printer: PrinterManager,
     api: PrintApiClient,
-    printed: PrintedOrdersStorage
+    printed: PrintedOrdersStorage,
+    storeId: string
   ) {
     this.queue = queue;
     this.printer = printer;
     this.api = api;
     this.printed = printed;
+    this.storeId = storeId;
   }
 
-  /** Subscribe to worker events */
   onEvent(cb: WorkerEventListener): () => void {
     this.listeners.add(cb);
     return () => this.listeners.delete(cb);
   }
 
-  /** Start processing the queue */
   start(): void {
     this.running = true;
     this.tick();
   }
 
-  /** Stop processing */
   stop(): void {
     this.running = false;
     if (this.timer) {
@@ -55,7 +56,6 @@ export class QueueWorker {
     }
   }
 
-  /** Trigger immediate processing */
   nudge(): void {
     if (this.running && !this.locked) {
       this.tick();
@@ -66,15 +66,20 @@ export class QueueWorker {
     return this.consecutiveErrors;
   }
 
-  // --- Processing ---
-
   private async tick(): Promise<void> {
     if (!this.running || this.locked) return;
 
     const job = this.queue.getNextPending();
     if (!job) {
-      // Nothing to process – schedule next check
       this.scheduleNext(2000);
+      return;
+    }
+
+    // CRITICAL: Verify job belongs to this store
+    if (job.storeId !== this.storeId) {
+      console.warn("[QueueWorker] Skipping job from different store:", job.storeId);
+      await this.queue.updateStatus(job.id, "done");
+      this.tick();
       return;
     }
 
@@ -82,11 +87,10 @@ export class QueueWorker {
     if (this.printed.has(job.orderId)) {
       await this.queue.updateStatus(job.id, "done");
       this.emit("skipped-duplicate", { orderId: job.orderId });
-      this.tick(); // Process next immediately
+      this.tick();
       return;
     }
 
-    // Check printer
     if (!this.printer.isConnected) {
       this.emit("printer-offline");
       this.scheduleNext(5000);
@@ -97,15 +101,12 @@ export class QueueWorker {
     await this.queue.updateStatus(job.id, "printing");
 
     try {
-      // Build ESC/POS bytes
       const { order, items, store, copies, mode } = job.payload;
       const data = buildReceipt(order, items, store, { copies, mode });
 
-      // Send to printer
       const ok = await this.printer.send(data);
       if (!ok) throw new Error("Falha no envio de dados");
 
-      // Mark as printed locally
       await this.printed.mark(job.orderId);
       await this.queue.updateStatus(job.id, "done");
 
@@ -113,14 +114,26 @@ export class QueueWorker {
       try {
         await this.api.confirmPrint(job.orderId, job.storeId);
       } catch {
-        // Non-critical – job was printed physically
         this.emit("backend-confirm-failed", { orderId: job.orderId });
       }
+
+      // Log success to print_logs
+      this.api.logPrint(
+        this.storeId,
+        job.orderId,
+        job.id,
+        "success",
+        job.attempts + 1
+      ).catch(() => {});
+
+      // Update runtime metrics
+      this.api.updateRuntimeStatus(this.storeId, {
+        last_print_at: new Date().toISOString(),
+      }).catch(() => {});
 
       this.consecutiveErrors = 0;
       this.emit("printed", { orderId: job.orderId });
 
-      // Process next immediately
       this.locked = false;
       this.tick();
     } catch (e: any) {
@@ -129,9 +142,18 @@ export class QueueWorker {
       await this.queue.updateStatus(job.id, "failed", errorMsg);
       this.emit("error", { orderId: job.orderId, error: errorMsg, attempts: job.attempts + 1 });
 
+      // Log failure to print_logs
+      this.api.logPrint(
+        this.storeId,
+        job.orderId,
+        job.id,
+        "failed",
+        job.attempts + 1,
+        errorMsg
+      ).catch(() => {});
+
       this.locked = false;
 
-      // Exponential backoff based on attempts
       const delay = Math.min(1000 * Math.pow(2, job.attempts), 30_000);
       this.scheduleNext(delay);
     }
