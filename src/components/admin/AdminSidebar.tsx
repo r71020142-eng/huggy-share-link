@@ -84,7 +84,7 @@ export function AdminSidebar() {
     <Sidebar className="border-r-0">
       <SidebarHeader className="bg-sidebar p-4">
         <div className="flex items-center gap-2 text-sidebar-foreground">
-          <Store className="h-6 w-6" />
+          <img src="/favicon.png" alt="Atende Já" className="h-7 w-7 rounded" />
           <span className="text-lg font-bold">Atende Já</span>
         </div>
 
