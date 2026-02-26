@@ -206,6 +206,22 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
     }));
   };
 
+  const updateAdditionalQty = (productId: string, additionalId: string, delta: number) => {
+    setCart(prev => prev.map(c => {
+      if (c.product.id !== productId) return c;
+      return {
+        ...c,
+        additionals: c.additionals.map(a => {
+          if (a.id !== additionalId) return a;
+          const newQty = a.quantity + delta;
+          if (newQty <= 0) return a; // use toggle to remove
+          if (newQty > 10) return a;
+          return { ...a, quantity: newQty };
+        }),
+      };
+    }));
+  };
+
   const subtotal = cart.reduce((s, c) => {
     const addTotal = c.additionals.reduce((a, ad) => a + ad.price * ad.quantity, 0);
     return s + (c.product.price + addTotal) * c.quantity;
@@ -478,19 +494,61 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
                             <button onClick={() => removeFromCart(item.product.id)} className="h-6 w-6 rounded-full border border-red-200 flex items-center justify-center text-red-500"><Trash2 className="h-3 w-3" /></button>
                           </div>
                         </div>
-                        {productAdditionals.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {productAdditionals.map(a => {
-                              const selected = item.additionals.some(ia => ia.id === a.id);
-                              return (
-                                <button key={a.id} onClick={() => toggleAdditional(item.product.id, a)}
-                                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium border ${selected ? "bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>
-                                  {a.name} +{formatBRL(a.price || 0)}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
+                        {productAdditionals.length > 0 && (() => {
+                          const freeAdds = productAdditionals.filter(a => !a.price || a.price === 0);
+                          const paidAdds = productAdditionals.filter(a => a.price && a.price > 0);
+                          return (
+                            <div className="space-y-2">
+                              {freeAdds.length > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-semibold text-muted-foreground mb-1">🟢 Inclusos (grátis)</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {freeAdds.map(a => {
+                                      const selected = item.additionals.some(ia => ia.id === a.id);
+                                      return (
+                                        <button key={a.id} onClick={() => toggleAdditional(item.product.id, a)}
+                                          className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${selected ? "bg-green-600 text-white border-green-600" : "border-border text-muted-foreground hover:border-green-400"}`}>
+                                          {a.name}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                              {paidAdds.length > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-semibold text-muted-foreground mb-1">💰 Adicionais pagos</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {paidAdds.map(a => {
+                                      const selectedAdd = item.additionals.find(ia => ia.id === a.id);
+                                      return (
+                                        <div key={a.id} className="flex items-center gap-0.5">
+                                          <button onClick={() => toggleAdditional(item.product.id, a)}
+                                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${selectedAdd ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
+                                            {a.name} +{formatBRL(a.price || 0)}
+                                          </button>
+                                          {selectedAdd && (
+                                            <div className="flex items-center gap-0.5 ml-0.5">
+                                              <button onClick={() => updateAdditionalQty(item.product.id, a.id, -1)}
+                                                className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[10px] hover:bg-muted-foreground/20">
+                                                <Minus className="h-2.5 w-2.5" />
+                                              </button>
+                                              <span className="text-[10px] font-bold w-3 text-center">{selectedAdd.quantity}</span>
+                                              <button onClick={() => updateAdditionalQty(item.product.id, a.id, 1)}
+                                                className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[10px] hover:bg-muted-foreground/20">
+                                                <Plus className="h-2.5 w-2.5" />
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}
