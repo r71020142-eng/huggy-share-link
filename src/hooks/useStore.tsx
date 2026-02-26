@@ -21,6 +21,7 @@ interface Store {
   theme_color: string | null;
   monthly_goal: number | null;
   owner_id: string;
+  dashboard_pin_hash: string | null;
 }
 
 interface StoreContextType {
