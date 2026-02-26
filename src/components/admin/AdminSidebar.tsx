@@ -52,8 +52,8 @@ import { Badge } from "@/components/ui/badge";
 import { ProBadge } from "./ProGate";
 
 const navItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard, proOnly: false },
   { title: "Pedidos", url: "/admin/orders", icon: ShoppingBag, proOnly: false },
+  { title: "Dashboard", url: "/admin", icon: LayoutDashboard, proOnly: false },
   { title: "Cardápios", url: "/admin/menus", icon: BookOpen, proOnly: false },
   { title: "Categorias", url: "/admin/categories", icon: Tag, proOnly: false },
   { title: "Produtos", url: "/admin/products", icon: Package, proOnly: false },
@@ -117,29 +117,7 @@ export function AdminSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === "/admin"}
-                      className="text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                      {item.proOnly && <ProBadge />}
-                      {item.title === "Planos" && isPro && (
-                        <Badge variant="secondary" className="ml-auto bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
-                          PRO ✓
-                        </Badge>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-
-              {/* Caixa collapsible */}
+              {/* Caixa collapsible no topo */}
               <SidebarMenuItem>
                 <Collapsible open={cashOpen} onOpenChange={setCashOpen}>
                   <CollapsibleTrigger asChild>
@@ -168,6 +146,28 @@ export function AdminSidebar() {
                   </CollapsibleContent>
                 </Collapsible>
               </SidebarMenuItem>
+
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end={item.url === "/admin"}
+                      className="text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      activeClassName="bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                      {item.proOnly && <ProBadge />}
+                      {item.title === "Planos" && isPro && (
+                        <Badge variant="secondary" className="ml-auto bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
+                          PRO ✓
+                        </Badge>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
