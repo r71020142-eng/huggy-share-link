@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { StoreProvider } from "@/hooks/useStore";
+import { PrintEngineProvider } from "@/context/PrintEngineProvider";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { SuperAdminLayout } from "@/components/admin/SuperAdminLayout";
 import Login from "@/pages/auth/Login";
@@ -59,6 +60,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <StoreProvider>
+            <PrintEngineProvider>
             <Routes>
               <Route path="/" element={<Navigate to="/admin" replace />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -93,6 +95,7 @@ const App = () => (
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </PrintEngineProvider>
           </StoreProvider>
         </AuthProvider>
       </BrowserRouter>

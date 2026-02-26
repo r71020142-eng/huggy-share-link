@@ -11,6 +11,15 @@ import { DeviceStorage } from "./storage/device-storage";
 type StatusListener = (status: PrinterStatus, type: PrinterType, name: string | null) => void;
 
 export class PrinterManager {
+  private static instance: PrinterManager | null = null;
+
+  static getInstance(): PrinterManager {
+    if (!PrinterManager.instance) {
+      PrinterManager.instance = new PrinterManager();
+    }
+    return PrinterManager.instance;
+  }
+
   private usb: WebUSBAdapter;
   private serial: WebSerialAdapter;
   private active: PrinterAdapter | null = null;
@@ -20,7 +29,7 @@ export class PrinterManager {
   private healthTimer: ReturnType<typeof setInterval> | null = null;
   private unsubDisconnect: (() => void) | null = null;
 
-  constructor() {
+  private constructor() {
     this.usb = new WebUSBAdapter();
     this.serial = new WebSerialAdapter();
   }
