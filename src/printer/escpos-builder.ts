@@ -165,18 +165,31 @@ export function buildReceipt(
       const sizeLabel = "";
       txt(lr(sizeLabel + "        " + qtyStr, priceStr));
 
-      // Additionals / Complementos
+      // Additionals / Complementos – separated by paid/free
       if (item.additionals) {
         try {
           const adds = typeof item.additionals === "string"
             ? JSON.parse(item.additionals)
             : item.additionals;
           if (Array.isArray(adds) && adds.length > 0) {
-            txt("Complementos:");
-            for (const a of adds) {
-              const aName = typeof a === "string" ? a : (a.name || "");
-              const aQty = a.quantity && a.quantity > 1 ? "(x" + a.quantity + ")" : "";
-              txt(fit(aQty + aName + ";", WIDTH));
+            const freeAdds = adds.filter((a: any) => !a.price || a.price === 0);
+            const paidAdds = adds.filter((a: any) => a.price && a.price > 0);
+
+            if (freeAdds.length > 0) {
+              txt("Inclusos:");
+              for (const a of freeAdds) {
+                const aName = typeof a === "string" ? a : (a.name || "");
+                txt(fit("  " + aName, WIDTH));
+              }
+            }
+            if (paidAdds.length > 0) {
+              txt("Adicionais:");
+              for (const a of paidAdds) {
+                const aName = typeof a === "string" ? a : (a.name || "");
+                const aQty = a.quantity && a.quantity > 1 ? a.quantity + "x " : "";
+                const aTotal = ((a.price || 0) * (a.quantity || 1));
+                txt(lr("  " + aQty + aName, brl(aTotal)));
+              }
             }
           }
         } catch { /* skip */ }
