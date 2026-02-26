@@ -35,6 +35,10 @@ export default function Dashboard() {
     menuCount: 0,
     monthlyGoal: 5000,
     monthlyRevenue: 0,
+    digitalOrders: 0,
+    digitalRevenue: 0,
+    manualOrders: 0,
+    manualRevenue: 0,
   });
   const [chartData, setChartData] = useState<{ date: string; revenue: number }[]>([]);
   const [ordersChartData, setOrdersChartData] = useState<{ date: string; pedidos: number }[]>([]);
@@ -112,6 +116,10 @@ export default function Dashboard() {
       completed: "Concluído", cancelled: "Cancelado", pending: "Pendente", confirmed: "Confirmado", preparing: "Preparando", delivering: "Entregando",
     };
 
+    // Order source breakdown
+    const digitalOrders = allOrders.filter(o => !o.is_manual);
+    const manualOrdersList = allOrders.filter(o => o.is_manual);
+
     setStats({
       todayRevenue: todayRev,
       todayOrders: (todayOrders || []).length,
@@ -125,6 +133,10 @@ export default function Dashboard() {
       menuCount: menuCount || 0,
       monthlyGoal: store.monthly_goal || 5000,
       monthlyRevenue,
+      digitalOrders: digitalOrders.length,
+      digitalRevenue: digitalOrders.reduce((s, o) => s + Number(o.total), 0),
+      manualOrders: manualOrdersList.length,
+      manualRevenue: manualOrdersList.reduce((s, o) => s + Number(o.total), 0),
     });
     setChartData(chart);
     setOrdersChartData(ordersChart);
@@ -442,6 +454,36 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Order Source Breakdown */}
+      {!loading && stats.totalOrders > 0 && (
+        <Card className="border-purple-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Origem dos Pedidos</CardTitle>
+            <p className="text-xs text-muted-foreground">{periodLabel} — {stats.totalOrders} pedidos</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-xl border p-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-950 text-lg">📱</span>
+                  <p className="text-sm font-semibold">Cardápio Digital / PWA</p>
+                </div>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.digitalOrders}</p>
+                <p className="text-xs text-muted-foreground">{formatBRL(stats.digitalRevenue)}</p>
+              </div>
+              <div className="rounded-xl border p-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-950 text-lg">🏪</span>
+                  <p className="text-sm font-semibold">Manual / Balcão / Tele</p>
+                </div>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.manualOrders}</p>
+                <p className="text-xs text-muted-foreground">{formatBRL(stats.manualRevenue)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick links */}
       <div className="grid gap-4 md:grid-cols-3">

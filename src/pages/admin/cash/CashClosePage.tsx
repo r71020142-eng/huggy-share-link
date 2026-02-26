@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCashSession, CashMovement } from "@/hooks/useCashSession";
 import { useStore } from "@/hooks/useStore";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,10 @@ export default function CashClosePage() {
     grandTotal: number;
     totalSangrias: number;
     totalSuprimentos: number;
+    digitalOrders: number;
+    digitalRevenue: number;
+    manualOrders: number;
+    manualRevenue: number;
   } | null>(null);
   const [finalAmount, setFinalAmount] = useState("");
   const [notes, setNotes] = useState("");
@@ -29,15 +34,40 @@ export default function CashClosePage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const prepareClose = async () => {
-    if (!activeSession) return;
+    if (!activeSession || !store) return;
     setPreparing(true);
-    const [sum, mvs] = await Promise.all([
+    const [sum, mvs, { data: sessionOrders }] = await Promise.all([
       getSessionSummary(activeSession.id),
       getSessionMovements(activeSession.id),
+      supabase
+        .from("order_payments")
+        .select("order_id")
+        .eq("cash_session_id", activeSession.id),
     ]);
+
+    // Get unique order IDs from this session
+    const orderIds = [...new Set((sessionOrders || []).map(p => p.order_id))];
+    let digitalOrders = 0, digitalRevenue = 0, manualOrders = 0, manualRevenue = 0;
+
+    if (orderIds.length > 0) {
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("id, is_manual, total")
+        .in("id", orderIds);
+      (orders || []).forEach(o => {
+        if (o.is_manual) {
+          manualOrders++;
+          manualRevenue += Number(o.total);
+        } else {
+          digitalOrders++;
+          digitalRevenue += Number(o.total);
+        }
+      });
+    }
+
     const totalSangrias = mvs.filter((m: CashMovement) => m.type === "sangria").reduce((s: number, m: CashMovement) => s + Number(m.amount), 0);
     const totalSuprimentos = mvs.filter((m: CashMovement) => m.type === "suprimento").reduce((s: number, m: CashMovement) => s + Number(m.amount), 0);
-    setSummary({ ...sum, totalSangrias, totalSuprimentos });
+    setSummary({ ...sum, totalSangrias, totalSuprimentos, digitalOrders, digitalRevenue, manualOrders, manualRevenue });
     setPreparing(false);
   };
 
@@ -111,6 +141,26 @@ export default function CashClosePage() {
       <Card>
         <CardContent className="p-6 space-y-4">
           <p className="font-bold">Resumo do Turno</p>
+
+          {/* Order source breakdown */}
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <div className="rounded-lg border p-3 space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">📱</span>
+                <span className="text-xs font-semibold">Digital / PWA</span>
+              </div>
+              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{summary.digitalOrders} pedidos</p>
+              <p className="text-xs text-muted-foreground">{formatBRL(summary.digitalRevenue)}</p>
+            </div>
+            <div className="rounded-lg border p-3 space-y-0.5">
+              <div className="flex items-center gap-1.5">
+                <span className="text-base">🏪</span>
+                <span className="text-xs font-semibold">Manual / Balcão</span>
+              </div>
+              <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{summary.manualOrders} pedidos</p>
+              <p className="text-xs text-muted-foreground">{formatBRL(summary.manualRevenue)}</p>
+            </div>
+          </div>
           <div className="space-y-1">
             {Object.entries(summary.byMethod).map(([method, data]) => (
               <div key={method} className="flex justify-between text-sm">
