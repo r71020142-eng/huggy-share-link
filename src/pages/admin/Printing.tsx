@@ -136,19 +136,24 @@ export default function Printing() {
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+          <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                {!initialized ? "Inicializando..." : "Nenhuma impressora conectada."}
+                {!initialized ? "Inicializando..." : "Nenhuma impressora conectada. Escolha o método de conexão:"}
               </p>
-              <Button onClick={pairPrinter} disabled={!initialized || (!usbSupported && !serialSupported)} className="gap-2">
-                <Usb className="h-4 w-4" />
-                Conectar Impressora
-              </Button>
+              <div className="flex gap-2 flex-wrap">
+                <Button onClick={() => pairPrinter("usb")} disabled={!initialized || !usbSupported} className="gap-2">
+                  <Usb className="h-4 w-4" />
+                  Conectar via USB
+                </Button>
+                <Button variant="outline" onClick={() => pairPrinter("serial")} disabled={!initialized || !serialSupported} className="gap-2">
+                  <Printer className="h-4 w-4" />
+                  Conectar via Serial
+                </Button>
+              </div>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>📌 A impressora deve estar ligada e conectada via USB.</p>
                 <p>📌 Use Chrome ou Edge. O navegador pedirá permissão.</p>
-                <p>📌 Se o dispositivo não aparecer na lista, clique em "Mostrar todos" no diálogo.</p>
-                <p>📌 WebUSB → WebSerial fallback automático.</p>
+                <p>📌 Se USB não funcionar, tente <strong>Serial</strong>.</p>
               </div>
             </div>
           )}

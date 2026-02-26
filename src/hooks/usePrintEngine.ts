@@ -219,19 +219,15 @@ export function usePrintEngine(storeId: string | undefined) {
     autoPrintRef.current = state.autoPrint;
   }, [state.autoPrint]);
 
-  const pairPrinter = useCallback(async () => {
+  const pairPrinter = useCallback(async (mode: "usb" | "serial" = "usb") => {
     try {
-      await managerRef.current?.pair();
+      await managerRef.current?.pair(mode);
     } catch (e: any) {
+      if (e.name === "NotFoundError") return; // user cancelled
       const msg = e.message || "Erro desconhecido";
-      if (msg.includes("Acesso negado") || msg.includes("Access denied")) {
-        toast.error("Erro ao conectar impressora: " + msg, {
-          description: "Dica: Feche outras abas do Chrome e reconecte o cabo USB.",
-          duration: 8000,
-        });
-      } else {
-        toast.error("Erro ao conectar impressora: " + msg);
-      }
+      toast.error("Erro ao conectar impressora: " + msg, {
+        duration: 6000,
+      });
     }
   }, []);
 
