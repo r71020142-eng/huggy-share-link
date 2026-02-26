@@ -702,6 +702,60 @@ export type Database = {
           },
         ]
       }
+      print_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          id: string
+          idempotency_key: string
+          order_id: string
+          printed_at: string | null
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key: string
+          order_id: string
+          printed_at?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string
+          order_id?: string
+          printed_at?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "print_jobs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "print_jobs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_additionals: {
         Row: {
           category: string | null
