@@ -333,7 +333,7 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] w-full h-[95vh] max-h-[95vh] overflow-hidden flex flex-col p-0">
         {/* Block if no cash session */}
         {!cashLoading && !activeSession ? (
           <div className="p-8 text-center space-y-4">
@@ -466,13 +466,13 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
               </div>
 
               {/* Product list */}
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-52 overflow-y-auto">
                 {products
                   .filter(p => !productSearch || p.name.toLowerCase().includes(productSearch.toLowerCase()))
                   .map(p => (
-                    <button key={p.id} onClick={() => addToCart(p)} className="rounded-lg border p-2 text-left hover:bg-muted/50 transition-colors">
+                    <button key={p.id} onClick={() => addToCart(p)} className="rounded-lg border p-3 text-left hover:bg-muted/50 transition-colors">
                       <p className="text-sm font-medium truncate">{p.name}</p>
-                      <p className="text-xs text-primary font-bold">{formatBRL(p.price)}</p>
+                      <p className="text-sm text-primary font-bold">{formatBRL(p.price)}</p>
                     </button>
                   ))}
               </div>
@@ -498,16 +498,16 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
                           const freeAdds = productAdditionals.filter(a => !a.price || a.price === 0);
                           const paidAdds = productAdditionals.filter(a => a.price && a.price > 0);
                           return (
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               {freeAdds.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-semibold text-muted-foreground mb-1">🟢 Inclusos (grátis)</p>
-                                  <div className="flex flex-wrap gap-1">
+                                  <p className="text-xs font-semibold text-muted-foreground mb-1.5">🟢 Inclusos (grátis)</p>
+                                  <div className="flex flex-wrap gap-1.5">
                                     {freeAdds.map(a => {
                                       const selected = item.additionals.some(ia => ia.id === a.id);
                                       return (
                                         <button key={a.id} onClick={() => toggleAdditional(item.product.id, a)}
-                                          className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${selected ? "bg-green-600 text-white border-green-600" : "border-border text-muted-foreground hover:border-green-400"}`}>
+                                          className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${selected ? "bg-green-600 text-white border-green-600" : "border-border text-muted-foreground hover:border-green-400"}`}>
                                           {a.name}
                                         </button>
                                       );
@@ -517,26 +517,26 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
                               )}
                               {paidAdds.length > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-semibold text-muted-foreground mb-1">💰 Adicionais pagos</p>
-                                  <div className="flex flex-wrap gap-1">
+                                  <p className="text-xs font-semibold text-muted-foreground mb-1.5">💰 Adicionais pagos</p>
+                                  <div className="flex flex-wrap gap-1.5">
                                     {paidAdds.map(a => {
                                       const selectedAdd = item.additionals.find(ia => ia.id === a.id);
                                       return (
-                                        <div key={a.id} className="flex items-center gap-0.5">
+                                        <div key={a.id} className="flex items-center gap-1">
                                           <button onClick={() => toggleAdditional(item.product.id, a)}
-                                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium border transition-colors ${selectedAdd ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
+                                            className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${selectedAdd ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-primary/50"}`}>
                                             {a.name} +{formatBRL(a.price || 0)}
                                           </button>
                                           {selectedAdd && (
-                                            <div className="flex items-center gap-0.5 ml-0.5">
+                                            <div className="flex items-center gap-1 ml-1">
                                               <button onClick={() => updateAdditionalQty(item.product.id, a.id, -1)}
-                                                className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[10px] hover:bg-muted-foreground/20">
-                                                <Minus className="h-2.5 w-2.5" />
+                                                className="h-6 w-6 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20">
+                                                <Minus className="h-3 w-3" />
                                               </button>
-                                              <span className="text-[10px] font-bold w-3 text-center">{selectedAdd.quantity}</span>
+                                              <span className="text-xs font-bold w-4 text-center">{selectedAdd.quantity}</span>
                                               <button onClick={() => updateAdditionalQty(item.product.id, a.id, 1)}
-                                                className="h-4 w-4 rounded-full bg-muted flex items-center justify-center text-[10px] hover:bg-muted-foreground/20">
-                                                <Plus className="h-2.5 w-2.5" />
+                                                className="h-6 w-6 rounded-full bg-muted flex items-center justify-center hover:bg-muted-foreground/20">
+                                                <Plus className="h-3 w-3" />
                                               </button>
                                             </div>
                                           )}
