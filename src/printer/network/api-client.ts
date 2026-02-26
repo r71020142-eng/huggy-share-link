@@ -75,21 +75,44 @@ export class PrintApiClient {
   async heartbeat(storeId: string, printerType: string, printerName: string | null): Promise<void> {
     const now = new Date().toISOString();
 
-    // Update print settings
-    const { error: settingsErr } = await supabase
+    // Update print settings – print_mode must be one of 'kitchen'|'counter'|'both' (DB constraint)
+    // First try to read existing print_mode; only create with default 'both' if no row exists
+    const { data: existingSettings } = await supabase
       .from("store_print_settings")
-      .upsert({
-        store_id: storeId,
-        auto_print: true,
-        print_mode: printerType,
-        updated_at: now,
-      }, { onConflict: "store_id" });
+      .select("id, print_mode")
+      .eq("store_id", storeId)
+      .maybeSingle();
 
-    if (settingsErr) {
-      console.warn("[PrintAPI] Heartbeat settings failed:", settingsErr.message);
+    if (existingSettings) {
+      // Row exists – only update auto_print and timestamp, preserve print_mode
+      const { error: settingsErr } = await supabase
+        .from("store_print_settings")
+        .update({
+          auto_print: true,
+          updated_at: now,
+        })
+        .eq("store_id", storeId);
+
+      if (settingsErr) {
+        console.warn("[PrintAPI] Heartbeat settings update failed:", settingsErr.message);
+      }
+    } else {
+      // No row – insert with valid default print_mode
+      const { error: settingsErr } = await supabase
+        .from("store_print_settings")
+        .insert({
+          store_id: storeId,
+          auto_print: true,
+          print_mode: "both",
+          updated_at: now,
+        });
+
+      if (settingsErr) {
+        console.warn("[PrintAPI] Heartbeat settings insert failed:", settingsErr.message);
+      }
     }
 
-    // Update runtime status
+    // Update runtime status (printer_type here is the connection type: webusb/webserial – no constraint)
     const { error: runtimeErr } = await supabase
       .from("store_runtime_status")
       .upsert({
