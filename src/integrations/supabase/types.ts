@@ -1065,6 +1065,54 @@ export type Database = {
         }
         Relationships: []
       }
+      store_print_metrics_daily: {
+        Row: {
+          created_at: string
+          id: string
+          metric_date: string
+          store_id: string
+          success_rate: number
+          total_errors: number
+          total_prints: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_date?: string
+          store_id: string
+          success_rate?: number
+          total_errors?: number
+          total_prints?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_date?: string
+          store_id?: string
+          success_rate?: number
+          total_errors?: number
+          total_prints?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_print_metrics_daily_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_print_metrics_daily_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_print_settings: {
         Row: {
           auto_print: boolean
