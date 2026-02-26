@@ -140,7 +140,10 @@ export default function PublicMenu() {
     setSubmitting(true);
 
     if (isPro) {
-      const { data: order, error } = await supabase.from("orders").insert({
+      const orderId = crypto.randomUUID();
+
+      const { error: orderError } = await supabase.from("orders").insert({
+        id: orderId,
         store_id: store.id,
         customer_name: data.customerName,
         customer_phone: data.customerPhone,
@@ -152,29 +155,36 @@ export default function PublicMenu() {
         total: orderTotal,
         payment_method: data.paymentMethod,
         notes: data.notes,
-      }).select().single();
+      });
 
-      if (error) {
+      if (orderError) {
+        console.error("Erro ao criar pedido", orderError);
         toast.error("Erro ao criar pedido");
         setSubmitting(false);
         return;
       }
 
-      if (order) {
-        await supabase.from("order_items").insert(
-          cart.map((item) => ({
-            order_id: order.id,
-            product_id: item.product.id,
-            product_name: item.product.name,
-            quantity: item.quantity,
-            unit_price: item.product.price,
-            subtotal: item.product.price * item.quantity,
-            additionals: item.additionals ? JSON.stringify(item.additionals) : null,
-          }))
-        );
-        setLastOrderId(order.id);
-        setLastTrackingCode(order.tracking_code);
+      const { error: itemsError } = await supabase.from("order_items").insert(
+        cart.map((item) => ({
+          order_id: orderId,
+          product_id: item.product.id,
+          product_name: item.product.name,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+          subtotal: item.product.price * item.quantity,
+          additionals: item.additionals || [],
+        }))
+      );
+
+      if (itemsError) {
+        console.error("Pedido criado, mas falhou ao criar itens", itemsError);
+        toast.error("Pedido criado, mas houve erro ao salvar itens");
+        setSubmitting(false);
+        return;
       }
+
+      setLastOrderId(orderId);
+      setLastTrackingCode(null);
 
       setCart([]);
       setCheckoutOpen(false);
