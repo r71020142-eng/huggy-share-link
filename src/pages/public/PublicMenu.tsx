@@ -58,7 +58,7 @@ export default function PublicMenu() {
     setMenu(menuData);
 
     const { data: storeData } = await supabase
-      .from("stores").select("*").eq("id", menuData.store_id).single();
+      .from("stores").select("id, name, slug, address, whatsapp, logo_url, banner_url, theme_color, is_open, delivery_enabled, pickup_enabled, min_order, estimated_time, promo_banner, operating_hours, plan_type, created_at").eq("id", menuData.store_id).single();
     setStore(storeData);
 
     const [{ data: prods }, { data: cats }, { data: hoods }] = await Promise.all([
