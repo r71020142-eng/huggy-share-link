@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function DashboardPinGate({ children }: Props) {
-  const { store } = useStore();
+  const { store, refreshStore } = useStore();
   const [unlocked, setUnlocked] = useState(false);
   const [hasPin, setHasPin] = useState<boolean | null>(null);
   const [pin, setPin] = useState("");
@@ -58,6 +58,7 @@ export function DashboardPinGate({ children }: Props) {
       toast.error("Erro ao salvar senha.");
       return;
     }
+    await refreshStore();
     toast.success("Senha do Dashboard criada com sucesso!");
     setUnlocked(true);
   };
