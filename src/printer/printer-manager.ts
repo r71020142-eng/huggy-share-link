@@ -38,35 +38,20 @@ export class PrinterManager {
     return () => this.listeners.delete(cb);
   }
 
-  /** Pair a new printer (requires user gesture) – tries WebUSB first, then WebSerial */
-  async pair(): Promise<void> {
-    // Try WebUSB
-    let usbError: string | null = null;
-    if (this.usb.isSupported) {
-      try {
-        await this.usb.connect();
-        await this.activate(this.usb);
-        return;
-      } catch (e: any) {
-        if (e.name === "NotFoundError") {
-          // User cancelled – don't fallback
-          return;
-        }
-        usbError = e.message;
-        console.warn("[PrinterManager] WebUSB failed, trying WebSerial:", e.message);
-      }
+  /** Pair a new printer (requires user gesture) – specify mode to avoid gesture loss */
+  async pair(mode: "usb" | "serial" = "usb"): Promise<void> {
+    if (mode === "usb") {
+      if (!this.usb.isSupported) throw new Error("WebUSB não é suportado neste navegador");
+      await this.usb.connect();
+      await this.activate(this.usb);
+      return;
     }
 
-    // Fallback to WebSerial
-    if (this.serial.isSupported) {
-      try {
-        await this.serial.connect();
-        await this.activate(this.serial);
-        return;
-      } catch (e: any) {
-        if (e.name === "NotFoundError") return;
-        throw e;
-      }
+    if (mode === "serial") {
+      if (!this.serial.isSupported) throw new Error("WebSerial não é suportado neste navegador");
+      await this.serial.connect();
+      await this.activate(this.serial);
+      return;
     }
 
     throw new Error("Nenhuma API de impressão suportada neste navegador");
