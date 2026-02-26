@@ -59,7 +59,7 @@ export default function Dashboard() {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
     const periodDays = period === "today" ? 0 : period === "7days" ? 7 : 30;
-    const periodStart = new Date(now.getTime() - periodDays * 86400000).toISOString();
+    const periodStart = period === "today" ? todayStart : new Date(now.getTime() - periodDays * 86400000).toISOString();
 
     const [{ data: orders }, { data: todayOrders }, { data: pendingOrders }, { count: productCount }, { count: menuCount }] = await Promise.all([
       supabase.from("orders").select("*").eq("store_id", store.id).gte("created_at", periodStart),
