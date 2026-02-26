@@ -1,11 +1,12 @@
 import { useStore } from "@/hooks/useStore";
-import { useWebPrinter } from "@/hooks/useWebPrinter";
+import { usePrintEngine } from "@/hooks/usePrintEngine";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Printer,
   Wifi,
@@ -16,32 +17,75 @@ import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
+  RefreshCcw,
+  List,
+  Clock,
+  XCircle,
+  RotateCcw,
 } from "lucide-react";
 
 export default function Printing() {
   const { store } = useStore();
   const {
-    printer,
+    printerStatus,
+    printerType,
+    printerName,
+    queue,
+    pendingCount,
+    lastPrintAt,
+    consecutiveErrors,
+    recentErrors,
     autoPrint,
-    setAutoPrint,
-    printing,
-    isSupported,
+    initialized,
     pairPrinter,
     disconnectPrinter,
     testPrint,
-  } = useWebPrinter(store?.id);
+    setAutoPrint,
+    retryFailed,
+    usbSupported,
+    serialSupported,
+  } = usePrintEngine(store?.id);
 
   if (!store) return null;
+
+  const isOnline = printerStatus === "online";
+  const isReconnecting = printerStatus === "reconnecting";
+  const failedJobs = queue.filter(j => j.status === "failed");
+  const activeJobs = queue.filter(j => j.status === "pending" || j.status === "printing");
+
+  const statusBadge = () => {
+    if (isOnline) return (
+      <Badge className="bg-green-500/20 text-green-700 border-green-500/30 gap-1">
+        <Wifi className="h-3 w-3" /> Online
+      </Badge>
+    );
+    if (isReconnecting) return (
+      <Badge className="bg-yellow-500/20 text-yellow-700 border-yellow-500/30 gap-1">
+        <Loader2 className="h-3 w-3 animate-spin" /> Reconectando
+      </Badge>
+    );
+    return (
+      <Badge variant="destructive" className="bg-red-500/20 text-red-700 border-red-500/30 gap-1">
+        <WifiOff className="h-3 w-3" /> Offline
+      </Badge>
+    );
+  };
+
+  const typeBadge = () => {
+    if (printerType === "webusb") return <Badge variant="outline" className="gap-1"><Usb className="h-3 w-3" /> WebUSB</Badge>;
+    if (printerType === "webserial") return <Badge variant="outline" className="gap-1"><Usb className="h-3 w-3" /> WebSerial</Badge>;
+    return null;
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Impressão</h1>
-        <p className="text-muted-foreground">Conecte sua impressora térmica USB diretamente pelo navegador.</p>
+        <h1 className="text-2xl font-bold">Print Engine</h1>
+        <p className="text-muted-foreground">Sistema de impressão térmica profissional com fila persistente e reconexão automática.</p>
       </div>
 
       {/* Compatibilidade */}
-      {!isSupported && (
+      {!usbSupported && !serialSupported && (
         <Card className="border-destructive">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 text-destructive">
@@ -49,7 +93,7 @@ export default function Printing() {
               <div>
                 <p className="font-medium">Navegador incompatível</p>
                 <p className="text-sm text-muted-foreground">
-                  A impressão USB requer <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> no desktop. Abra este painel no Chrome para continuar.
+                  Requer <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> desktop.
                 </p>
               </div>
             </div>
@@ -62,63 +106,101 @@ export default function Printing() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Usb className="h-5 w-5" />
-            Impressora USB
+            Impressora
           </CardTitle>
           <CardDescription>Conecte sua impressora térmica 58mm via USB.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {printer ? (
+          {printerStatus !== "offline" ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                {printer.connected ? (
-                  <Badge className="bg-green-500/20 text-green-700 border-green-500/30 gap-1">
-                    <Wifi className="h-3 w-3" /> Conectada
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="bg-red-500/20 text-red-700 border-red-500/30 gap-1">
-                    <WifiOff className="h-3 w-3" /> Desconectada
-                  </Badge>
-                )}
-                <span className="text-sm font-medium">{printer.name}</span>
+              <div className="flex items-center gap-3 flex-wrap">
+                {statusBadge()}
+                {typeBadge()}
+                {printerName && <span className="text-sm font-medium">{printerName}</span>}
               </div>
 
-              <div className="text-xs text-muted-foreground">
-                Vendor: 0x{printer.vendorId.toString(16).padStart(4, "0")} | Product: 0x{printer.productId.toString(16).padStart(4, "0")}
-              </div>
+              {lastPrintAt && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  Última impressão: {new Date(lastPrintAt).toLocaleString("pt-BR")}
+                </div>
+              )}
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={testPrint}
-                  disabled={!printer.connected || printing}
-                  className="gap-2"
-                >
-                  {printing ? <Loader2 className="h-4 w-4 animate-spin" /> : <TestTube className="h-4 w-4" />}
-                  Testar Impressão
+              <div className="flex gap-2 flex-wrap">
+                <Button variant="outline" onClick={testPrint} disabled={!isOnline} className="gap-2">
+                  <TestTube className="h-4 w-4" /> Testar
                 </Button>
-                <Button
-                  variant="destructive"
-                  onClick={disconnectPrinter}
-                  className="gap-2"
-                >
-                  <Unplug className="h-4 w-4" />
-                  Desconectar
+                <Button variant="destructive" onClick={disconnectPrinter} className="gap-2">
+                  <Unplug className="h-4 w-4" /> Desconectar
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">Nenhuma impressora conectada.</p>
-              <Button onClick={pairPrinter} disabled={!isSupported} className="gap-2">
+              <p className="text-sm text-muted-foreground">
+                {!initialized ? "Inicializando..." : "Nenhuma impressora conectada."}
+              </p>
+              <Button onClick={pairPrinter} disabled={!initialized || (!usbSupported && !serialSupported)} className="gap-2">
                 <Usb className="h-4 w-4" />
-                Conectar Impressora USB
+                Conectar Impressora
               </Button>
               <div className="text-xs text-muted-foreground space-y-1">
-                <p>📌 Certifique-se de que a impressora está ligada e conectada via USB.</p>
-                <p>📌 Use Google Chrome ou Microsoft Edge.</p>
-                <p>📌 O navegador pedirá permissão para acessar o dispositivo USB.</p>
+                <p>📌 A impressora deve estar ligada e conectada via USB.</p>
+                <p>📌 Use Chrome ou Edge. O navegador pedirá permissão USB.</p>
+                <p>📌 Se WebUSB falhar, o sistema tenta WebSerial automaticamente.</p>
               </div>
             </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Fila de Impressão */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <List className="h-5 w-5" />
+            Fila de Impressão
+            {pendingCount > 0 && (
+              <Badge variant="secondary">{pendingCount} pendente(s)</Badge>
+            )}
+          </CardTitle>
+          <CardDescription>Jobs de impressão com retry automático e persistência.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {activeJobs.length > 0 ? (
+            <ScrollArea className="max-h-40">
+              <div className="space-y-2">
+                {activeJobs.map(job => (
+                  <div key={job.id} className="flex items-center justify-between text-sm p-2 rounded bg-muted/50">
+                    <span className="font-mono text-xs">{job.orderId.substring(0, 8)}...</span>
+                    <div className="flex items-center gap-2">
+                      {job.status === "printing" && <Loader2 className="h-3 w-3 animate-spin" />}
+                      <Badge variant="outline" className="text-xs">
+                        {job.status === "printing" ? "Imprimindo" : "Na fila"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">#{job.attempts}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : (
+            <p className="text-sm text-muted-foreground">Fila vazia – novos pedidos entrarão automaticamente.</p>
+          )}
+
+          {failedJobs.length > 0 && (
+            <>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-destructive">
+                  <XCircle className="h-4 w-4" />
+                  {failedJobs.length} job(s) com falha
+                </div>
+                <Button variant="outline" size="sm" onClick={retryFailed} className="gap-1">
+                  <RotateCcw className="h-3 w-3" /> Retentar
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -130,41 +212,60 @@ export default function Printing() {
             <Printer className="h-5 w-5" />
             Impressão Automática
           </CardTitle>
-          <CardDescription>Quando ativada, novos pedidos são impressos automaticamente.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <Label>Imprimir ao receber pedido</Label>
-              <p className="text-xs text-muted-foreground">A comanda será impressa assim que chegar um novo pedido.</p>
+              <p className="text-xs text-muted-foreground">Pedidos entram na fila automaticamente.</p>
             </div>
             <Switch checked={autoPrint} onCheckedChange={setAutoPrint} />
           </div>
-
           <Separator />
-
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <CheckCircle2 className="h-4 w-4 mt-0.5 text-green-600 shrink-0" />
-            <p>
-              <strong>Importante:</strong> Mantenha esta aba do navegador aberta para que a impressão automática funcione. Se fechar a aba, os pedidos não serão impressos.
-            </p>
+            <p>Mantenha esta aba aberta. O sistema reconecta automaticamente se a impressora desconectar.</p>
           </div>
         </CardContent>
       </Card>
 
-      {/* Instruções */}
+      {/* Erros Recentes */}
+      {recentErrors.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Erros Recentes
+              {consecutiveErrors > 0 && (
+                <Badge variant="destructive">{consecutiveErrors} consecutivo(s)</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="max-h-32">
+              <div className="space-y-1">
+                {recentErrors.map((err, i) => (
+                  <p key={i} className="text-xs text-muted-foreground font-mono">{err}</p>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Como funciona */}
       <Card>
         <CardHeader>
-          <CardTitle>Como funciona?</CardTitle>
+          <CardTitle>Arquitetura</CardTitle>
         </CardHeader>
         <CardContent>
           <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-            <li>Conecte a impressora térmica 58mm ao computador via cabo USB</li>
-            <li>Clique em <strong>"Conectar Impressora USB"</strong> acima</li>
-            <li>Selecione a impressora na janela que aparecer</li>
-            <li>Faça uma <strong>impressão de teste</strong> para verificar</li>
-            <li>Ative a <strong>impressão automática</strong></li>
-            <li>Mantenha esta aba aberta — novos pedidos serão impressos automaticamente! 🖨️</li>
+            <li>Novo pedido → trigger cria <strong>print_job</strong> no backend</li>
+            <li>Realtime notifica o navegador → job entra na <strong>fila local</strong> (IndexedDB)</li>
+            <li>Queue Worker processa sequencialmente → gera ESC/POS → envia ao <strong>USB/Serial</strong></li>
+            <li>Sucesso → marca no backend + anti-duplicação local</li>
+            <li>Falha → retry com backoff exponencial (até 5 tentativas)</li>
+            <li>Desconexão → reconexão automática com backoff</li>
           </ol>
         </CardContent>
       </Card>
