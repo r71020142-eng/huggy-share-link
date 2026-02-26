@@ -6,6 +6,7 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
 import { toast } from "sonner";
 import { PrinterManager } from "@/printer/printer-manager";
+import { supabase } from "@/integrations/supabase/client";
 import { PrintQueue } from "@/printer/queue/print-queue";
 import { QueueWorker } from "@/printer/queue/queue-worker";
 import { PrintApiClient } from "@/printer/network/api-client";
@@ -147,24 +148,40 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
 
     // Realtime subscription for new print jobs
     const realtime = new PrintRealtime(storeId, async (printJob) => {
-      if (!autoPrintRef.current) return;
-      if (printed.has(printJob.order_id)) return;
-      if (queue.hasOrder(printJob.order_id)) return;
+      console.log("[PrintEngine] Realtime print_job received:", printJob.id, "order:", printJob.order_id);
+      if (!autoPrintRef.current) {
+        console.log("[PrintEngine] Auto-print disabled, skipping");
+        return;
+      }
+      if (printed.has(printJob.order_id)) {
+        console.log("[PrintEngine] Already printed, skipping:", printJob.order_id);
+        return;
+      }
+      if (queue.hasOrder(printJob.order_id)) {
+        console.log("[PrintEngine] Already in queue, skipping:", printJob.order_id);
+        return;
+      }
 
       try {
-        const [items, storeData] = await Promise.all([
+        // Small delay to ensure order data is committed and visible
+        await new Promise(r => setTimeout(r, 500));
+
+        const [orderData, items, storeData] = await Promise.all([
+          supabase.from("orders").select("*").eq("id", printJob.order_id).maybeSingle().then(r => r.data),
           api.fetchOrderItems(printJob.order_id),
           storeCache.current[storeId]
             ? Promise.resolve(storeCache.current[storeId])
             : api.fetchStore(storeId).then(s => { storeCache.current[storeId] = s; return s; }),
         ]);
 
-        const pendingJobs = await api.fetchPending(storeId);
-        const match = pendingJobs.find(j => j.order_id === printJob.order_id);
-        const order = match?.orders || {};
+        if (!orderData) {
+          console.warn("[PrintEngine] Order not found for print job:", printJob.order_id);
+          return;
+        }
 
-        const payload: PrintPayload = { order, items, store: storeData, copies: 1, mode: "both" };
+        const payload: PrintPayload = { order: orderData, items, store: storeData, copies: 1, mode: "both" };
         await queue.enqueue(printJob.order_id, storeId, payload);
+        console.log("[PrintEngine] Enqueued order for printing:", printJob.order_id);
         worker.nudge();
       } catch (e: any) {
         console.error("[PrintEngine] Failed to enqueue order:", e);
