@@ -113,11 +113,44 @@ export class WebUSBAdapter implements PrinterAdapter {
   // --- Private ---
 
   private async openDevice(device: any): Promise<void> {
-    await device.open();
-    if (device.configuration === null) {
-      await device.selectConfiguration(1);
+    // If already open, try to close first
+    if (device.opened) {
+      try { await device.close(); } catch { /* ignore */ }
     }
-    await device.claimInterface(0);
+
+    try {
+      await device.open();
+    } catch (e: any) {
+      if (e.message?.includes("Access denied") || e.name === "SecurityError") {
+        throw new Error(
+          "Acesso negado ao dispositivo USB. Feche outras abas/programas que possam estar usando a impressora e tente novamente."
+        );
+      }
+      throw e;
+    }
+
+    if (device.configuration === null) {
+      try {
+        await device.selectConfiguration(1);
+      } catch {
+        // Some devices don't support selectConfiguration
+      }
+    }
+
+    try {
+      await device.claimInterface(0);
+    } catch (e: any) {
+      // Interface might already be claimed, try to release and reclaim
+      try {
+        await device.releaseInterface(0);
+        await device.claimInterface(0);
+      } catch {
+        await device.close();
+        throw new Error(
+          "Não foi possível acessar a interface USB. Desconecte e reconecte a impressora, ou tente WebSerial."
+        );
+      }
+    }
 
     // Find bulk OUT endpoint
     const iface = device.configuration?.interfaces?.[0];
