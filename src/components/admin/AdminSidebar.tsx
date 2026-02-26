@@ -85,7 +85,7 @@ export function AdminSidebar() {
       <SidebarHeader className="bg-sidebar p-4">
         <div className="flex items-center gap-2 text-sidebar-foreground">
           <Store className="h-6 w-6" />
-          <span className="text-lg font-bold">Açaí Lab</span>
+          <span className="text-lg font-bold">Atende Já</span>
         </div>
 
         <DropdownMenu>
