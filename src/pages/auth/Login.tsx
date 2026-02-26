@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Store } from "lucide-react";
+import logoAtendeJa from "@/assets/logo-atende-ja.png";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -32,10 +32,10 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <Store className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-2">
+            <img src={logoAtendeJa} alt="Atende Já" className="h-12 w-12 rounded-xl" />
           </div>
-          <CardTitle className="text-2xl">Açaí Lab</CardTitle>
+          <CardTitle className="text-2xl">Atende Já</CardTitle>
           <CardDescription>Entre na sua conta para gerenciar sua loja</CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
