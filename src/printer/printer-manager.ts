@@ -41,6 +41,7 @@ export class PrinterManager {
   /** Pair a new printer (requires user gesture) – tries WebUSB first, then WebSerial */
   async pair(): Promise<void> {
     // Try WebUSB
+    let usbError: string | null = null;
     if (this.usb.isSupported) {
       try {
         await this.usb.connect();
@@ -51,6 +52,7 @@ export class PrinterManager {
           // User cancelled – don't fallback
           return;
         }
+        usbError = e.message;
         console.warn("[PrinterManager] WebUSB failed, trying WebSerial:", e.message);
       }
     }
