@@ -1,6 +1,7 @@
 /**
  * PrintEngineProvider – Global context that keeps the print engine alive across routes.
  * Must be mounted once at the top of the app tree.
+ * IndexedDB is namespaced per store_id for multi-tenant isolation.
  */
 
 import { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from "react";
@@ -13,6 +14,7 @@ import { PrintApiClient } from "@/printer/network/api-client";
 import { PrintHeartbeat } from "@/printer/network/heartbeat";
 import { PrintRealtime } from "@/printer/network/realtime";
 import { PrintedOrdersStorage } from "@/printer/storage/printed-orders-storage";
+import { setActiveStoreId } from "@/printer/db";
 import { buildReceipt } from "@/printer/escpos-builder";
 import type { PrinterStatus, PrinterType, PrintJob, PrintPayload } from "@/printer/types";
 import { useStore } from "@/hooks/useStore";
@@ -86,9 +88,12 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
   // Boot engine when storeId becomes available
   useEffect(() => {
     if (!storeId) return;
-    if (bootedStoreRef.current === storeId) return; // Already booted for this store
+    if (bootedStoreRef.current === storeId) return;
 
     bootedStoreRef.current = storeId;
+
+    // CRITICAL: Set active store_id for IndexedDB namespacing
+    setActiveStoreId(storeId);
 
     const manager = managerRef.current;
     const queue = new PrintQueue();
@@ -99,7 +104,7 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
     apiRef.current = api;
     printedRef.current = printed;
 
-    const worker = new QueueWorker(queue, manager, api, printed);
+    const worker = new QueueWorker(queue, manager, api, printed, storeId);
     workerRef.current = worker;
 
     const heartbeat = new PrintHeartbeat(api, manager, storeId);
@@ -108,6 +113,12 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
     // Status changes from PrinterManager
     const unsubStatus = manager.onStatusChange((status, type, name) => {
       setState(prev => ({ ...prev, printerStatus: status, printerType: type, printerName: name }));
+      
+      // Update runtime status on backend
+      api.updateRuntimeStatus(storeId, {
+        printer_status: status,
+      }).catch(() => {});
+
       if (status === "online") {
         toast.success(`Impressora "${name}" conectada via ${type === "webusb" ? "USB" : "Serial"}`);
         heartbeat.start();
@@ -122,11 +133,18 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
 
     // Queue changes
     const unsubQueue = queue.onChange((jobs) => {
+      const pendingCount = jobs.filter(j => j.status === "pending" || j.status === "printing").length;
+      const failedCount = jobs.filter(j => j.status === "failed").length;
       setState(prev => ({
         ...prev,
         queue: jobs,
-        pendingCount: jobs.filter(j => j.status === "pending" || j.status === "printing").length,
+        pendingCount,
       }));
+      // Update queue metrics on backend
+      api.updateRuntimeStatus(storeId, {
+        queue_size: pendingCount,
+        failed_jobs: failedCount,
+      }).catch(() => {});
     });
 
     // Worker events
@@ -146,9 +164,16 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // Realtime subscription for new print jobs
+    // Realtime subscription for new print jobs (filtered by store_id)
     const realtime = new PrintRealtime(storeId, async (printJob) => {
-      console.log("[PrintEngine] Realtime print_job received:", printJob.id, "order:", printJob.order_id);
+      console.log("[PrintEngine] Realtime print_job received:", printJob.id, "order:", printJob.order_id, "store:", printJob.store_id);
+      
+      // CRITICAL: Double-check store_id matches
+      if (printJob.store_id !== storeId) {
+        console.warn("[PrintEngine] Ignoring print_job from different store:", printJob.store_id);
+        return;
+      }
+
       if (!autoPrintRef.current) {
         console.log("[PrintEngine] Auto-print disabled, skipping");
         return;
@@ -163,11 +188,10 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        // Small delay to ensure order data is committed and visible
         await new Promise(r => setTimeout(r, 500));
 
         const [orderData, items, storeData] = await Promise.all([
-          supabase.from("orders").select("*").eq("id", printJob.order_id).maybeSingle().then(r => r.data),
+          supabase.from("orders").select("*").eq("id", printJob.order_id).eq("store_id", storeId).maybeSingle().then(r => r.data),
           api.fetchOrderItems(printJob.order_id),
           storeCache.current[storeId]
             ? Promise.resolve(storeCache.current[storeId])
@@ -232,7 +256,6 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
       worker.stop();
       heartbeat.stop();
       realtime.stop();
-      // Do NOT destroy manager – it's a singleton and keeps the USB connection
       bootedStoreRef.current = null;
     };
   }, [storeId]);
