@@ -146,8 +146,9 @@ export default function Printing() {
               </Button>
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>📌 A impressora deve estar ligada e conectada via USB.</p>
-                <p>📌 Use Chrome ou Edge. O navegador pedirá permissão USB.</p>
-                <p>📌 Se WebUSB falhar, o sistema tenta WebSerial automaticamente.</p>
+                <p>📌 Use Chrome ou Edge. O navegador pedirá permissão.</p>
+                <p>📌 Se o dispositivo não aparecer na lista, clique em "Mostrar todos" no diálogo.</p>
+                <p>📌 WebUSB → WebSerial fallback automático.</p>
               </div>
             </div>
           )}

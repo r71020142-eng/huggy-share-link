@@ -41,13 +41,28 @@ export class WebUSBAdapter implements PrinterAdapter {
     return this.device?.productId ?? null;
   }
 
-  /** Pair a new device (requires user gesture) */
+  /** Pair a new device (requires user gesture) – shows ALL USB devices */
   async connect(): Promise<void> {
     if (!this.isSupported) throw new Error("WebUSB not supported");
 
-    const device = await navigator.usb!.requestDevice({
-      filters: THERMAL_PRINTER_VENDORS.map(v => ({ vendorId: v })),
-    });
+    // Try with known vendor filters first, then fallback to no filter
+    let device: any;
+    try {
+      device = await navigator.usb!.requestDevice({
+        filters: THERMAL_PRINTER_VENDORS.map(v => ({ vendorId: v })),
+      });
+    } catch (e: any) {
+      if (e.name === "NotFoundError") {
+        // User cancelled or no device matched filters – try without filters
+        try {
+          device = await navigator.usb!.requestDevice({ filters: [] });
+        } catch (e2: any) {
+          throw e2; // propagate (NotFoundError = user cancelled)
+        }
+      } else {
+        throw e;
+      }
+    }
 
     await this.openDevice(device);
     this.listenEvents();

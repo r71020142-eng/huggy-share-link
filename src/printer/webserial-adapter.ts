@@ -111,7 +111,16 @@ export class WebSerialAdapter implements PrinterAdapter {
   // --- Private ---
 
   private async openPort(port: any): Promise<void> {
-    await port.open({ baudRate: 9600 });
+    // Most thermal printers use 115200 or 9600; try 115200 first
+    try {
+      await port.open({ baudRate: 115200 });
+    } catch {
+      try {
+        await port.open({ baudRate: 9600 });
+      } catch (e) {
+        throw new Error("Não foi possível abrir a porta serial. Verifique se a impressora está ligada.");
+      }
+    }
     this.port = port;
     this.writer = port.writable.getWriter();
   }
