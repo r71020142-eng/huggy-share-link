@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { TrendingUp, ShoppingCart, DollarSign, ClipboardList, Star, Package, BookOpen, Target, Settings, Tag } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar } from "recharts";
 import { OnboardingChecklist } from "@/components/admin/OnboardingChecklist";
+import { DashboardPinGate } from "@/components/admin/DashboardPinGate";
 import { useNavigate } from "react-router-dom";
 
 type Period = "today" | "7days" | "30days";
@@ -144,6 +145,7 @@ export default function Dashboard() {
   }
 
   return (
+    <DashboardPinGate>
     <div className="space-y-6">
       <OnboardingChecklist />
 
@@ -463,5 +465,6 @@ export default function Dashboard() {
         </Card>
       </div>
     </div>
+    </DashboardPinGate>
   );
 }

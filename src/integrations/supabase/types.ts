@@ -949,6 +949,7 @@ export type Database = {
           address: string | null
           banner_url: string | null
           created_at: string
+          dashboard_pin_hash: string | null
           delivery_enabled: boolean | null
           estimated_time: string | null
           id: string
@@ -971,6 +972,7 @@ export type Database = {
           address?: string | null
           banner_url?: string | null
           created_at?: string
+          dashboard_pin_hash?: string | null
           delivery_enabled?: boolean | null
           estimated_time?: string | null
           id?: string
@@ -993,6 +995,7 @@ export type Database = {
           address?: string | null
           banner_url?: string | null
           created_at?: string
+          dashboard_pin_hash?: string | null
           delivery_enabled?: boolean | null
           estimated_time?: string | null
           id?: string
