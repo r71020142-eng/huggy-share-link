@@ -219,26 +219,10 @@ export function usePrintEngine(storeId: string | undefined) {
     autoPrintRef.current = state.autoPrint;
   }, [state.autoPrint]);
 
-  const pairPrinter = useCallback(async (mode: "usb" | "serial" = "usb") => {
-    try {
-      await managerRef.current?.pair(mode);
-    } catch (e: any) {
-      if (e.name === "NotFoundError") return; // user cancelled
-      const msg = e.message || "Erro desconhecido";
-      toast.error("Erro ao conectar impressora: " + msg, {
-        duration: 6000,
-      });
-    }
-  }, []);
-
-  const disconnectPrinter = useCallback(async () => {
-    await managerRef.current?.disconnect();
-  }, []);
-
-  const testPrint = useCallback(async () => {
+  const sendTestPrint = useCallback(async (kind: "manual" | "auto" = "manual") => {
     if (!managerRef.current?.isConnected) {
-      toast.error("Impressora não conectada");
-      return;
+      if (kind === "manual") toast.error("Impressora não conectada");
+      return false;
     }
 
     const testOrder = {
@@ -261,11 +245,44 @@ export function usePrintEngine(storeId: string | undefined) {
     try {
       const data = buildReceipt(testOrder, testItems, { name: "Teste Print Engine" });
       await managerRef.current.send(data);
-      toast.success("Impressão de teste enviada!");
+      toast.success(kind === "auto" ? "Impressão de teste automática enviada!" : "Impressão de teste enviada!");
+      return true;
     } catch (e: any) {
-      toast.error("Erro no teste: " + e.message);
+      toast.error("Erro no teste: " + (e.message || "Erro desconhecido"));
+      return false;
     }
   }, []);
+
+  const pairPrinter = useCallback(async (mode: "usb" | "serial" = "usb") => {
+    try {
+      await managerRef.current?.pair(mode);
+      toast.info("Conexão concluída. Enviando impressão de teste automática...");
+      await sendTestPrint("auto");
+    } catch (e: any) {
+      if (e.name === "NotFoundError") return; // user cancelled
+      const msg = e.message || "Erro desconhecido";
+
+      if (msg.includes("Acesso negado ao dispositivo USB") || msg.includes("Access denied")) {
+        toast.error("USB bloqueado pelo sistema/driver da impressora.", {
+          description: "Este erro não é da tela. Feche programas que usam a impressora, tente 'Conectar via Serial' ou use o Print Agent Desktop.",
+          duration: 9000,
+        });
+        return;
+      }
+
+      toast.error("Erro ao conectar impressora: " + msg, {
+        duration: 7000,
+      });
+    }
+  }, [sendTestPrint]);
+
+  const disconnectPrinter = useCallback(async () => {
+    await managerRef.current?.disconnect();
+  }, []);
+
+  const testPrint = useCallback(async () => {
+    await sendTestPrint("manual");
+  }, [sendTestPrint]);
 
   const setAutoPrint = useCallback((value: boolean) => {
     setState(prev => ({ ...prev, autoPrint: value }));

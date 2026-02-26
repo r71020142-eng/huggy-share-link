@@ -153,7 +153,8 @@ export default function Printing() {
               <div className="text-xs text-muted-foreground space-y-1">
                 <p>📌 A impressora deve estar ligada e conectada via USB.</p>
                 <p>📌 Use Chrome ou Edge. O navegador pedirá permissão.</p>
-                <p>📌 Se USB não funcionar, tente <strong>Serial</strong>.</p>
+                <p>📌 Se aparecer "USB bloqueado", o bloqueio é do sistema/driver da impressora.</p>
+                <p>📌 Nesse caso, tente <strong>Conectar via Serial</strong> ou use o <strong>Print Agent Desktop</strong>.</p>
               </div>
             </div>
           )}
