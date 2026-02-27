@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -50,8 +51,6 @@ const ORDER_STATUS: Record<string, string> = {
   completed: "Concluído",
   cancelled: "Cancelado",
 };
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 export default function CustomerDetailDialog({ open, onOpenChange, customer }: CustomerDetailDialogProps) {
   const [orders, setOrders] = useState<OrderRow[]>([]);

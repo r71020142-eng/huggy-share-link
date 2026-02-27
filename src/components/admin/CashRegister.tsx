@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { useCashSession, CashSession, CashMovement } from "@/hooks/useCashSession";
@@ -19,8 +20,6 @@ import {
 const METHOD_LABELS: Record<string, string> = {
   pix: "💎 Pix", cash: "💵 Dinheiro", credit: "💳 Crédito", debit: "💳 Débito",
 };
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 export default function CashRegister() {
   const { store } = useStore();

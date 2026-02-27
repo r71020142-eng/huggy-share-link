@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -195,8 +196,6 @@ export default function Orders() {
   const todayOrders = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString());
   const pendingCount = orders.filter(o => o.status === "pending").length;
   const todayRevenue = todayOrders.reduce((s, o) => s + Number(o.total), 0);
-
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr);

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Button } from "@/components/ui/button";
@@ -98,8 +99,6 @@ export default function Products() {
   };
 
   const getCategoryName = (id: string | null) => categories.find((c) => c.id === id)?.name || "—";
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
-
   // --- Product inline edit ---
   const startEdit = (p: Product) => {
     setEditingId(p.id);

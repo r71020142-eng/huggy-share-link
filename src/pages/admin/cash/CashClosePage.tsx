@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatBRL } from "@/lib/utils";
 import { useCashSession, CashMovement } from "@/hooks/useCashSession";
 import { useStore } from "@/hooks/useStore";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,8 +11,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Lock, CheckCircle, TrendingUp, TrendingDown } from "lucide-react";
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 export default function CashClosePage() {
   const { store } = useStore();

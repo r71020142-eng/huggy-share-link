@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Clock, MapPin, Phone, CreditCard, Truck, Store as StoreIcon, User, FileText, Package } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { formatBRL } from "@/lib/utils";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type OrderItem = Database["public"]["Tables"]["order_items"]["Row"];
@@ -42,8 +43,6 @@ const paymentLabels: Record<string, string> = {
   credit: "💳 Crédito",
   debit: "💳 Débito",
 };
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr);
