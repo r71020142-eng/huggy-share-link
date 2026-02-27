@@ -23,7 +23,7 @@ type Neighborhood = Database["public"]["Tables"]["neighborhoods"]["Row"];
 interface CartItem {
   product: Product;
   quantity: number;
-  additionals?: { name: string; price: number; quantity: number }[];
+  additionals?: { id?: string; name: string; price: number; quantity: number }[];
 }
 
 export default function PublicMenu() {
@@ -88,6 +88,7 @@ export default function PublicMenu() {
 
   const handleProductAdd = (product: Product, quantity: number, selectedAdditionals: any[]) => {
     const adds = selectedAdditionals.map((s) => ({
+      id: s.additional.id,
       name: s.additional.name,
       price: Number(s.additional.price) || 0,
       quantity: s.quantity,

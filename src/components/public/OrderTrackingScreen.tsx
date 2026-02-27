@@ -29,6 +29,7 @@ const STATUS_INDEX: Record<string, number> = {
 
 export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, themeColor }: OrderTrackingScreenProps) {
   const [orderStatus, setOrderStatus] = useState("pending");
+  const [resolvedTrackingCode, setResolvedTrackingCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || (!orderId && !trackingCode)) return;
@@ -37,23 +38,34 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, them
     const fetchStatus = async () => {
       if (trackingCode) {
         const { data } = await supabase.rpc("get_order_by_tracking", { p_tracking_code: trackingCode });
-        if (data) setOrderStatus((data as any).status);
+        if (data) {
+          setOrderStatus((data as any).status);
+          setResolvedTrackingCode((data as any).tracking_code);
+        }
+      } else if (orderId) {
+        // Fetch tracking code by order ID
+        const { data } = await supabase.rpc("get_tracking_by_order_id", { p_order_id: orderId });
+        if (data) {
+          setOrderStatus((data as any).status);
+          setResolvedTrackingCode((data as any).tracking_code);
+        }
       }
     };
     fetchStatus();
 
-    // Subscribe to realtime updates (realtime doesn't need RLS for listening)
+    // Subscribe to realtime updates
     if (orderId) {
       const channel = supabase
         .channel(`order-${orderId}`)
         .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` }, (payload) => {
           if (payload.new?.status) setOrderStatus(payload.new.status as string);
+          if (payload.new?.tracking_code) setResolvedTrackingCode(payload.new.tracking_code as string);
         })
         .subscribe();
 
       return () => { supabase.removeChannel(channel); };
     }
-  }, [orderId, open]);
+  }, [orderId, trackingCode, open]);
 
   if (!open) return null;
 
@@ -79,8 +91,8 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, them
           </button>
           <h2 className="text-lg font-bold">Acompanhar pedido</h2>
         </div>
-        {trackingCode && (
-          <span className="text-sm text-muted-foreground">#{trackingCode}</span>
+        {(resolvedTrackingCode || trackingCode) && (
+          <span className="text-sm text-muted-foreground">#{resolvedTrackingCode || trackingCode}</span>
         )}
       </div>
 
