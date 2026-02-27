@@ -45,107 +45,127 @@ export default function Dashboard() {
   const [statusData, setStatusData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
 
+  const [initialLoad, setInitialLoad] = useState(true);
+
   useEffect(() => {
     if (!store) return;
-    fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 30000);
+    setInitialLoad(true);
+    fetchDashboardData(true);
+    const interval = setInterval(() => fetchDashboardData(false), 60000);
     return () => clearInterval(interval);
   }, [store, period]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (showLoading = false) => {
     if (!store) return;
-    setLoading(true);
+    if (showLoading) setLoading(true);
 
-    const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const periodDays = period === "today" ? 0 : period === "7days" ? 7 : 30;
-    const periodStart = period === "today" ? todayStart : new Date(now.getTime() - periodDays * 86400000).toISOString();
+    try {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+      const periodDays = period === "today" ? 0 : period === "7days" ? 7 : 30;
+      const periodStart = period === "today" ? todayStart : new Date(now.getTime() - periodDays * 86400000).toISOString();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    const [{ data: orders }, { data: todayOrders }, { data: pendingOrders }, { count: productCount }, { count: menuCount }] = await Promise.all([
-      supabase.from("orders").select("*").eq("store_id", store.id).gte("created_at", periodStart),
-      supabase.from("orders").select("*").eq("store_id", store.id).gte("created_at", todayStart),
-      supabase.from("orders").select("*").eq("store_id", store.id).eq("status", "pending"),
-      supabase.from("products").select("*", { count: "exact", head: true }).eq("store_id", store.id),
-      supabase.from("menus").select("*", { count: "exact", head: true }).eq("store_id", store.id),
-    ]);
+      const [
+        { data: orders },
+        { data: pendingOrders },
+        { count: productCount },
+        { count: menuCount },
+        { data: monthOrders },
+      ] = await Promise.all([
+        supabase.from("orders").select("*").eq("store_id", store.id).gte("created_at", periodStart),
+        supabase.from("orders").select("id").eq("store_id", store.id).eq("status", "pending"),
+        supabase.from("products").select("*", { count: "exact", head: true }).eq("store_id", store.id),
+        supabase.from("menus").select("*", { count: "exact", head: true }).eq("store_id", store.id),
+        supabase.from("orders").select("total").eq("store_id", store.id).gte("created_at", monthStart),
+      ]);
 
-    const { data: orderItems } = await supabase
-      .from("order_items")
-      .select("product_name, quantity, order_id")
-      .in("order_id", (orders || []).map(o => o.id));
+      const allOrders = orders || [];
+      
+      // Derive today orders from period orders (avoid extra query)
+      const todayOrders = allOrders.filter(o => o.created_at >= todayStart);
 
-    const allOrders = orders || [];
-    const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.total), 0);
-    const totalOrders = allOrders.length;
-    const avgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-    const todayRev = (todayOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
+      // Only fetch order items if we have orders
+      let orderItems: any[] = [];
+      if (allOrders.length > 0) {
+        const { data } = await supabase
+          .from("order_items")
+          .select("product_name, quantity, order_id")
+          .in("order_id", allOrders.slice(0, 200).map(o => o.id));
+        orderItems = data || [];
+      }
+      const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.total), 0);
+      const totalOrders = allOrders.length;
+      const avgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+      const todayRev = todayOrders.reduce((sum, o) => sum + Number(o.total), 0);
 
-    // Top products
-    const productCounts: Record<string, number> = {};
-    (orderItems || []).forEach(item => {
-      productCounts[item.product_name] = (productCounts[item.product_name] || 0) + item.quantity;
-    });
-    const sortedProducts = Object.entries(productCounts).sort((a, b) => b[1] - a[1]);
-    const topEntry = sortedProducts[0];
-    setTopProducts(sortedProducts.slice(0, 5).map(([name, count]) => ({ name, count })));
+      // Top products
+      const productCounts: Record<string, number> = {};
+      orderItems.forEach(item => {
+        productCounts[item.product_name] = (productCounts[item.product_name] || 0) + item.quantity;
+      });
+      const sortedProducts = Object.entries(productCounts).sort((a, b) => b[1] - a[1]);
+      const topEntry = sortedProducts[0];
+      setTopProducts(sortedProducts.slice(0, 5).map(([name, count]) => ({ name, count })));
 
-    // Monthly revenue
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const { data: monthOrders } = await supabase
-      .from("orders").select("total").eq("store_id", store.id).gte("created_at", monthStart);
-    const monthlyRevenue = (monthOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
+      const monthlyRevenue = (monthOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
 
-    // Revenue chart data
-    const dateMap: Record<string, number> = {};
-    const ordersDateMap: Record<string, number> = {};
-    allOrders.forEach(o => {
-      const date = new Date(o.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
-      dateMap[date] = (dateMap[date] || 0) + Number(o.total);
-      ordersDateMap[date] = (ordersDateMap[date] || 0) + 1;
-    });
-    const chart = Object.entries(dateMap).map(([date, revenue]) => ({ date, revenue })).sort((a, b) => a.date.localeCompare(b.date));
-    const ordersChart = Object.entries(ordersDateMap).map(([date, pedidos]) => ({ date, pedidos })).sort((a, b) => a.date.localeCompare(b.date));
+      // Revenue chart data
+      const dateMap: Record<string, number> = {};
+      const ordersDateMap: Record<string, number> = {};
+      allOrders.forEach(o => {
+        const date = new Date(o.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        dateMap[date] = (dateMap[date] || 0) + Number(o.total);
+        ordersDateMap[date] = (ordersDateMap[date] || 0) + 1;
+      });
+      const chart = Object.entries(dateMap).map(([date, revenue]) => ({ date, revenue })).sort((a, b) => a.date.localeCompare(b.date));
+      const ordersChart = Object.entries(ordersDateMap).map(([date, pedidos]) => ({ date, pedidos })).sort((a, b) => a.date.localeCompare(b.date));
 
-    // Status distribution
-    const statusCounts: Record<string, number> = {};
-    allOrders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
-    const statusColors: Record<string, string> = {
-      completed: "#7c3aed", cancelled: "#f97316", pending: "#22c55e", confirmed: "#3b82f6", preparing: "#eab308", delivering: "#06b6d4",
-    };
-    const statusLabels: Record<string, string> = {
-      completed: "Concluído", cancelled: "Cancelado", pending: "Pendente", confirmed: "Confirmado", preparing: "Preparando", delivering: "Entregando",
-    };
+      // Status distribution
+      const statusCounts: Record<string, number> = {};
+      allOrders.forEach(o => { statusCounts[o.status] = (statusCounts[o.status] || 0) + 1; });
+      const statusColors: Record<string, string> = {
+        completed: "#7c3aed", cancelled: "#f97316", pending: "#22c55e", confirmed: "#3b82f6", preparing: "#eab308", delivering: "#06b6d4",
+      };
+      const statusLabels: Record<string, string> = {
+        completed: "Concluído", cancelled: "Cancelado", pending: "Pendente", confirmed: "Confirmado", preparing: "Preparando", delivering: "Entregando",
+      };
 
-    // Order source breakdown
-    const digitalOrders = allOrders.filter(o => !o.is_manual);
-    const manualOrdersList = allOrders.filter(o => o.is_manual);
+      // Order source breakdown
+      const digitalOrders = allOrders.filter(o => !o.is_manual);
+      const manualOrdersList = allOrders.filter(o => o.is_manual);
 
-    setStats({
-      todayRevenue: todayRev,
-      todayOrders: (todayOrders || []).length,
-      pendingOrders: (pendingOrders || []).length,
-      totalRevenue,
-      totalOrders,
-      avgTicket,
-      topProduct: topEntry ? topEntry[0] : "—",
-      topProductCount: topEntry ? topEntry[1] : 0,
-      productCount: productCount || 0,
-      menuCount: menuCount || 0,
-      monthlyGoal: store.monthly_goal || 5000,
-      monthlyRevenue,
-      digitalOrders: digitalOrders.length,
-      digitalRevenue: digitalOrders.reduce((s, o) => s + Number(o.total), 0),
-      manualOrders: manualOrdersList.length,
-      manualRevenue: manualOrdersList.reduce((s, o) => s + Number(o.total), 0),
-    });
-    setChartData(chart);
-    setOrdersChartData(ordersChart);
-    setStatusData(
-      Object.entries(statusCounts).map(([name, value]) => ({
-        name: statusLabels[name] || name, value, color: statusColors[name] || "#999",
-      }))
-    );
-    setLoading(false);
+      setStats({
+        todayRevenue: todayRev,
+        todayOrders: todayOrders.length,
+        pendingOrders: (pendingOrders || []).length,
+        totalRevenue,
+        totalOrders,
+        avgTicket,
+        topProduct: topEntry ? topEntry[0] : "—",
+        topProductCount: topEntry ? topEntry[1] : 0,
+        productCount: productCount || 0,
+        menuCount: menuCount || 0,
+        monthlyGoal: store.monthly_goal || 5000,
+        monthlyRevenue,
+        digitalOrders: digitalOrders.length,
+        digitalRevenue: digitalOrders.reduce((s, o) => s + Number(o.total), 0),
+        manualOrders: manualOrdersList.length,
+        manualRevenue: manualOrdersList.reduce((s, o) => s + Number(o.total), 0),
+      });
+      setChartData(chart);
+      setOrdersChartData(ordersChart);
+      setStatusData(
+        Object.entries(statusCounts).map(([name, value]) => ({
+          name: statusLabels[name] || name, value, color: statusColors[name] || "#999",
+        }))
+      );
+    } catch (err) {
+      console.warn("[Dashboard] Erro ao buscar dados:", err);
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
+    }
   };
 
   const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
@@ -165,7 +185,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Visão Geral</h2>
-          <p className="text-sm text-muted-foreground">Atualizado automaticamente a cada 30s</p>
+          <p className="text-sm text-muted-foreground">Atualizado automaticamente a cada 60s</p>
         </div>
         <div className="flex gap-1 rounded-xl border bg-muted/50 p-1">
           {([["today", "Hoje"], ["7days", "7 dias"], ["30days", "30 dias"]] as const).map(([key, label]) => (
