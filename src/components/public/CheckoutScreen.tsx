@@ -6,7 +6,7 @@ import { ArrowLeft, ShoppingBag } from "lucide-react";
 interface CartItem {
   product: { id: string; name: string; price: number };
   quantity: number;
-  additionals?: { name: string; price: number; quantity: number }[];
+  additionals?: { id?: string; name: string; price: number; quantity: number }[];
 }
 
 interface CheckoutScreenProps {
