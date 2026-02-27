@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { CashSession } from "@/hooks/useCashSession";
@@ -9,8 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { History, Printer } from "lucide-react";
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 export default function CashHistoryPage() {
   const { store } = useStore();

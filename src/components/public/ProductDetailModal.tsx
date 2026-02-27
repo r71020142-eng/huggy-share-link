@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatBRL } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Plus, Minus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,8 +71,6 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
   };
 
   if (!product) return null;
-
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
   const additionalsTotal = selectedAdditionals.reduce(
     (sum, s) => sum + (Number(s.additional.price) || 0) * s.quantity, 0

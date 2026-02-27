@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,7 +169,6 @@ export default function Dashboard() {
     }
   };
 
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   const goalProgress = stats.monthlyGoal > 0 ? Math.min((stats.monthlyRevenue / stats.monthlyGoal) * 100, 100) : 0;
   const periodLabel = period === "today" ? "Hoje" : period === "7days" ? "7 dias" : "30 dias";
 

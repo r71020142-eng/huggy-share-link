@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -119,8 +120,6 @@ export default function CRMContent() {
     const avgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     return { byStatus, totalRevenue, totalOrders, avgTicket, total: customers.length };
   }, [customers]);
-
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
   const sendWhatsApp = (customer: CustomerRow) => {
     const msg = whatsappMsg.replace("{nome}", customer.name);

@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, CalendarDays, Package, Users, CreditCard } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatBRL } from "@/lib/utils";
 
 interface PeriodReport { date: string; orders: number; revenue: number; avgTicket: number; }
 interface PaymentMethodReport { method: string; label: string; total: number; count: number; }
@@ -80,7 +81,6 @@ export default function ReportsContent() {
     setLoading(false);
   };
 
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   if (!store) return null;
 
   return (

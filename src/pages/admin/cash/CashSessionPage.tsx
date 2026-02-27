@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatBRL } from "@/lib/utils";
 import { useCashSession } from "@/hooks/useCashSession";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,8 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Wallet, Lock, Unlock, Clock } from "lucide-react";
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 export default function CashSessionPage() {
   const { store } = useStore();

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatBRL } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
 import { Button } from "@/components/ui/button";
@@ -78,8 +79,6 @@ export default function Neighborhoods() {
     await supabase.from("neighborhoods").update({ is_active: !n.is_active }).eq("id", n.id);
     fetchNeighborhoods();
   };
-
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
   if (!store) return null;
 

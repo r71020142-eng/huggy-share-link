@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { formatBRL } from "@/lib/utils";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -112,8 +113,6 @@ export default function PublicMenu() {
     return s + (i.product.price + addTotal) * i.quantity;
   }, 0);
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
-
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
   const filteredProducts = products.filter((p) => {
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;

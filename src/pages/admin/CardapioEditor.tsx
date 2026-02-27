@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { formatBRL } from "@/lib/utils";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/hooks/useStore";
@@ -197,8 +198,6 @@ export default function CardapioEditor() {
     );
     await Promise.all(updates);
   }, [menuProducts]);
-
-  const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
   const menuProductIds = menuProducts.map((mp) => mp.product_id);
   const filteredAvailable = allProducts.filter(

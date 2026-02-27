@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatBRL } from "@/lib/utils";
 import { useCashSession, CashMovement } from "@/hooks/useCashSession";
 import { useStore } from "@/hooks/useStore";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,8 +12,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { ArrowDownCircle, ArrowUpCircle, Lock } from "lucide-react";
-
-const formatBRL = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
 
 export default function CashMovementsPage() {
   const { store } = useStore();
