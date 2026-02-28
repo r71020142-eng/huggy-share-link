@@ -32,8 +32,8 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4">
-            <img src={logoAnoto} alt="Anotô" className="h-14 w-auto object-contain" />
+          <div className="mx-auto mb-6">
+            <img src={logoAnoto} alt="Anotô" className="h-20 w-auto object-contain" />
           </div>
           <CardDescription>Entre na sua conta para gerenciar sua loja</CardDescription>
         </CardHeader>
