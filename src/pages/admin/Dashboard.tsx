@@ -5,7 +5,7 @@ import { useStore } from "@/hooks/useStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, ShoppingCart, DollarSign, ClipboardList, Star, Package, BookOpen, Target, Settings, Tag } from "lucide-react";
+import { TrendingUp, ShoppingCart, DollarSign, ClipboardList, Star, Package, BookOpen, Target, Settings, Tag, HandCoins } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, BarChart, Bar } from "recharts";
 import { OnboardingChecklist } from "@/components/admin/OnboardingChecklist";
 import { DashboardPinGate } from "@/components/admin/DashboardPinGate";
@@ -40,6 +40,8 @@ export default function Dashboard() {
     digitalRevenue: 0,
     manualOrders: 0,
     manualRevenue: 0,
+    fiadoTotal: 0,
+    fiadoCount: 0,
   });
   const [chartData, setChartData] = useState<{ date: string; revenue: number }[]>([]);
   const [ordersChartData, setOrdersChartData] = useState<{ date: string; pedidos: number }[]>([]);
@@ -136,6 +138,10 @@ export default function Dashboard() {
       const digitalOrders = allOrders.filter(o => !o.is_manual);
       const manualOrdersList = allOrders.filter(o => o.is_manual);
 
+      // Fiado stats
+      const fiadoOrders = allOrders.filter(o => (o as any).payment_status === "pending");
+      const fiadoTotal = fiadoOrders.reduce((s, o) => s + Number(o.total), 0);
+
       setStats({
         todayRevenue: todayRev,
         todayOrders: todayOrders.length,
@@ -153,6 +159,8 @@ export default function Dashboard() {
         digitalRevenue: digitalOrders.reduce((s, o) => s + Number(o.total), 0),
         manualOrders: manualOrdersList.length,
         manualRevenue: manualOrdersList.reduce((s, o) => s + Number(o.total), 0),
+        fiadoTotal,
+        fiadoCount: fiadoOrders.length,
       });
       setChartData(chart);
       setOrdersChartData(ordersChart);
@@ -500,6 +508,26 @@ export default function Dashboard() {
                 <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.manualOrders}</p>
                 <p className="text-xs text-muted-foreground">{formatBRL(stats.manualRevenue)}</p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Fiado indicator */}
+      {!loading && stats.fiadoCount > 0 && (
+        <Card className="border-orange-300 cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => navigate("/admin/fiados")}>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 dark:bg-orange-950">
+                  <HandCoins className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Fiados em aberto</p>
+                  <p className="text-xs text-muted-foreground">{stats.fiadoCount} pedidos pendentes de pagamento</p>
+                </div>
+              </div>
+              <p className="text-xl font-bold text-orange-600">{formatBRL(stats.fiadoTotal)}</p>
             </div>
           </CardContent>
         </Card>

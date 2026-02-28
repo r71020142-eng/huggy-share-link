@@ -20,6 +20,7 @@ import {
   Lock,
   History,
   Printer,
+  HandCoins,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useStore } from "@/hooks/useStore";
@@ -58,6 +59,7 @@ const navItems = [
   { title: "Categorias", url: "/admin/categories", icon: Tag, proOnly: false },
   { title: "Produtos", url: "/admin/products", icon: Package, proOnly: false },
   { title: "Bairros", url: "/admin/neighborhoods", icon: MapPin, proOnly: false },
+  { title: "Fiados", url: "/admin/fiados", icon: HandCoins, proOnly: false },
   { title: "CRM", url: "/admin/crm", icon: Users, proOnly: true },
   { title: "Relatórios", url: "/admin/reports", icon: BarChart3, proOnly: true },
   { title: "Impressão", url: "/admin/printing", icon: Printer, proOnly: false },

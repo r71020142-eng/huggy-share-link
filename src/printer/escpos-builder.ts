@@ -210,7 +210,12 @@ export function buildReceipt(
     txt(SEP);
 
     // ── Payment ──
-    if (order.payment_method) {
+    if (order.payment_method === "credit_later" || order.payment_status === "pending") {
+      boldOn();
+      txt(center("** FIADO **"));
+      txt(center("PAGAMENTO PENDENTE"));
+      boldOff();
+    } else if (order.payment_method) {
       const pmLabels: Record<string, string> = {
         pix: "Pix", cash: "Dinheiro", credit: "Credito", debit: "Debito",
       };

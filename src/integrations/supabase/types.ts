@@ -642,7 +642,9 @@ export type Database = {
           neighborhood_id: string | null
           notes: string | null
           order_type: string | null
+          paid_at: string | null
           payment_method: string | null
+          payment_status: string
           status: Database["public"]["Enums"]["order_status"]
           store_id: string
           subtotal: number
@@ -662,7 +664,9 @@ export type Database = {
           neighborhood_id?: string | null
           notes?: string | null
           order_type?: string | null
+          paid_at?: string | null
           payment_method?: string | null
+          payment_status?: string
           status?: Database["public"]["Enums"]["order_status"]
           store_id: string
           subtotal?: number
@@ -682,7 +686,9 @@ export type Database = {
           neighborhood_id?: string | null
           notes?: string | null
           order_type?: string | null
+          paid_at?: string | null
           payment_method?: string | null
+          payment_status?: string
           status?: Database["public"]["Enums"]["order_status"]
           store_id?: string
           subtotal?: number
@@ -1379,6 +1385,14 @@ export type Database = {
           p_closing_amount: number
           p_notes?: string
           p_session_id: string
+        }
+        Returns: Json
+      }
+      confirm_fiado_payment: {
+        Args: {
+          p_closed_by: string
+          p_order_id: string
+          p_payment_method: string
         }
         Returns: Json
       }
