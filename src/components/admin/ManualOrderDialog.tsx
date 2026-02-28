@@ -12,7 +12,7 @@ import {
   Search, Plus, Minus, Trash2, ArrowLeft, ArrowRight, User, ShoppingCart,
   CreditCard, MapPin, Phone, Store as StoreIcon, Truck, X, Lock
 } from "lucide-react";
-import CustomerSearchCombobox from "@/components/admin/CustomerSearchCombobox";
+import CustomerSearchCombobox, { formatPhone, normalizePhone } from "@/components/admin/CustomerSearchCombobox";
 import CustomerHistoryPanel from "@/components/admin/CustomerHistoryPanel";
 
 // ── Types ───────────────────────────────────────────────────
@@ -394,7 +394,12 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium">Telefone *</label>
-                    <Input value={custPhone} onChange={e => setCustPhone(e.target.value)} placeholder="Telefone" readOnly={!!customer} />
+                    <Input
+                      value={formatPhone(custPhone)}
+                      onChange={e => setCustPhone(normalizePhone(e.target.value))}
+                      placeholder="(31) 99999-9999"
+                      readOnly={!!customer}
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium">Endereço</label>
