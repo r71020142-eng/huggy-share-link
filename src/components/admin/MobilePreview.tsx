@@ -70,7 +70,7 @@ export function MobilePreview({ slug, onRefresh }: MobilePreviewProps) {
           >
             <iframe
               key={iframeKey}
-              src={`/m/${slug}`}
+              src={`/m/${slug}?preview=1`}
               title="Preview Mobile"
               className="border-0"
               style={{

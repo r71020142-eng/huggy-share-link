@@ -52,8 +52,10 @@ export default function PublicMenu() {
   }, [slug]);
 
   const fetchMenu = async () => {
-    const { data: menuData } = await supabase
-      .from("menus").select("*").eq("slug", slug!).eq("is_published", true).single();
+    const isPreview = new URLSearchParams(window.location.search).get("preview") === "1";
+    let query = supabase.from("menus").select("*").eq("slug", slug!);
+    if (!isPreview) query = query.eq("is_published", true);
+    const { data: menuData } = await query.single();
 
     if (!menuData) { setNotFound(true); setLoading(false); return; }
     setMenu(menuData);
