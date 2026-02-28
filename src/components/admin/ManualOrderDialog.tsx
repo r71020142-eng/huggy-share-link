@@ -12,6 +12,8 @@ import {
   Search, Plus, Minus, Trash2, ArrowLeft, ArrowRight, User, ShoppingCart,
   CreditCard, MapPin, Phone, Store as StoreIcon, Truck, X, Lock
 } from "lucide-react";
+import CustomerSearchCombobox from "@/components/admin/CustomerSearchCombobox";
+import CustomerHistoryPanel from "@/components/admin/CustomerHistoryPanel";
 
 // ── Types ───────────────────────────────────────────────────
 interface Customer {
@@ -145,38 +147,7 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
     setPayments([]);
   };
 
-  // ── Step 1: Customer search ──────────────────────────────
-  const searchCustomer = async () => {
-    if (!store || !phoneSearch.trim()) return;
-    const { data } = await supabase
-      .from("customers")
-      .select("*")
-      .eq("store_id", store.id)
-      .eq("phone", phoneSearch.trim())
-      .maybeSingle();
-
-    if (data) {
-      setCustomer(data as Customer);
-      setCustName(data.name);
-      setCustPhone(data.phone);
-      setCustAddress(data.address || "");
-      setCustBairro(data.bairro || "");
-      setCustComplemento(data.complemento || "");
-      setCustObs(data.observations || "");
-      setIsNewCustomer(false);
-      // fetch history
-      const { count } = await supabase.from("orders").select("*", { count: "exact", head: true }).eq("store_id", store.id).eq("customer_phone", data.phone);
-      const { data: totals } = await supabase.from("orders").select("total").eq("store_id", store.id).eq("customer_phone", data.phone);
-      const total = (totals || []).reduce((s, o) => s + Number(o.total), 0);
-      setCustomerHistory({ orders: count || 0, total });
-    } else {
-      setCustomer(null);
-      setIsNewCustomer(true);
-      setCustPhone(phoneSearch.trim());
-      setCustName(""); setCustAddress(""); setCustBairro(""); setCustComplemento(""); setCustObs("");
-      setCustomerHistory(null);
-    }
-  };
+  // ── Step 1: Customer search (handled by CustomerSearchCombobox) ──
 
   // ── Step 2: Cart ─────────────────────────────────────────
   const addToCart = (product: Product) => {
@@ -377,21 +348,35 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
           {/* ═══════ STEP 1: Customer ═══════ */}
           {step === 1 && (
             <>
-              <div className="space-y-2">
-                <label className="text-sm font-bold">Buscar cliente por telefone</label>
-                <div className="flex gap-2">
-                  <Input placeholder="(31) 99999-9999" value={phoneSearch} onChange={e => setPhoneSearch(e.target.value)} onKeyDown={e => e.key === "Enter" && searchCustomer()} />
-                  <Button onClick={searchCustomer} size="sm"><Search className="h-4 w-4 mr-1" /> Buscar</Button>
-                </div>
-              </div>
+              <CustomerSearchCombobox
+                storeId={store.id}
+                onSelect={(c) => {
+                  setCustomer(c as any);
+                  setCustName(c.name);
+                  setCustPhone(c.phone);
+                  setCustAddress(c.address || "");
+                  setCustBairro(c.bairro || "");
+                  setCustComplemento(c.complemento || "");
+                  setCustObs(c.observations || "");
+                  setIsNewCustomer(false);
+                  setCustomerHistory({ orders: c.total_orders, total: c.total_spent });
+                }}
+                onNewCustomer={(phone) => {
+                  setCustomer(null);
+                  setIsNewCustomer(true);
+                  setCustPhone(phone);
+                  setCustName("");
+                  setCustAddress("");
+                  setCustBairro("");
+                  setCustComplemento("");
+                  setCustObs("");
+                  setCustomerHistory(null);
+                }}
+              />
 
-              {customer && customerHistory && (
-                <div className="rounded-lg border p-3 bg-green-50 space-y-1">
-                  <p className="font-bold text-green-700">✅ Cliente encontrado</p>
-                  <p className="text-sm">{customer.name} · {customer.phone}</p>
-                  <p className="text-xs text-muted-foreground">{customerHistory.orders} pedidos · Total gasto: {formatBRL(customerHistory.total)}</p>
-                  {customer.last_order_at && <p className="text-xs text-muted-foreground">Último pedido: {new Date(customer.last_order_at).toLocaleDateString("pt-BR")}</p>}
-                </div>
+              {/* Customer history panel */}
+              {customer && (
+                <CustomerHistoryPanel customerId={customer.id} storeId={store.id} />
               )}
 
               {isNewCustomer && !customer && (
@@ -405,11 +390,11 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="text-sm font-medium">Nome *</label>
-                    <Input value={custName} onChange={e => setCustName(e.target.value)} placeholder="Nome do cliente" />
+                    <Input value={custName} onChange={e => setCustName(e.target.value)} placeholder="Nome do cliente" autoFocus={isNewCustomer} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium">Telefone *</label>
-                    <Input value={custPhone} onChange={e => setCustPhone(e.target.value)} placeholder="Telefone" />
+                    <Input value={custPhone} onChange={e => setCustPhone(e.target.value)} placeholder="Telefone" readOnly={!!customer} />
                   </div>
                   <div className="space-y-1">
                     <label className="text-sm font-medium">Endereço</label>
