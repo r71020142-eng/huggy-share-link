@@ -10,7 +10,7 @@ export class PrintApiClient {
   async fetchPending(storeId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from("print_jobs")
-      .select("*, orders(*)")
+      .select("id, store_id, order_id, status, attempts, created_at, orders(id, store_id, tracking_code, customer_name, customer_phone, customer_address, order_type, subtotal, delivery_fee, total, payment_method, payment_status, notes, created_at, status)")
       .eq("store_id", storeId)
       .eq("status", "pending")
       .order("created_at", { ascending: true })
