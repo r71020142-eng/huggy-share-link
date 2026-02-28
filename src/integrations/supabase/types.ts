@@ -1396,11 +1396,15 @@ export type Database = {
         }
         Returns: Json
       }
-      get_order_by_tracking: {
-        Args: { p_tracking_code: string }
-        Returns: Json
-      }
-      get_tracking_by_order_id: { Args: { p_order_id: string }; Returns: Json }
+      get_order_by_tracking:
+        | { Args: { p_tracking_code: string }; Returns: Json }
+        | {
+            Args: { p_store_id?: string; p_tracking_code: string }
+            Returns: Json
+          }
+      get_tracking_by_order_id:
+        | { Args: { p_order_id: string }; Returns: Json }
+        | { Args: { p_order_id: string; p_store_id?: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
