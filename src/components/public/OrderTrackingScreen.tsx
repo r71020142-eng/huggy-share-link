@@ -31,41 +31,51 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, them
   const [orderStatus, setOrderStatus] = useState("pending");
   const [resolvedTrackingCode, setResolvedTrackingCode] = useState<string | null>(null);
 
+  const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(null);
+
+  // Fetch initial status and resolve orderId for realtime
   useEffect(() => {
     if (!open || (!orderId && !trackingCode)) return;
 
-    // Fetch initial status via RPC (bypasses RLS safely)
     const fetchStatus = async () => {
+      let fetchedOrderId: string | null = null;
+
       if (trackingCode) {
         const { data } = await supabase.rpc("get_order_by_tracking", { p_tracking_code: trackingCode });
         if (data) {
           setOrderStatus((data as any).status);
           setResolvedTrackingCode((data as any).tracking_code);
+          fetchedOrderId = (data as any).id;
         }
       } else if (orderId) {
-        // Fetch tracking code by order ID
         const { data } = await supabase.rpc("get_tracking_by_order_id", { p_order_id: orderId });
         if (data) {
           setOrderStatus((data as any).status);
           setResolvedTrackingCode((data as any).tracking_code);
+          fetchedOrderId = (data as any).id;
         }
       }
+
+      setResolvedOrderId(fetchedOrderId || orderId || null);
     };
     fetchStatus();
-
-    // Subscribe to realtime updates
-    if (orderId) {
-      const channel = supabase
-        .channel(`order-${orderId}`)
-        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${orderId}` }, (payload) => {
-          if (payload.new?.status) setOrderStatus(payload.new.status as string);
-          if (payload.new?.tracking_code) setResolvedTrackingCode(payload.new.tracking_code as string);
-        })
-        .subscribe();
-
-      return () => { supabase.removeChannel(channel); };
-    }
   }, [orderId, trackingCode, open]);
+
+  // Subscribe to realtime updates using resolved order ID
+  useEffect(() => {
+    const subId = resolvedOrderId;
+    if (!open || !subId) return;
+
+    const channel = supabase
+      .channel(`order-${subId}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${subId}` }, (payload) => {
+        if (payload.new?.status) setOrderStatus(payload.new.status as string);
+        if (payload.new?.tracking_code) setResolvedTrackingCode(payload.new.tracking_code as string);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [resolvedOrderId, open]);
 
   if (!open) return null;
 
