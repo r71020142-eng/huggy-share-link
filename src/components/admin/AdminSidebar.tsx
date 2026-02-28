@@ -23,6 +23,7 @@ import {
   HandCoins,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
+import logoAnoto from "@/assets/logo-anoto.png";
 import { useStore } from "@/hooks/useStore";
 import { useCashSession } from "@/hooks/useCashSession";
 import { useAuth } from "@/hooks/useAuth";
@@ -86,7 +87,7 @@ export function AdminSidebar() {
     <Sidebar className="border-r-0">
       <SidebarHeader className="bg-sidebar p-4">
         <div className="flex items-center gap-2 text-sidebar-foreground">
-          <img src="/favicon.png" alt="Anotô" className="h-7 w-7 rounded" />
+          <img src={logoAnoto} alt="Anotô" className="h-7 w-7 rounded" />
           <span className="text-lg font-bold">Anotô</span>
         </div>
 

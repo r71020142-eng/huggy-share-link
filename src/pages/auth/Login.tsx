@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import logoAtendeJa from "@/assets/logo-atende-ja.png";
+import logoAnoto from "@/assets/logo-anoto.png";
 import { toast } from "sonner";
 
 export default function Login() {
@@ -33,7 +33,7 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2">
-            <img src={logoAtendeJa} alt="Anotô" className="h-12 w-12 rounded-xl" />
+            <img src={logoAnoto} alt="Anotô" className="h-12 w-12 rounded-xl" />
           </div>
           <CardTitle className="text-2xl">Anotô</CardTitle>
           <CardDescription>Entre na sua conta para gerenciar sua loja</CardDescription>
