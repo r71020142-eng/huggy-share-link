@@ -1398,6 +1398,7 @@ export type Database = {
         Args: { _store_id: string; _user_id: string }
         Returns: boolean
       }
+      order_exists: { Args: { p_order_id: string }; Returns: boolean }
       reclassify_all_customers: {
         Args: { p_store_id?: string }
         Returns: number
