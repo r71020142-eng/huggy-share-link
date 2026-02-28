@@ -86,9 +86,8 @@ export function AdminSidebar() {
   return (
     <Sidebar className="border-r-0">
       <SidebarHeader className="bg-sidebar p-4">
-        <div className="flex items-center gap-2 text-sidebar-foreground">
-          <img src={logoAnoto} alt="Anotô" className="h-7 w-7 rounded" />
-          <span className="text-lg font-bold">Anotô</span>
+        <div className="flex items-center gap-3 text-sidebar-foreground">
+          <img src={logoAnoto} alt="Anotô" className="h-9 w-auto object-contain" />
         </div>
 
         <DropdownMenu>
