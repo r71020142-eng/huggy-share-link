@@ -51,6 +51,44 @@ export default function PublicMenu() {
     if (slug) fetchMenu();
   }, [slug]);
 
+  // Update document title and apple-touch-icon for ALL stores (iOS Add to Home Screen uses these)
+  useEffect(() => {
+    if (!store) return;
+    const originalTitle = document.title;
+    document.title = store.name || "Cardápio Digital";
+
+    // Update theme-color meta
+    const themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
+    const originalThemeColor = themeMeta?.content;
+    if (themeMeta && (menu?.theme_color || store.theme_color)) {
+      themeMeta.content = menu?.theme_color || store.theme_color;
+    }
+
+    // Update apple-touch-icon for iOS
+    const iconUrl = menu?.logo_url || store.logo_url;
+    if (iconUrl) {
+      let appleIcon = document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement | null;
+      if (!appleIcon) {
+        appleIcon = document.createElement("link");
+        appleIcon.rel = "apple-touch-icon";
+        document.head.appendChild(appleIcon);
+      }
+      const originalIcon = appleIcon.href;
+      appleIcon.href = iconUrl;
+
+      return () => {
+        document.title = originalTitle;
+        if (themeMeta && originalThemeColor) themeMeta.content = originalThemeColor;
+        appleIcon!.href = originalIcon;
+      };
+    }
+
+    return () => {
+      document.title = originalTitle;
+      if (themeMeta && originalThemeColor) themeMeta.content = originalThemeColor;
+    };
+  }, [store, menu]);
+
   const fetchMenu = async () => {
     const isPreview = new URLSearchParams(window.location.search).get("preview") === "1";
     let query = supabase.from("menus").select("*").eq("slug", slug!);
