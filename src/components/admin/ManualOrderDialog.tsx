@@ -66,6 +66,7 @@ const PAYMENT_OPTIONS = [
   { value: "cash", label: "Dinheiro", icon: "💵" },
   { value: "debit", label: "Débito", icon: "💳" },
   { value: "credit", label: "Crédito", icon: "💳" },
+  { value: "credit_later", label: "Fiado", icon: "📝" },
 ];
 
 // ── Main Component ──────────────────────────────────────────
@@ -247,9 +248,10 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
   };
 
   const paymentsSum = payments.reduce((s, p) => s + p.amount, 0);
+  const isFiado = payments.length === 1 && payments[0]?.method === "credit_later";
   const hasCash = payments.some(p => p.method === "cash");
   const change = hasCash && paymentsSum > orderTotal ? paymentsSum - orderTotal : 0;
-  const canFinalize = paymentsSum >= orderTotal && cart.length > 0 && custName.trim();
+  const canFinalize = (isFiado || paymentsSum >= orderTotal) && cart.length > 0 && custName.trim();
 
   // ── Submit ────────────────────────────────────────────────
   const handleSubmit = async () => {
@@ -274,13 +276,14 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
       }
 
       // 2. Create order
+      const isFiadoOrder = payments.length === 1 && payments[0]?.method === "credit_later";
       const { data: order, error: orderErr } = await supabase.from("orders").insert({
         store_id: store.id,
         customer_name: custName,
         customer_phone: custPhone,
         customer_address: orderType === "delivery" ? custAddress : null,
         order_type: orderType === "delivery" ? "delivery" : "pickup",
-        payment_method: payments[0]?.method || "cash",
+        payment_method: isFiadoOrder ? "credit_later" : (payments[0]?.method || "cash"),
         subtotal,
         delivery_fee: deliveryFee,
         total: orderTotal,
@@ -289,6 +292,7 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
         customer_id: customerId,
         is_manual: true,
         neighborhood_id: orderType === "delivery" ? selectedNeighborhoodId || null : null,
+        payment_status: isFiadoOrder ? "pending" : "paid",
       }).select("id").single();
 
       if (orderErr || !order) throw orderErr;
@@ -305,20 +309,22 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
       }));
       await supabase.from("order_items").insert(items);
 
-      // 4. Create order_payments (only real amounts, change is NOT stored)
-      const paymentRecords = payments.map(p => {
-        const isLastCash = p.method === "cash" && change > 0;
-        return {
-          order_id: order.id,
-          store_id: store.id,
-          payment_method: p.method,
-          amount: isLastCash ? Math.round((p.amount - change) * 100) / 100 : p.amount,
-          cash_session_id: activeSession?.id || null,
-        };
-      }).filter(p => p.amount > 0);
-      await supabase.from("order_payments").insert(paymentRecords);
+      // 4. Create order_payments (skip for fiado - no payment yet)
+      if (!isFiadoOrder) {
+        const paymentRecords = payments.map(p => {
+          const isLastCash = p.method === "cash" && change > 0;
+          return {
+            order_id: order.id,
+            store_id: store.id,
+            payment_method: p.method,
+            amount: isLastCash ? Math.round((p.amount - change) * 100) / 100 : p.amount,
+            cash_session_id: activeSession?.id || null,
+          };
+        }).filter(p => p.amount > 0);
+        await supabase.from("order_payments").insert(paymentRecords);
+      }
 
-      toast.success("Pedido manual criado com sucesso!");
+      toast.success(isFiadoOrder ? "Pedido fiado criado! Pagamento pendente." : "Pedido manual criado com sucesso!");
       onOpenChange(false);
       onOrderCreated?.();
     } catch (err: any) {
@@ -575,46 +581,76 @@ export default function ManualOrderDialog({ open, onOpenChange, onOrderCreated }
                 <p className="text-xs text-muted-foreground">{custName} · {orderType === "delivery" ? "Entrega" : "Balcão"} · {cart.length} itens</p>
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold">Formas de Pagamento</h3>
-                  <Button size="sm" variant="outline" onClick={addPayment}><Plus className="h-3 w-3 mr-1" /> Adicionar</Button>
+              {/* Payment mode toggle */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { setPayments([]); }}
+                  className={`rounded-lg border-2 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${!isFiado ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}
+                >
+                  💳 Pagamento Normal
+                </button>
+                <button
+                  onClick={() => { setPayments([{ method: "credit_later", amount: orderTotal }]); }}
+                  className={`rounded-lg border-2 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 ${isFiado ? "bg-orange-600 text-white border-orange-600" : "border-border"}`}
+                >
+                  📝 Fiado (Pagar depois)
+                </button>
+              </div>
+
+              {isFiado ? (
+                <div className="rounded-lg border-2 border-orange-300 bg-orange-50 dark:bg-orange-950/20 p-4 space-y-2 text-center">
+                  <p className="text-lg font-bold text-orange-600">📝 Pedido Fiado</p>
+                  <p className="text-sm text-muted-foreground">
+                    Este pedido será criado com <strong>pagamento pendente</strong>. Não será contabilizado no caixa até o recebimento.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Gerencie fiados em <strong>Fiados → Receber Pagamento</strong>
+                  </p>
                 </div>
-
-                {payments.map((p, i) => (
-                  <div key={i} className="rounded-lg border p-3 space-y-2">
+              ) : (
+                <>
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Pagamento {i + 1}</span>
-                      <button onClick={() => removePayment(i)} className="text-red-500 hover:text-red-700"><X className="h-4 w-4" /></button>
+                      <h3 className="text-sm font-bold">Formas de Pagamento</h3>
+                      <Button size="sm" variant="outline" onClick={addPayment}><Plus className="h-3 w-3 mr-1" /> Adicionar</Button>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {PAYMENT_OPTIONS.map(opt => (
-                        <button key={opt.value} onClick={() => updatePayment(i, "method", opt.value)}
-                          className={`rounded-lg border px-3 py-2 text-xs font-medium ${p.method === opt.value ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}>
-                          {opt.icon} {opt.label}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-medium">Valor (R$)</label>
-                      <Input type="number" step="0.01" min="0" value={p.amount || ""} onChange={e => updatePayment(i, "amount", parseFloat(e.target.value) || 0)} placeholder="0,00" />
-                    </div>
+
+                    {payments.map((p, i) => (
+                      <div key={i} className="rounded-lg border p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Pagamento {i + 1}</span>
+                          <button onClick={() => removePayment(i)} className="text-red-500 hover:text-red-700"><X className="h-4 w-4" /></button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {PAYMENT_OPTIONS.filter(o => o.value !== "credit_later").map(opt => (
+                            <button key={opt.value} onClick={() => updatePayment(i, "method", opt.value)}
+                              className={`rounded-lg border px-3 py-2 text-xs font-medium ${p.method === opt.value ? "bg-primary text-primary-foreground border-primary" : "border-border"}`}>
+                              {opt.icon} {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium">Valor (R$)</label>
+                          <Input type="number" step="0.01" min="0" value={p.amount || ""} onChange={e => updatePayment(i, "amount", parseFloat(e.target.value) || 0)} placeholder="0,00" />
+                        </div>
+                      </div>
+                    ))}
+
+                    {payments.length === 0 && (
+                      <p className="text-center text-sm text-muted-foreground py-4">Clique em "Adicionar" para inserir uma forma de pagamento</p>
+                    )}
                   </div>
-                ))}
 
-                {payments.length === 0 && (
-                  <p className="text-center text-sm text-muted-foreground py-4">Clique em "Adicionar" para inserir uma forma de pagamento</p>
-                )}
-              </div>
-
-              {/* Payment summary */}
-              <div className="rounded-lg border p-3 space-y-1">
-                <div className="flex justify-between text-sm"><span>Total do pedido</span><span>{formatBRL(orderTotal)}</span></div>
-                <div className="flex justify-between text-sm"><span>Total pago</span><span className={paymentsSum >= orderTotal ? "text-green-600 font-bold" : "text-red-500 font-bold"}>{formatBRL(paymentsSum)}</span></div>
-                {paymentsSum < orderTotal && <div className="flex justify-between text-sm text-red-500"><span>Falta</span><span>{formatBRL(orderTotal - paymentsSum)}</span></div>}
-                {change > 0 && <div className="flex justify-between text-sm text-orange-600 font-bold"><span>Troco</span><span>{formatBRL(change)}</span></div>}
-                {paymentsSum > orderTotal && !hasCash && <p className="text-xs text-red-500">⚠️ Valor pago maior que o total só é permitido com Dinheiro (troco)</p>}
-              </div>
+                  {/* Payment summary */}
+                  <div className="rounded-lg border p-3 space-y-1">
+                    <div className="flex justify-between text-sm"><span>Total do pedido</span><span>{formatBRL(orderTotal)}</span></div>
+                    <div className="flex justify-between text-sm"><span>Total pago</span><span className={paymentsSum >= orderTotal ? "text-green-600 font-bold" : "text-red-500 font-bold"}>{formatBRL(paymentsSum)}</span></div>
+                    {paymentsSum < orderTotal && <div className="flex justify-between text-sm text-red-500"><span>Falta</span><span>{formatBRL(orderTotal - paymentsSum)}</span></div>}
+                    {change > 0 && <div className="flex justify-between text-sm text-orange-600 font-bold"><span>Troco</span><span>{formatBRL(change)}</span></div>}
+                    {paymentsSum > orderTotal && !hasCash && <p className="text-xs text-red-500">⚠️ Valor pago maior que o total só é permitido com Dinheiro (troco)</p>}
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>

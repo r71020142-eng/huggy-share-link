@@ -55,6 +55,7 @@ const paymentIcons: Record<string, string> = {
   cash: "💵 Dinheiro",
   credit: "💳 Crédito",
   debit: "💳 Débito",
+  credit_later: "📝 Fiado",
 };
 
 // Notification sound using Web Audio API
@@ -309,6 +310,11 @@ export default function Orders() {
                           <Clock className="h-3 w-3" />
                           {statusLabels[order.status]}
                         </span>
+                        {(order as any).payment_status === "pending" && (
+                          <span className="inline-flex items-center rounded-full border border-orange-300 bg-orange-50 px-2 py-0.5 text-[10px] font-bold text-orange-600">
+                            FIADO
+                          </span>
+                        )}
                       </div>
                       {/* Date + order type */}
                       <p className="text-xs text-muted-foreground flex items-center gap-1">

@@ -21,7 +21,7 @@ export default function ReportsContent() {
   const [loading, setLoading] = useState(true);
   const [periodData, setPeriodData] = useState<PeriodReport[]>([]);
   const [paymentData, setPaymentData] = useState<PaymentMethodReport[]>([]);
-  const [totals, setTotals] = useState({ orders: 0, revenue: 0, avgTicket: 0, uniqueCustomers: 0 });
+  const [totals, setTotals] = useState({ orders: 0, revenue: 0, avgTicket: 0, uniqueCustomers: 0, pendingFiado: 0, paidRevenue: 0 });
 
   useEffect(() => { if (store) fetchReports(); }, [store, period]);
 
@@ -47,8 +47,10 @@ export default function ReportsContent() {
     }));
 
     const totalRevenue = orders.reduce((s, o) => s + Number(o.total), 0);
+    const pendingFiado = orders.filter(o => (o as any).payment_status === "pending").reduce((s, o) => s + Number(o.total), 0);
+    const paidRevenue = totalRevenue - pendingFiado;
     setPeriodData(reportData);
-    setTotals({ orders: orders.length, revenue: totalRevenue, avgTicket: orders.length > 0 ? totalRevenue / orders.length : 0, uniqueCustomers: customerSet.size });
+    setTotals({ orders: orders.length, revenue: totalRevenue, avgTicket: orders.length > 0 ? totalRevenue / orders.length : 0, uniqueCustomers: customerSet.size, pendingFiado, paidRevenue });
 
     // Fetch payment method breakdown from order_payments
     const orderIds = orders.map(o => o.id);
@@ -103,10 +105,12 @@ export default function ReportsContent() {
         </Select>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         {[
           { label: "Total pedidos", value: totals.orders },
-          { label: "Faturamento", value: formatBRL(totals.revenue), className: "text-primary" },
+          { label: "Faturamento bruto", value: formatBRL(totals.revenue), className: "text-primary" },
+          { label: "Faturamento recebido", value: formatBRL(totals.paidRevenue), className: "text-green-600" },
+          { label: "Pendente (Fiado)", value: formatBRL(totals.pendingFiado), className: "text-orange-600" },
           { label: "Ticket médio", value: formatBRL(totals.avgTicket), className: "text-primary" },
           { label: "Clientes únicos", value: totals.uniqueCustomers },
         ].map((s, i) => (
