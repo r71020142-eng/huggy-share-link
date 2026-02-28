@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { formatBRL } from "@/lib/utils";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +88,17 @@ export default function PublicMenu() {
       if (themeMeta && originalThemeColor) themeMeta.content = originalThemeColor;
     };
   }, [store, menu]);
+
+  // Detect ?tracking= query param to auto-open tracking screen
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const trackingParam = searchParams.get("tracking");
+    if (trackingParam && !loading) {
+      setLastTrackingCode(trackingParam);
+      setLastOrderId(null);
+      setTrackingOpen(true);
+    }
+  }, [searchParams, loading]);
 
   const fetchMenu = async () => {
     const isPreview = new URLSearchParams(window.location.search).get("preview") === "1";
@@ -498,6 +509,7 @@ export default function PublicMenu() {
         open={trackingOpen}
         orderId={lastOrderId}
         trackingCode={lastTrackingCode}
+        storeId={store?.id || null}
         onClose={() => setTrackingOpen(false)}
         themeColor={themeColor}
       />

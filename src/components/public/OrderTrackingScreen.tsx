@@ -6,6 +6,7 @@ interface OrderTrackingScreenProps {
   open: boolean;
   orderId: string | null;
   trackingCode: string | null;
+  storeId: string | null;
   onClose: () => void;
   themeColor: string;
 }
@@ -27,39 +28,50 @@ const STATUS_INDEX: Record<string, number> = {
   cancelled: -1,
 };
 
-export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, themeColor }: OrderTrackingScreenProps) {
+export function OrderTrackingScreen({ open, orderId, trackingCode, storeId, onClose, themeColor }: OrderTrackingScreenProps) {
   const [orderStatus, setOrderStatus] = useState("pending");
   const [resolvedTrackingCode, setResolvedTrackingCode] = useState<string | null>(null);
-
   const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   // Fetch initial status and resolve orderId for realtime
   useEffect(() => {
     if (!open || (!orderId && !trackingCode)) return;
+    setNotFound(false);
 
     const fetchStatus = async () => {
       let fetchedOrderId: string | null = null;
 
       if (trackingCode) {
-        const { data } = await supabase.rpc("get_order_by_tracking", { p_tracking_code: trackingCode });
+        const rpcArgs: any = { p_tracking_code: trackingCode };
+        if (storeId) rpcArgs.p_store_id = storeId;
+        const { data } = await supabase.rpc("get_order_by_tracking", rpcArgs);
         if (data) {
           setOrderStatus((data as any).status);
           setResolvedTrackingCode((data as any).tracking_code);
           fetchedOrderId = (data as any).id;
+        } else {
+          setNotFound(true);
+          return;
         }
       } else if (orderId) {
-        const { data } = await supabase.rpc("get_tracking_by_order_id", { p_order_id: orderId });
+        const rpcArgs: any = { p_order_id: orderId };
+        if (storeId) rpcArgs.p_store_id = storeId;
+        const { data } = await supabase.rpc("get_tracking_by_order_id", rpcArgs);
         if (data) {
           setOrderStatus((data as any).status);
           setResolvedTrackingCode((data as any).tracking_code);
           fetchedOrderId = (data as any).id;
+        } else {
+          setNotFound(true);
+          return;
         }
       }
 
       setResolvedOrderId(fetchedOrderId || orderId || null);
     };
     fetchStatus();
-  }, [orderId, trackingCode, open]);
+  }, [orderId, trackingCode, storeId, open]);
 
   // Subscribe to realtime updates using resolved order ID
   useEffect(() => {
@@ -78,6 +90,26 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, onClose, them
   }, [resolvedOrderId, open]);
 
   if (!open) return null;
+
+  if (notFound) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-background" style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
+        <div className="flex items-center gap-3 border-b px-4 py-3 min-h-[56px]">
+          <button onClick={onClose} className="rounded-full p-1 hover:bg-muted">
+            <X className="h-5 w-5" />
+          </button>
+          <h2 className="text-lg font-bold">Acompanhar pedido</h2>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-6">
+          <span className="text-5xl">🔍</span>
+          <h3 className="text-xl font-bold">Pedido não encontrado</h3>
+          <p className="text-sm text-muted-foreground text-center">
+            O código de rastreio informado não pertence a esta loja ou não existe.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const currentIndex = STATUS_INDEX[orderStatus] ?? 0;
   const progressPercent = Math.max(5, (currentIndex / 4) * 100);
