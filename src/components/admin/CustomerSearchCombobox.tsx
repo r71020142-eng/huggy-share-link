@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
-import { Phone, User, AlertCircle, UserPlus } from "lucide-react";
-import { formatBRL } from "@/lib/utils";
+import { Search, User, AlertCircle, UserPlus, Star } from "lucide-react";
 
 interface CustomerResult {
   id: string;
@@ -28,6 +27,18 @@ function normalizePhone(input: string): string {
   return input.replace(/\D/g, "");
 }
 
+function formatPhone(phone: string): string {
+  const d = normalizePhone(phone);
+  if (d.length <= 2) return d;
+  if (d.length <= 7) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7, 11)}`;
+}
+
+function isNumericQuery(q: string): boolean {
+  return /^\d+$/.test(normalizePhone(q)) && normalizePhone(q).length === q.trim().replace(/[\s()-]/g, "").length;
+}
+
 export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustomer }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<CustomerResult[]>([]);
@@ -39,20 +50,41 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
   const search = useCallback(async (q: string) => {
-    const normalized = normalizePhone(q);
-    if (normalized.length < 3) {
+    const trimmed = q.trim();
+    if (trimmed.length < 3) {
       setResults([]);
       setOpen(false);
       return;
     }
     setLoading(true);
-    const { data } = await supabase
+
+    const normalized = normalizePhone(trimmed);
+    const isPhone = isNumericQuery(trimmed) && normalized.length >= 3;
+
+    // Build query with OR: phone ILIKE or name ILIKE
+    let query$ = supabase
       .from("customers")
       .select("id, name, phone, address, bairro, complemento, observations, last_order_at, total_orders, total_spent, crm_status")
-      .eq("store_id", storeId)
-      .ilike("phone", `%${normalized}%`)
+      .eq("store_id", storeId);
+
+    if (isPhone) {
+      // Pure digits → search phone only
+      query$ = query$.ilike("phone", `%${normalized}%`);
+    } else {
+      // Contains letters → search by name, also try phone if there are digits
+      const hasDigits = normalized.length >= 3;
+      if (hasDigits) {
+        query$ = query$.or(`name.ilike.%${trimmed}%,phone.ilike.%${normalized}%`);
+      } else {
+        query$ = query$.ilike("name", `%${trimmed}%`);
+      }
+    }
+
+    const { data } = await query$
+      .order("total_orders", { ascending: false })
+      .order("name", { ascending: true })
       .limit(10);
-    
+
     const fetched = (data as CustomerResult[]) || [];
     setResults(fetched);
     setHighlightIndex(0);
@@ -61,7 +93,7 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
     // Auto-select if exactly 1 result
     if (fetched.length === 1) {
       onSelect(fetched[0]);
-      setQuery(fetched[0].phone);
+      setQuery(fetched[0].name + " — " + formatPhone(fetched[0].phone));
       setOpen(false);
     }
     setLoading(false);
@@ -69,7 +101,8 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (normalizePhone(query).length < 3) {
+    const trimmed = query.trim();
+    if (trimmed.length < 3) {
       setResults([]);
       setOpen(false);
       return;
@@ -91,7 +124,7 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!open) return;
-    const total = results.length + 1; // +1 for "new customer" option
+    const total = results.length + 1;
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setHighlightIndex(i => (i + 1) % total);
@@ -112,7 +145,7 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
 
   const selectCustomer = (c: CustomerResult) => {
     onSelect(c);
-    setQuery(c.phone);
+    setQuery(c.name + " — " + formatPhone(c.phone));
     setOpen(false);
   };
 
@@ -123,15 +156,16 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
   };
 
   const hasPendingFiado = (c: CustomerResult) => c.crm_status === "inadimplente";
+  const isFrequent = (c: CustomerResult) => c.total_orders >= 10;
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="text-sm font-bold mb-1 block">Buscar cliente por telefone</label>
+      <label className="text-sm font-bold mb-1 block">Buscar cliente</label>
       <div className="relative">
-        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           ref={inputRef}
-          placeholder="Digite 3+ dígitos do telefone..."
+          placeholder="Digite nome ou telefone..."
           className="pl-10"
           value={query}
           onChange={e => setQuery(e.target.value)}
@@ -148,6 +182,12 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
 
       {open && (
         <div className="absolute z-50 mt-1 w-full rounded-lg border bg-popover shadow-lg max-h-64 overflow-y-auto">
+          {results.length === 0 && (
+            <div className="px-3 py-3 text-sm text-center text-muted-foreground">
+              Nenhum cliente encontrado
+            </div>
+          )}
+
           {results.map((c, i) => (
             <button
               key={c.id}
@@ -160,13 +200,16 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="font-medium truncate">{c.name}</span>
+                  {isFrequent(c) && (
+                    <Star className="h-3 w-3 text-amber-500 fill-amber-500 shrink-0" />
+                  )}
                   {hasPendingFiado(c) && (
                     <span className="inline-flex items-center gap-0.5 rounded-full border border-orange-300 bg-orange-50 px-1.5 py-0.5 text-[10px] font-bold text-orange-600">
                       <AlertCircle className="h-2.5 w-2.5" /> FIADO
                     </span>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground">{c.phone}</span>
+                <span className="text-xs text-muted-foreground">{formatPhone(c.phone)}</span>
               </div>
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {c.total_orders} pedidos
@@ -183,8 +226,8 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
           >
             <UserPlus className="h-4 w-4 text-primary shrink-0" />
             <span className="font-medium text-primary">Cadastrar novo cliente</span>
-            {normalizePhone(query) && (
-              <span className="text-xs text-muted-foreground">({normalizePhone(query)})</span>
+            {normalizePhone(query).length >= 3 && (
+              <span className="text-xs text-muted-foreground">({formatPhone(normalizePhone(query))})</span>
             )}
           </button>
         </div>
@@ -192,3 +235,5 @@ export default function CustomerSearchCombobox({ storeId, onSelect, onNewCustome
     </div>
   );
 }
+
+export { formatPhone, normalizePhone };
