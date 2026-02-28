@@ -34,10 +34,11 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, storeId, onCl
   const [resolvedOrderId, setResolvedOrderId] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
 
-  // Fetch initial status and resolve orderId for realtime
+  // Resolve tracking/order snapshot and keep data fresh even without realtime permissions
   useEffect(() => {
     if (!open || (!orderId && !trackingCode)) return;
-    setNotFound(false);
+
+    let cancelled = false;
 
     const fetchStatus = async () => {
       let fetchedOrderId: string | null = null;
@@ -45,35 +46,52 @@ export function OrderTrackingScreen({ open, orderId, trackingCode, storeId, onCl
       if (trackingCode) {
         const rpcArgs: any = { p_tracking_code: trackingCode };
         if (storeId) rpcArgs.p_store_id = storeId;
+
         const { data } = await supabase.rpc("get_order_by_tracking", rpcArgs);
-        if (data) {
-          setOrderStatus((data as any).status);
-          setResolvedTrackingCode((data as any).tracking_code);
-          fetchedOrderId = (data as any).id;
-        } else {
-          setNotFound(true);
+        if (!data) {
+          if (!cancelled) setNotFound(true);
           return;
         }
+
+        if (!cancelled) {
+          setNotFound(false);
+          setOrderStatus((data as any).status);
+          setResolvedTrackingCode((data as any).tracking_code);
+        }
+        fetchedOrderId = (data as any).id;
       } else if (orderId) {
         const rpcArgs: any = { p_order_id: orderId };
         if (storeId) rpcArgs.p_store_id = storeId;
+
         const { data } = await supabase.rpc("get_tracking_by_order_id", rpcArgs);
-        if (data) {
-          setOrderStatus((data as any).status);
-          setResolvedTrackingCode((data as any).tracking_code);
-          fetchedOrderId = (data as any).id;
-        } else {
-          setNotFound(true);
+        if (!data) {
+          if (!cancelled) setNotFound(true);
           return;
         }
+
+        if (!cancelled) {
+          setNotFound(false);
+          setOrderStatus((data as any).status);
+          setResolvedTrackingCode((data as any).tracking_code);
+        }
+        fetchedOrderId = (data as any).id;
       }
 
-      setResolvedOrderId(fetchedOrderId || orderId || null);
+      if (!cancelled) {
+        setResolvedOrderId(fetchedOrderId || orderId || null);
+      }
     };
+
     fetchStatus();
+    const intervalId = window.setInterval(fetchStatus, 4000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
   }, [orderId, trackingCode, storeId, open]);
 
-  // Subscribe to realtime updates using resolved order ID
+  // Realtime subscription for immediate updates when channel is available
   useEffect(() => {
     const subId = resolvedOrderId;
     if (!open || !subId) return;
