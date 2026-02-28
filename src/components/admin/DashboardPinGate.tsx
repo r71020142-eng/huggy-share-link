@@ -29,8 +29,11 @@ export function DashboardPinGate({ children }: Props) {
     setConfirmPin("");
   }, [store?.id]);
 
+  const [dismissed, setDismissed] = useState(false);
+
   if (!store || hasPin === null) return null;
   if (unlocked) return <>{children}</>;
+  if (dismissed) return null;
 
   const hashPin = async (raw: string): Promise<string> => {
     const encoder = new TextEncoder();
@@ -77,8 +80,8 @@ export function DashboardPinGate({ children }: Props) {
   };
 
   return (
-    <Dialog open={!unlocked} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-sm [&>button]:hidden" onPointerDownOutside={(e) => e.preventDefault()}>
+    <Dialog open={!unlocked && !dismissed} onOpenChange={(open) => { if (!open) setDismissed(true); }}>
+      <DialogContent className="sm:max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader className="items-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 mb-2">
             {step === "enter" ? <Lock className="h-7 w-7 text-primary" /> : <ShieldCheck className="h-7 w-7 text-primary" />}
