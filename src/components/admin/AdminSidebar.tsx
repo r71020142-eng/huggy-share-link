@@ -86,8 +86,8 @@ export function AdminSidebar() {
     <Sidebar className="border-r-0">
       <SidebarHeader className="bg-sidebar p-4">
         <div className="flex items-center gap-2 text-sidebar-foreground">
-          <img src="/favicon.png" alt="Atende Já" className="h-7 w-7 rounded" />
-          <span className="text-lg font-bold">Atende Já</span>
+          <img src="/favicon.png" alt="Anotô" className="h-7 w-7 rounded" />
+          <span className="text-lg font-bold">Anotô</span>
         </div>
 
         <DropdownMenu>

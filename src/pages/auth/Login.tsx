@@ -33,9 +33,9 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2">
-            <img src={logoAtendeJa} alt="Atende Já" className="h-12 w-12 rounded-xl" />
+            <img src={logoAtendeJa} alt="Anotô" className="h-12 w-12 rounded-xl" />
           </div>
-          <CardTitle className="text-2xl">Atende Já</CardTitle>
+          <CardTitle className="text-2xl">Anotô</CardTitle>
           <CardDescription>Entre na sua conta para gerenciar sua loja</CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
