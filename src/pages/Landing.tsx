@@ -14,6 +14,9 @@ import logoIcon from "@/assets/logo-icon.png";
 import benefitOrdersApp from "@/assets/benefit-orders-app.png";
 import benefitKanbanUI from "@/assets/benefit-kanban-ui.png";
 import benefitThermalPrinter from "@/assets/benefit-thermal-printer.png";
+import testimonialCarlos from "@/assets/testimonial-carlos.jpg";
+import testimonialAna from "@/assets/testimonial-ana.jpg";
+import testimonialRoberto from "@/assets/testimonial-roberto.jpg";
 
 /* ─── Header ─── */
 function LandingHeader() {
@@ -255,9 +258,9 @@ function HowItWorksSection() {
 /* ─── Prova social ─── */
 function TestimonialsSection() {
   const testimonials = [
-    { name: "Carlos M.", biz: "Dono de Lanchonete", text: "Antes eu anotava tudo no papel e perdia pedidos. Agora recebo tudo organizado no celular e imprimo direto na cozinha. Meus clientes notaram a diferença.", avatar: "C" },
-    { name: "Ana P.", biz: "Dona de Açaiteria", text: "Montei meu cardápio digital sozinha em uma tarde. Meus clientes adoram pedir pelo celular, e minhas vendas cresceram 40% no primeiro mês.", avatar: "A" },
-    { name: "Roberto S.", biz: "Dono de Pizzaria", text: "O caixa integrado me deu controle real do faturamento. Antes eu não sabia quanto entrava por dia. Hoje tenho clareza total.", avatar: "R" },
+    { name: "Carlos M.", biz: "Dono de Lanchonete", text: "Antes eu anotava tudo no papel e perdia pedidos. Agora recebo tudo organizado no celular e imprimo direto na cozinha. Meus clientes notaram a diferença.", img: testimonialCarlos },
+    { name: "Ana P.", biz: "Dona de Açaiteria", text: "Montei meu cardápio digital sozinha em uma tarde. Meus clientes adoram pedir pelo celular, e minhas vendas cresceram 40% no primeiro mês.", img: testimonialAna },
+    { name: "Roberto S.", biz: "Dono de Pizzaria", text: "O caixa integrado me deu controle real do faturamento. Antes eu não sabia quanto entrava por dia. Hoje tenho clareza total.", img: testimonialRoberto },
   ];
   return (
     <section className="relative py-24 overflow-hidden">
@@ -269,36 +272,36 @@ function TestimonialsSection() {
           <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
             Quem usa, recomenda
           </h2>
+          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Veja o que donos de negócios como o seu dizem sobre o Anotô</p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
-              className="relative flex flex-col rounded-2xl bg-white p-8 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+              className="relative flex flex-col rounded-3xl bg-white p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
             >
-              {/* Quote mark */}
-              <span className="absolute -top-3 left-6 text-5xl font-serif leading-none" style={{ color: "#FF7A1A", opacity: 0.3 }}>"</span>
-
-              <div className="mb-4 flex gap-1">
+              {/* Stars */}
+              <div className="mb-5 flex gap-1">
                 {[...Array(5)].map((_, j) => (
                   <Star key={j} className="h-4 w-4 fill-orange-400 text-orange-400" />
                 ))}
               </div>
 
-              <p className="flex-1 text-[15px] text-gray-600 leading-relaxed">{t.text}</p>
+              {/* Quote */}
+              <p className="flex-1 text-[15px] text-gray-600 leading-relaxed italic">"{t.text}"</p>
 
-              <div className="mt-6 flex items-center gap-3 border-t border-gray-100 pt-5">
-                <div
-                  className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white"
-                  style={{ background: "linear-gradient(135deg, #FF7A1A, #7c3aed)" }}
-                >
-                  {t.avatar}
-                </div>
+              {/* Author */}
+              <div className="mt-8 flex items-center gap-4 border-t border-gray-100 pt-6">
+                <img
+                  src={t.img}
+                  alt={t.name}
+                  className="h-14 w-14 rounded-full object-cover ring-2 ring-white shadow-md"
+                />
                 <div>
                   <p className="text-sm font-bold text-gray-900">{t.name}</p>
                   <p className="text-xs text-gray-500">{t.biz}</p>
@@ -311,8 +314,6 @@ function TestimonialsSection() {
     </section>
   );
 }
-
-/* ─── Planos ─── */
 function PricingSection() {
   const plans = [
     {
