@@ -33,7 +33,7 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-6">
-            <img src={logoAnoto} alt="Anotô" className="w-64 h-auto object-contain mx-auto" />
+            <img src={logoAnoto} alt="Anotô" className="w-56 h-auto object-contain mx-auto mix-blend-multiply" />
           </div>
           <CardDescription>Entre na sua conta para gerenciar sua loja</CardDescription>
         </CardHeader>
