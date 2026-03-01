@@ -7,6 +7,7 @@ import {
   QrCode, ShoppingCart, ClipboardList, Monitor, MapPin, Printer, Users, BarChart3,
   Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight
 } from "lucide-react";
+import heroDevices from "@/assets/hero-devices.png";
 
 /* ─── Header ─── */
 function LandingHeader() {
@@ -67,33 +68,9 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* Phone mockup */}
+        {/* Hero image */}
         <div className="flex justify-center">
-          <div className="relative mx-auto w-[280px] rounded-[2.5rem] border-[6px] border-gray-800 bg-white p-3 shadow-2xl">
-            <div className="absolute left-1/2 top-2 h-5 w-24 -translate-x-1/2 rounded-full bg-gray-800" />
-            <div className="mt-6 space-y-3 rounded-2xl bg-gray-50 p-3">
-              <div className="h-8 rounded-lg bg-blue-700 flex items-center px-3">
-                <span className="text-xs font-bold text-white">🍔 Minha Lanchonete</span>
-              </div>
-              {["X-Burguer", "X-Salada", "Açaí 500ml"].map((item, i) => (
-                <div key={i} className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-2.5">
-                  <div className="flex items-center gap-2">
-                    <div className="h-9 w-9 rounded-md bg-gray-200 flex items-center justify-center text-xs">🍔</div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-800">{item}</p>
-                      <p className="text-[10px] text-gray-500">R$ {(12 + i * 5).toFixed(2).replace(".", ",")}</p>
-                    </div>
-                  </div>
-                  <div className="h-7 w-7 rounded-full bg-orange-500 flex items-center justify-center">
-                    <span className="text-xs text-white font-bold">+</span>
-                  </div>
-                </div>
-              ))}
-              <div className="rounded-lg bg-orange-500 py-2 text-center">
-                <span className="text-xs font-bold text-white">🛒 Ver carrinho (3)</span>
-              </div>
-            </div>
-          </div>
+          <img src={heroDevices} alt="Anotô em notebook, tablet e celular" className="w-full max-w-lg h-auto object-contain" />
         </div>
       </div>
     </section>
