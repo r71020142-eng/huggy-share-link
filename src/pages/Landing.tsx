@@ -17,7 +17,7 @@ function LandingHeader() {
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <a href="/" className="flex items-center">
-          <span className="text-lg font-extrabold text-gray-900">Anotô, <span className="font-medium text-gray-500">pedidos &amp; atendimento</span></span>
+          <span className="text-lg font-extrabold" style={{ color: "#FF7A1A" }}>Anotô<span className="font-medium text-gray-500">, pedidos &amp; atendimento</span></span>
         </a>
         <nav className="hidden gap-6 md:flex">
           {[
