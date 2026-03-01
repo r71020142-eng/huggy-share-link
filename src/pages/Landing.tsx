@@ -17,7 +17,7 @@ function LandingHeader() {
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <a href="/" className="flex items-center">
-          <img src={logoLanding} alt="Anotô" className="h-8 w-auto object-contain" />
+          <img src={logoIcon} alt="Anotô" className="h-10 w-auto object-contain" />
         </a>
         <nav className="hidden gap-6 md:flex">
           {[
@@ -50,7 +50,7 @@ function HeroSection() {
     <section className="bg-gradient-to-b from-blue-50 to-white py-20 md:py-28">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
         <div className="space-y-6">
-          <img src={logoIcon} alt="Anotô" style={{ width: "140px", height: "auto" }} />
+          <img src={logoLanding} alt="Anotô - Pedidos e atendimento" style={{ width: "320px", height: "auto" }} />
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 text-xs font-semibold">
             Para lanchonetes, pizzarias, açaiterias e mais
           </Badge>
