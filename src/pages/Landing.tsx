@@ -14,9 +14,9 @@ import logoLanding from "@/assets/logo-anoto-landing.png";
 function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-4">
         <a href="/" className="flex items-center">
-          <img src={logoLanding} alt="Anotô" className="h-16 w-auto object-contain" />
+          <img src={logoLanding} alt="Anotô - Pedidos e atendimento" className="h-20 w-auto object-contain" />
         </a>
         <nav className="hidden gap-6 md:flex">
           {[
