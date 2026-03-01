@@ -82,25 +82,57 @@ function HeroSection() {
 
 /* ─── Benefícios ─── */
 function BenefitsSection() {
-  const benefits = [
-    { icon: Zap, title: "Receba pedidos sem taxas por pedido", desc: "Diferente dos marketplaces, você não paga comissão sobre vendas." },
-    { icon: LayoutList, title: "Organize pedidos em Kanban", desc: "Acompanhe cada pedido: pendente → preparando → entregando → concluído." },
-    { icon: Printer, title: "Impressão térmica automática", desc: "Imprima pedidos direto na cozinha com impressoras ESC/POS." },
+  const pillars = [
+    {
+      icon: Zap,
+      title: "Zero taxa por pedido",
+      desc: "Você fica com 100% do valor de cada venda. Sem comissões escondidas, sem surpresas no final do mês.",
+      accent: "#FF7A1A",
+      accentBg: "#FFF3EB",
+    },
+    {
+      icon: LayoutList,
+      title: "Pedidos organizados",
+      desc: "Painel Kanban em tempo real. Veja o fluxo completo do pedido, da entrada à entrega, sem perder nada.",
+      accent: "#1e40af",
+      accentBg: "#EFF6FF",
+    },
+    {
+      icon: Printer,
+      title: "Impressão automática",
+      desc: "Pedido chegou, já imprime na cozinha. Compatível com impressoras térmicas ESC/POS via USB ou rede.",
+      accent: "#7c3aed",
+      accentBg: "#F5F3FF",
+    },
   ];
+
   return (
-    <section className="bg-white py-20">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 md:grid-cols-3">
-        {benefits.map((b, i) => (
-          <Card key={i} className="border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="flex flex-col items-start gap-3 p-6">
-              <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-100">
-                <b.icon className="h-5 w-5 text-blue-700" />
+    <section className="bg-white py-24">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mb-6 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+            Por que escolher o Anotô
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Feito para quem vive o dia a dia do balcão
+          </h2>
+        </div>
+
+        <div className="mt-14 grid gap-8 md:grid-cols-3">
+          {pillars.map((p, i) => (
+            <div key={i} className="group relative rounded-2xl border border-gray-100 bg-white p-8 transition-all hover:shadow-lg hover:-translate-y-1">
+              <div
+                className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl"
+                style={{ backgroundColor: p.accentBg }}
+              >
+                <p.icon className="h-7 w-7" style={{ color: p.accent }} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900">{b.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{b.desc}</p>
-            </CardContent>
-          </Card>
-        ))}
+              <h3 className="text-xl font-bold text-gray-900">{p.title}</h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-gray-500">{p.desc}</p>
+              <div className="mt-6 h-1 w-12 rounded-full" style={{ backgroundColor: p.accent, opacity: 0.3 }} />
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -109,32 +141,44 @@ function BenefitsSection() {
 /* ─── Funcionalidades ─── */
 function FeaturesSection() {
   const features = [
-    { icon: QrCode, label: "Cardápio público por link / QR Code" },
-    { icon: ShoppingCart, label: "Carrinho e checkout" },
-    { icon: ClipboardList, label: "Gestão de pedidos (status)" },
-    { icon: Monitor, label: "PDV / Caixa" },
-    { icon: MapPin, label: "Bairros e taxa de entrega" },
-    { icon: Printer, label: "Impressão térmica" },
-    { icon: Users, label: "CRM de clientes", pro: true },
-    { icon: BarChart3, label: "Relatórios e métricas", pro: true },
+    { icon: QrCode, label: "Cardápio por link & QR Code", desc: "Compartilhe e seus clientes pedem pelo celular." },
+    { icon: ShoppingCart, label: "Carrinho e checkout", desc: "Experiência de compra rápida e intuitiva." },
+    { icon: ClipboardList, label: "Gestão de pedidos", desc: "Status em tempo real para sua equipe." },
+    { icon: Monitor, label: "PDV / Caixa", desc: "Controle financeiro completo do seu dia." },
+    { icon: MapPin, label: "Bairros e entregas", desc: "Taxas por região, automáticas no checkout." },
+    { icon: Printer, label: "Impressão térmica", desc: "Integração direta com impressoras ESC/POS." },
+    { icon: Users, label: "CRM de clientes", desc: "Conheça quem compra de você.", pro: true },
+    { icon: BarChart3, label: "Relatórios", desc: "Métricas para decisões inteligentes.", pro: true },
   ];
+
   return (
-    <section id="funcionalidades" className="bg-gray-50 py-20">
+    <section id="funcionalidades" className="bg-gray-50/70 py-24">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Tudo que você precisa para vender mais</h2>
-          <p className="mt-3 text-gray-600">Funcionalidades pensadas para o dia a dia do seu negócio.</p>
+        <div className="mb-14 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+            Funcionalidades
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Tudo que você precisa, num só sistema
+          </h2>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((f, i) => (
-            <div key={i} className="flex items-start gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100">
+            <div
+              key={i}
+              className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-all hover:shadow-md hover:border-gray-200"
+            >
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
                 <f.icon className="h-5 w-5 text-blue-700" />
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{f.label}</p>
-                {f.pro && <Badge className="mt-1 bg-orange-100 text-orange-700 hover:bg-orange-100 text-[10px] border-orange-200">Pro</Badge>}
-              </div>
+              <p className="text-[15px] font-semibold text-gray-900">{f.label}</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-gray-400">{f.desc}</p>
+              {f.pro && (
+                <Badge className="mt-3 w-fit bg-orange-50 text-orange-600 hover:bg-orange-50 text-[10px] font-bold border-orange-200 uppercase tracking-wide">
+                  Pro
+                </Badge>
+              )}
             </div>
           ))}
         </div>
