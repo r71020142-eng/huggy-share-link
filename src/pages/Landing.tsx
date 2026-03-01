@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
+import logoIcon from "@/assets/logo-icon.png";
 
 /* ─── Header ─── */
 function LandingHeader() {
@@ -49,7 +50,7 @@ function HeroSection() {
     <section className="bg-gradient-to-b from-blue-50 to-white py-20 md:py-28">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
         <div className="space-y-6">
-          <img src={logoLanding} alt="Anotô - Pedidos e atendimento" style={{ width: "320px", height: "auto" }} />
+          <img src={logoIcon} alt="Anotô" style={{ width: "140px", height: "auto" }} />
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 text-xs font-semibold">
             Para lanchonetes, pizzarias, açaiterias e mais
           </Badge>
