@@ -31,9 +31,9 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-6">
-            <img src={logoAnoto} alt="Anotô" className="w-56 h-auto object-contain mx-auto mix-blend-multiply" />
+        <CardHeader className="text-center pt-0 px-0">
+          <div className="mx-auto mb-6 w-full overflow-hidden rounded-t-lg">
+            <img src={logoAnoto} alt="Anotô" className="w-full h-auto object-cover" />
           </div>
           <CardDescription>Entre na sua conta para gerenciar sua loja</CardDescription>
         </CardHeader>
