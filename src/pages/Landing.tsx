@@ -10,6 +10,9 @@ import {
 import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
 import logoIcon from "@/assets/logo-icon.png";
+import benefitZeroTaxa from "@/assets/benefit-zero-taxa.png";
+import benefitKanban from "@/assets/benefit-kanban.png";
+import benefitPrinter from "@/assets/benefit-printer.png";
 
 /* ─── Header ─── */
 function LandingHeader() {
@@ -84,52 +87,57 @@ function HeroSection() {
 function BenefitsSection() {
   const pillars = [
     {
-      icon: Zap,
+      img: benefitZeroTaxa,
       title: "Zero taxa por pedido",
       desc: "Você fica com 100% do valor de cada venda. Sem comissões escondidas, sem surpresas no final do mês.",
       accent: "#FF7A1A",
-      accentBg: "#FFF3EB",
     },
     {
-      icon: LayoutList,
+      img: benefitKanban,
       title: "Pedidos organizados",
       desc: "Painel Kanban em tempo real. Veja o fluxo completo do pedido, da entrada à entrega, sem perder nada.",
       accent: "#1e40af",
-      accentBg: "#EFF6FF",
     },
     {
-      icon: Printer,
+      img: benefitPrinter,
       title: "Impressão automática",
       desc: "Pedido chegou, já imprime na cozinha. Compatível com impressoras térmicas ESC/POS via USB ou rede.",
       accent: "#7c3aed",
-      accentBg: "#F5F3FF",
     },
   ];
 
   return (
-    <section className="bg-white py-24">
-      <div className="mx-auto max-w-6xl px-4">
+    <section
+      className="relative py-24 overflow-hidden"
+      style={{
+        background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%)",
+      }}
+    >
+      {/* Decorative blurred circles */}
+      <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
+      <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+
+      <div className="relative mx-auto max-w-6xl px-4">
         <div className="mb-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+          <p className="text-sm font-semibold uppercase tracking-widest text-orange-400">
             Por que escolher o Anotô
           </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h2 className="mt-2 text-3xl font-extrabold text-white md:text-4xl">
             Feito para quem vive o dia a dia do balcão
           </h2>
         </div>
 
-        <div className="mt-14 grid gap-8 md:grid-cols-3">
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
           {pillars.map((p, i) => (
-            <div key={i} className="group relative rounded-2xl border border-gray-100 bg-white p-8 transition-all hover:shadow-lg hover:-translate-y-1">
-              <div
-                className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl"
-                style={{ backgroundColor: p.accentBg }}
-              >
-                <p.icon className="h-7 w-7" style={{ color: p.accent }} />
+            <div key={i} className="group flex flex-col overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 transition-all hover:bg-white/15 hover:-translate-y-1">
+              <div className="flex items-center justify-center bg-white/5 p-6">
+                <img src={p.img} alt={p.title} className="h-44 w-auto object-contain" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">{p.title}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-gray-500">{p.desc}</p>
-              <div className="mt-6 h-1 w-12 rounded-full" style={{ backgroundColor: p.accent, opacity: 0.3 }} />
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="text-xl font-bold text-white">{p.title}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-white/70">{p.desc}</p>
+                <div className="mt-5 h-1 w-12 rounded-full" style={{ backgroundColor: p.accent }} />
+              </div>
             </div>
           ))}
         </div>
