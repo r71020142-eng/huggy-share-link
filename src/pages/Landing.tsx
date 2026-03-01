@@ -11,9 +11,9 @@ import {
 import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
 import logoIcon from "@/assets/logo-icon.png";
-import benefitZeroTaxa from "@/assets/benefit-zero-taxa.png";
-import benefitKanban from "@/assets/benefit-kanban.png";
-import benefitPrinter from "@/assets/benefit-printer.png";
+import benefitOrdersApp from "@/assets/benefit-orders-app.png";
+import benefitKanbanUI from "@/assets/benefit-kanban-ui.png";
+import benefitThermalPrinter from "@/assets/benefit-thermal-printer.png";
 
 /* ─── Header ─── */
 function LandingHeader() {
@@ -97,19 +97,19 @@ function HeroSection() {
 function BenefitsSection() {
   const pillars = [
     {
-      img: benefitZeroTaxa,
+      img: benefitOrdersApp,
       title: "Zero taxa por pedido",
       desc: "Você fica com 100% do valor de cada venda. Sem comissões escondidas, sem surpresas no final do mês.",
       accent: "#FF7A1A",
     },
     {
-      img: benefitKanban,
+      img: benefitKanbanUI,
       title: "Pedidos organizados",
       desc: "Painel Kanban em tempo real. Veja o fluxo completo do pedido, da entrada à entrega, sem perder nada.",
       accent: "#1e40af",
     },
     {
-      img: benefitPrinter,
+      img: benefitThermalPrinter,
       title: "Impressão automática",
       desc: "Pedido chegou, já imprime na cozinha. Compatível com impressoras térmicas ESC/POS via USB ou rede.",
       accent: "#7c3aed",
@@ -139,11 +139,11 @@ function BenefitsSection() {
 
         <div className="mt-14 grid gap-6 md:grid-cols-3">
           {pillars.map((p, i) => (
-            <motion.div key={i} className="group flex flex-col overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 transition-all hover:bg-white/15 hover:-translate-y-1" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5, delay: i * 0.15 }}>
-              <div className="flex items-center justify-center bg-white/5 p-6">
-                <img src={p.img} alt={p.title} className="h-44 w-auto object-contain" />
+            <motion.div key={i} className="group flex flex-col overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 transition-all hover:bg-white/15 hover:-translate-y-1 hover:shadow-2xl" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5, delay: i * 0.15 }}>
+              <div className="flex items-center justify-center overflow-hidden bg-white/5 p-4">
+                <img src={p.img} alt={p.title} className="h-52 w-auto object-contain rounded-xl" />
               </div>
-              <div className="flex flex-1 flex-col p-6">
+              <div className="flex flex-1 flex-col p-6 pt-4">
                 <h3 className="text-xl font-bold text-white">{p.title}</h3>
                 <p className="mt-2 text-[15px] leading-relaxed text-white/70">{p.desc}</p>
                 <div className="mt-5 h-1 w-12 rounded-full" style={{ backgroundColor: p.accent }} />
