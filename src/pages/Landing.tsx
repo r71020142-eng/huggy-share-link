@@ -71,7 +71,7 @@ function HeroSection() {
             <span style={{ color: "#1e40af" }}>tudo em um só lugar</span>
           </h1>
           <p className="max-w-md text-lg text-gray-600">
-            Seu cardápio como um app instalável no celular do cliente. Receba pedidos, rastreie entregas em tempo real, organize na cozinha e feche o caixa — sem taxa por pedido.
+            Seu cardápio como um app instalável no celular do cliente. Receba pedidos, rastreie entregas em tempo real, organize na cozinha e feche o caixa. Sem taxa por pedido.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
@@ -360,7 +360,7 @@ function PricingSection() {
         "App personalizado instalável",
         "Domínio customizado",
         "Suporte prioritário 24/7",
-        "Painel de pedidos premium",
+        "Painel de pedidos avançado",
       ],
       locked: [],
       cta: "Assinar Pro",
