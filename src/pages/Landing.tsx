@@ -319,56 +319,78 @@ function PricingSection() {
     {
       name: "Basic",
       price: "Grátis",
+      period: "",
       desc: "Para quem está começando",
-      features: ["Cardápio digital ilimitado", "Pedidos online", "PDV / Caixa", "Bairros e taxas", "Impressão térmica"],
+      features: ["Cardápio digital ilimitado", "Pedidos online em tempo real", "PDV / Caixa completo", "Bairros e taxas de entrega", "Impressão térmica ESC/POS"],
       cta: "Começar grátis",
       highlight: false,
     },
     {
       name: "Pro",
       price: "Em breve",
+      period: "",
       desc: "Para quem quer crescer",
-      features: ["Tudo do Basic", "CRM de clientes", "Relatórios e métricas", "Prioridade no suporte", "Funcionalidades exclusivas"],
-      cta: "Assinar Pro",
+      features: ["Tudo do Basic +", "CRM de clientes completo", "Relatórios e métricas avançadas", "Prioridade no suporte", "Funcionalidades exclusivas"],
+      cta: "Quero ser Pro",
       highlight: true,
     },
   ];
   return (
-    <section id="planos" className="py-20">
+    <section id="planos" className="py-24">
       <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Planos</h2>
-          <p className="mt-3 text-gray-600">Escolha o plano ideal para o seu negócio.</p>
+        <div className="mb-16 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+            Planos
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
+            Escolha o plano ideal para seu negócio
+          </h2>
+          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Sem taxa por pedido. Sem surpresas. Comece grátis e evolua quando quiser.</p>
         </div>
-        <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
+        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
           {plans.map((p, i) => (
-            <Card key={i} className={`relative overflow-hidden shadow-sm ${p.highlight ? "border-2 border-blue-700 shadow-md" : "border-gray-200"}`}>
-              {p.highlight && (
-                <div className="absolute right-0 top-0 rounded-bl-lg bg-blue-700 px-3 py-1 text-xs font-bold text-white">
-                  Popular
-                </div>
-              )}
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl text-gray-900">{p.name}</CardTitle>
-                <CardDescription>{p.desc}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-3xl font-extrabold text-gray-900">{p.price}</p>
-                <ul className="space-y-2">
-                  {p.features.map((f, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-gray-700">
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button asChild className={`w-full ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-blue-700 hover:bg-blue-800 text-white"}`}>
-                  <Link to="/register">{p.cta}</Link>
-                </Button>
-              </CardFooter>
-            </Card>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+            >
+              <Card className={`relative overflow-hidden h-full flex flex-col ${p.highlight ? "border-2 shadow-xl ring-1 ring-blue-200" : "border-gray-200 shadow-sm"}`} style={p.highlight ? { borderColor: "#1e40af" } : {}}>
+                {p.highlight && (
+                  <div className="absolute -right-8 top-6 rotate-45 px-10 py-1 text-xs font-bold text-white" style={{ backgroundColor: "#FF7A1A" }}>
+                    Popular
+                  </div>
+                )}
+                <CardHeader className="pb-4 pt-8">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: p.highlight ? "#1e40af" : "#f1f5f9" }}>
+                    <Zap className={`h-6 w-6 ${p.highlight ? "text-white" : "text-gray-500"}`} />
+                  </div>
+                  <CardTitle className="text-2xl text-gray-900">{p.name}</CardTitle>
+                  <CardDescription className="text-sm">{p.desc}</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 space-y-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-gray-900">{p.price}</span>
+                    {p.period && <span className="text-sm text-gray-500">{p.period}</span>}
+                  </div>
+                  <div className="h-px bg-gray-100" />
+                  <ul className="space-y-3">
+                    {p.features.map((f, j) => (
+                      <li key={j} className="flex items-start gap-3 text-sm text-gray-700">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" style={{ color: p.highlight ? "#1e40af" : "#22c55e" }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <CardFooter className="pt-4 pb-8">
+                  <Button asChild size="lg" className={`w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25" : "bg-gray-900 hover:bg-gray-800 text-white"}`}>
+                    <Link to="/register">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -386,23 +408,34 @@ function FAQSection() {
     { q: "Como funciona o plano Pro?", a: "O plano Pro inclui funcionalidades avançadas como CRM de clientes, relatórios detalhados e prioridade no suporte." },
   ];
   return (
-    <section id="faq" className="py-20">
+    <section id="faq" className="py-24">
       <div className="mx-auto max-w-3xl px-4">
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900">Perguntas frequentes</h2>
+        <div className="mb-14 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+            FAQ
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">Perguntas frequentes</h2>
+          <p className="mt-4 text-gray-500">Tire suas dúvidas antes de começar</p>
         </div>
-        <Accordion type="single" collapsible className="space-y-2">
-          {faqs.map((f, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="rounded-lg border border-gray-200 bg-white px-4">
-              <AccordionTrigger className="text-sm font-semibold text-gray-900 hover:no-underline">
-                {f.q}
-              </AccordionTrigger>
-              <AccordionContent className="text-sm text-gray-600 leading-relaxed">
-                {f.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+        >
+          <Accordion type="single" collapsible className="space-y-3">
+            {faqs.map((f, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="rounded-2xl border border-gray-200 bg-white px-6 shadow-sm transition-shadow hover:shadow-md data-[state=open]:shadow-md data-[state=open]:border-blue-200">
+                <AccordionTrigger className="py-5 text-[15px] font-semibold text-gray-900 hover:no-underline [&[data-state=open]]:text-blue-700">
+                  {f.q}
+                </AccordionTrigger>
+                <AccordionContent className="pb-5 text-[14px] text-gray-600 leading-relaxed">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </motion.div>
       </div>
     </section>
   );
