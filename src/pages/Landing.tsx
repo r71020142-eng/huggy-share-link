@@ -56,7 +56,7 @@ function HeroSection() {
             <span style={{ color: "#1e40af" }}>tudo em um só lugar</span>
           </h1>
           <p className="max-w-md text-lg text-gray-600">
-            Crie seu cardápio online, receba pedidos pelo celular, organize na cozinha e feche o caixa — sem pagar taxa por pedido.
+            Crie seu cardápio online, receba pedidos pelo celular, organize na cozinha e feche o caixa sem pagar taxa por pedido.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
