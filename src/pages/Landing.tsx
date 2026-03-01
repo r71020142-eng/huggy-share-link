@@ -67,15 +67,15 @@ function HeroSection() {
             Para lanchonetes, pizzarias, açaiterias e mais
           </Badge>
           <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-5xl">
-            Cardápio digital + pedidos + caixa,{" "}
+            Cardápio em app nativo + pedidos + caixa,{" "}
             <span style={{ color: "#1e40af" }}>tudo em um só lugar</span>
           </h1>
           <p className="max-w-md text-lg text-gray-600">
-            Crie seu cardápio online, receba pedidos pelo celular, organize na cozinha e feche o caixa sem pagar taxa por pedido.
+            Seu cardápio como um app instalável no celular do cliente. Receba pedidos, rastreie entregas em tempo real, organize na cozinha e feche o caixa — sem taxa por pedido.
           </p>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
-              <Link to="/register">Começar grátis <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <Link to="/register">Testar agora <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-gray-300 text-gray-700">
               <a href="#como-funciona">Ver como funciona</a>
@@ -318,20 +318,37 @@ function PricingSection() {
   const plans = [
     {
       name: "Basic",
-      price: "Grátis",
-      period: "",
+      price: "R$ 49,90",
+      period: "/mês",
       desc: "Para quem está começando",
-      features: ["Cardápio digital ilimitado", "Pedidos online em tempo real", "PDV / Caixa completo", "Bairros e taxas de entrega", "Impressão térmica ESC/POS"],
-      cta: "Começar grátis",
+      features: [
+        "Cardápio digital ilimitado",
+        "Pedidos via WhatsApp",
+        "PDV / Caixa completo",
+        "Bairros e taxas de entrega",
+        "Impressão térmica ESC/POS",
+        "Personalização de cores e logo",
+      ],
+      cta: "Começar agora",
       highlight: false,
     },
     {
       name: "Pro",
-      price: "Em breve",
-      period: "",
-      desc: "Para quem quer crescer",
-      features: ["Tudo do Basic +", "CRM de clientes completo", "Relatórios e métricas avançadas", "Prioridade no suporte", "Funcionalidades exclusivas"],
-      cta: "Quero ser Pro",
+      price: "R$ 99,90",
+      period: "/mês",
+      desc: "Para quem quer a experiência completa",
+      features: [
+        "Tudo do Basic +",
+        "App nativo instalável (PWA)",
+        "Carrinho interno com checkout",
+        "Rastreio de pedidos em tempo real",
+        "CRM de clientes completo",
+        "Relatórios e métricas avançadas",
+        "Adicionais com regras (min/max)",
+        "Confirmação animada + tela de acompanhamento",
+        "Prioridade no suporte",
+      ],
+      cta: "Assinar Pro",
       highlight: true,
     },
   ];
@@ -345,7 +362,7 @@ function PricingSection() {
           <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
             Escolha o plano ideal para seu negócio
           </h2>
-          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Sem taxa por pedido. Sem surpresas. Comece grátis e evolua quando quiser.</p>
+          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Sem taxa por pedido. Sem surpresas. Escolha o plano que cabe no seu bolso.</p>
         </div>
         <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
           {plans.map((p, i) => (
