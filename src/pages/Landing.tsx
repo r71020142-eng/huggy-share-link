@@ -166,13 +166,13 @@ function FeaturesSection() {
   ];
 
   return (
-    <section id="funcionalidades" className="py-24">
+    <section id="funcionalidades" className="relative py-24">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-14 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
             Funcionalidades
           </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
+          <h2 className="mt-2 text-3xl font-extrabold text-white md:text-4xl">
             Tudo que você precisa, num só sistema
           </h2>
         </div>
@@ -181,19 +181,19 @@ function FeaturesSection() {
           {features.map((f, i) => (
             <motion.div
               key={i}
-              className="group flex flex-col rounded-2xl border border-gray-100 bg-white p-6 transition-all hover:shadow-md hover:border-gray-200"
+              className="group flex flex-col rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm p-6 transition-all hover:bg-white/15 hover:shadow-lg hover:border-white/20"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-30px" }}
               transition={{ duration: 0.4, delay: i * 0.07 }}
             >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                <f.icon className="h-5 w-5 text-blue-700" />
+              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
+                <f.icon className="h-5 w-5 text-orange-400" />
               </div>
-              <p className="text-[15px] font-semibold text-gray-900">{f.label}</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-gray-400">{f.desc}</p>
+              <p className="text-[15px] font-semibold text-white">{f.label}</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{f.desc}</p>
               {f.pro && (
-                <Badge className="mt-3 w-fit bg-orange-50 text-orange-600 hover:bg-orange-50 text-[10px] font-bold border-orange-200 uppercase tracking-wide">
+                <Badge className="mt-3 w-fit bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 text-[10px] font-bold border-orange-500/30 uppercase tracking-wide">
                   Pro
                 </Badge>
               )}
@@ -213,7 +213,7 @@ function HowItWorksSection() {
     { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", color: "#7c3aed" },
   ];
   return (
-    <section id="como-funciona" className="py-24">
+    <section id="como-funciona" className="relative py-24">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
@@ -225,7 +225,6 @@ function HowItWorksSection() {
         </div>
 
         <div className="relative grid gap-0 md:grid-cols-3">
-          {/* Connecting line */}
           <div className="absolute top-12 left-[16.6%] right-[16.6%] hidden h-0.5 bg-gradient-to-r from-orange-300 via-blue-300 to-purple-300 md:block" />
 
           {steps.map((s, i) => (
@@ -476,17 +475,32 @@ function LandingFooter() {
 /* ─── Page ─── */
 export default function Landing() {
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(180deg, #f0f4ff 0%, #ffffff 8%, #ffffff 15%, #1e1b4b 22%, #312e81 30%, #f8fafc 38%, #ffffff 48%, #f0f4ff 58%, #eef2ff 68%, #ffffff 78%, #f8fafc 88%, #1e1b4b 94%, #0f172a 100%)" }}>
-      <LandingHeader />
-      <HeroSection />
-      <BenefitsSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <PricingSection />
-      <FAQSection />
-      <FinalCTASection />
-      <LandingFooter />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Light top: Header + Hero */}
+      <div style={{ background: "linear-gradient(180deg, #f0f4ff 0%, #ffffff 50%, #eef2ff 100%)" }}>
+        <LandingHeader />
+        <HeroSection />
+      </div>
+
+      {/* Dark zone: Benefits + Features */}
+      <div style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%)" }}>
+        <BenefitsSection />
+        <FeaturesSection />
+      </div>
+
+      {/* Light zone: How it works + Testimonials + Pricing + FAQ */}
+      <div style={{ background: "linear-gradient(180deg, #f8fafc 0%, #ffffff 15%, #f0f4ff 40%, #ffffff 60%, #eef2ff 80%, #f8fafc 100%)" }}>
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <PricingSection />
+        <FAQSection />
+      </div>
+
+      {/* Dark zone: CTA + Footer */}
+      <div style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)" }}>
+        <FinalCTASection />
+        <LandingFooter />
+      </div>
     </div>
   );
 }
