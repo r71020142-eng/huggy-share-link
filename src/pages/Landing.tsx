@@ -51,7 +51,7 @@ function LandingHeader() {
 /* ─── Hero ─── */
 function HeroSection() {
   return (
-    <section className="bg-gradient-to-b from-blue-50 to-white py-20 md:py-28">
+    <section className="py-20 md:py-28">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
         <motion.div
           className="space-y-6"
@@ -117,12 +117,8 @@ function BenefitsSection() {
   ];
 
   return (
-    <section
-      className="relative py-24 overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 100%)",
-      }}
-    >
+    <section className="relative py-24 overflow-hidden">
+
       {/* Decorative blurred circles */}
       <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
       <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
@@ -170,7 +166,7 @@ function FeaturesSection() {
   ];
 
   return (
-    <section id="funcionalidades" className="bg-gray-50/70 py-24">
+    <section id="funcionalidades" className="py-24">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-14 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
@@ -217,7 +213,7 @@ function HowItWorksSection() {
     { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", color: "#7c3aed" },
   ];
   return (
-    <section id="como-funciona" className="bg-white py-24">
+    <section id="como-funciona" className="py-24">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
@@ -265,10 +261,7 @@ function TestimonialsSection() {
     { name: "Roberto S.", biz: "Dono de Pizzaria", text: "O caixa integrado me deu controle real do faturamento. Antes eu não sabia quanto entrava por dia. Hoje tenho clareza total.", avatar: "R" },
   ];
   return (
-    <section
-      className="relative py-24 overflow-hidden"
-      style={{ background: "linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%)" }}
-    >
+    <section className="relative py-24 overflow-hidden">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-16 text-center">
           <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
@@ -341,7 +334,7 @@ function PricingSection() {
     },
   ];
   return (
-    <section id="planos" className="bg-white py-20">
+    <section id="planos" className="py-20">
       <div className="mx-auto max-w-6xl px-4">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-extrabold text-gray-900">Planos</h2>
@@ -393,7 +386,7 @@ function FAQSection() {
     { q: "Como funciona o plano Pro?", a: "O plano Pro inclui funcionalidades avançadas como CRM de clientes, relatórios detalhados e prioridade no suporte." },
   ];
   return (
-    <section id="faq" className="bg-gray-50 py-20">
+    <section id="faq" className="py-20">
       <div className="mx-auto max-w-3xl px-4">
         <div className="mb-12 text-center">
           <h2 className="text-3xl font-extrabold text-gray-900">Perguntas frequentes</h2>
@@ -418,10 +411,10 @@ function FAQSection() {
 /* ─── CTA Final ─── */
 function FinalCTASection() {
   return (
-    <section className="bg-blue-700 py-16">
+    <section className="py-16">
       <div className="mx-auto max-w-3xl px-4 text-center">
         <h2 className="text-3xl font-extrabold text-white">Pronto para digitalizar seu negócio?</h2>
-        <p className="mt-3 text-blue-100">Crie sua conta gratuita e comece a receber pedidos em minutos.</p>
+        <p className="mt-3 text-white/70">Crie sua conta gratuita e comece a receber pedidos em minutos.</p>
         <Button size="lg" asChild className="mt-6 bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
           <Link to="/register">Começar grátis <ArrowRight className="ml-1 h-4 w-4" /></Link>
         </Button>
@@ -433,15 +426,15 @@ function FinalCTASection() {
 /* ─── Footer ─── */
 function LandingFooter() {
   return (
-    <footer className="border-t border-gray-200 bg-white py-10">
+    <footer className="border-t border-white/10 py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center md:flex-row md:justify-between md:text-left">
-        <img src={logoLanding} alt="Anotô" className="h-8 w-auto object-contain" />
+        <img src={logoLanding} alt="Anotô" className="h-8 w-auto object-contain brightness-0 invert" />
         <div className="flex gap-6">
           {["Termos de uso", "Privacidade", "Suporte"].map((l) => (
-            <a key={l} href="#" className="text-xs text-gray-500 hover:text-gray-700 transition">{l}</a>
+            <a key={l} href="#" className="text-xs text-white/50 hover:text-white/80 transition">{l}</a>
           ))}
         </div>
-        <p className="text-xs text-gray-400">© {new Date().getFullYear()} Anotô. Todos os direitos reservados.</p>
+        <p className="text-xs text-white/30">© {new Date().getFullYear()} Anotô. Todos os direitos reservados.</p>
       </div>
     </footer>
   );
@@ -450,7 +443,7 @@ function LandingFooter() {
 /* ─── Page ─── */
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: "linear-gradient(180deg, #f0f4ff 0%, #ffffff 8%, #ffffff 15%, #1e1b4b 22%, #312e81 30%, #f8fafc 38%, #ffffff 48%, #f0f4ff 58%, #eef2ff 68%, #ffffff 78%, #f8fafc 88%, #1e1b4b 94%, #0f172a 100%)" }}>
       <LandingHeader />
       <HeroSection />
       <BenefitsSection />
