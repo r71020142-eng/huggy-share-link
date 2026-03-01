@@ -86,7 +86,7 @@ export function AdminSidebar() {
   return (
     <Sidebar className="border-r-0">
       <SidebarHeader className="bg-sidebar p-0">
-        <div className="flex w-full items-center justify-center">
+        <div className="flex w-full items-center justify-center bg-white rounded-lg m-2" style={{ width: 'calc(100% - 16px)' }}>
           <img src={logoAnoto} alt="Anotô" className="w-full h-auto object-contain" />
         </div>
 
