@@ -65,7 +65,7 @@ const App = () => (
           <StoreProvider>
             <PrintEngineProvider>
             <Routes>
-              <Route path="/" element={<Navigate to="/admin" replace />} />
+              <Route path="/" element={<Landing />} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
