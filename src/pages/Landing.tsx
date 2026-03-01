@@ -75,7 +75,7 @@ function HeroSection() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
-              <Link to="/register">Testar agora <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <a href={`https://wa.me/5531986570126?text=${encodeURIComponent("Oi, vim pelo site do Anotô. Gostaria de um teste para conhecer mais sobre.")}`} target="_blank" rel="noopener noreferrer">Testar agora <ArrowRight className="ml-1 h-4 w-4" /></a>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-gray-300 text-gray-700">
               <a href="#como-funciona">Ver como funciona</a>
@@ -424,7 +424,7 @@ function PricingSection() {
                 </CardContent>
                 <CardFooter className="pt-4 pb-8">
                   <Button asChild size="lg" className={`w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25" : "bg-gray-900 hover:bg-gray-800 text-white"}`}>
-                    <Link to="/register">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    <a href={`https://wa.me/5531986570126?text=${encodeURIComponent(`Olá, gostaria de assinar o plano ${p.name}.`)}`} target="_blank" rel="noopener noreferrer">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></a>
                   </Button>
                 </CardFooter>
               </Card>
@@ -487,7 +487,7 @@ function FinalCTASection() {
         <h2 className="text-3xl font-extrabold text-white">Pronto para digitalizar seu negócio?</h2>
         <p className="mt-3 text-white/70">Crie sua conta gratuita e comece a receber pedidos em minutos.</p>
         <Button size="lg" asChild className="mt-6 bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
-          <Link to="/register">Começar grátis <ArrowRight className="ml-1 h-4 w-4" /></Link>
+          <a href={`https://wa.me/5531986570126?text=${encodeURIComponent("Oi, vim pelo site do Anotô. Gostaria de um teste para conhecer mais sobre.")}`} target="_blank" rel="noopener noreferrer">Começar grátis <ArrowRight className="ml-1 h-4 w-4" /></a>
         </Button>
       </div>
     </section>
