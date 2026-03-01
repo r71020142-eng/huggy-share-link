@@ -8,14 +8,15 @@ import {
   Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
+import logoLanding from "@/assets/logo-anoto-landing.png";
 
 /* ─── Header ─── */
 function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <a href="/landing" className="text-2xl font-extrabold tracking-tight" style={{ color: "#1e40af" }}>
-          Anotô
+        <a href="/" className="flex items-center">
+          <img src={logoLanding} alt="Anotô" className="h-10 w-auto object-contain" />
         </a>
         <nav className="hidden gap-6 md:flex">
           {[
@@ -325,7 +326,7 @@ function LandingFooter() {
   return (
     <footer className="border-t border-gray-200 bg-white py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center md:flex-row md:justify-between md:text-left">
-        <p className="text-sm font-bold text-gray-800">Anotô</p>
+        <img src={logoLanding} alt="Anotô" className="h-8 w-auto object-contain" />
         <div className="flex gap-6">
           {["Termos de uso", "Privacidade", "Suporte"].map((l) => (
             <a key={l} href="#" className="text-xs text-gray-500 hover:text-gray-700 transition">{l}</a>
