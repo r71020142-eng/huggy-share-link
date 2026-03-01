@@ -8,10 +8,10 @@ import {
   QrCode, ShoppingCart, ClipboardList, Monitor, MapPin, Printer, Users, BarChart3,
   Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock
 } from "lucide-react";
-import heroDevices from "@/assets/hero-app-screenshot.png";
+import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
 import logoIcon from "@/assets/logo-icon.png";
-import benefitOrdersApp from "@/assets/benefit-orders-app.png";
+import benefitOrdersApp from "@/assets/hero-app-screenshot.png";
 import benefitKanbanUI from "@/assets/benefit-kanban-ui.png";
 import benefitThermalPrinter from "@/assets/benefit-thermal-printer.png";
 import testimonialCarlos from "@/assets/testimonial-carlos.jpg";
@@ -89,10 +89,7 @@ function HeroSection() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
         >
-          <div className="relative mx-auto w-[280px] rounded-[2.5rem] border-[8px] border-gray-800 bg-gray-800 shadow-2xl overflow-hidden">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-5 bg-gray-800 rounded-b-2xl z-10" />
-            <img src={heroDevices} alt="App Anotô - Cardápio digital" className="w-full h-auto object-cover rounded-[2rem]" />
-          </div>
+          <img src={heroDevices} alt="Anotô em notebook, tablet e celular" className="w-full max-w-lg h-auto object-contain" />
         </motion.div>
       </div>
     </section>
