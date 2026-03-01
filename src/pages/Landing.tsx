@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   QrCode, ShoppingCart, ClipboardList, Monitor, MapPin, Printer, Users, BarChart3,
-  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight
+  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
@@ -317,17 +317,23 @@ function TestimonialsSection() {
 function PricingSection() {
   const plans = [
     {
-      name: "Basic",
+      name: "Básico",
       price: "R$ 49,90",
       period: "/mês",
-      desc: "Para quem está começando",
-      features: [
-        "Cardápio digital ilimitado",
+      desc: "Para começar a vender online",
+      included: [
+        "Até 10 produtos",
+        "1 cardápio online",
+        "3 categorias",
         "Pedidos via WhatsApp",
-        "PDV / Caixa completo",
-        "Bairros e taxas de entrega",
-        "Impressão térmica ESC/POS",
-        "Personalização de cores e logo",
+        "Painel de pedidos básico",
+      ],
+      locked: [
+        "CRM avançado de clientes",
+        "Analytics e relatórios",
+        "Rastreio de pedidos em tempo real",
+        "App personalizado instalável",
+        "Múltiplos cardápios",
       ],
       cta: "Começar agora",
       highlight: false,
@@ -336,18 +342,22 @@ function PricingSection() {
       name: "Pro",
       price: "R$ 99,90",
       period: "/mês",
-      desc: "Para quem quer a experiência completa",
-      features: [
-        "Tudo do Basic +",
-        "App nativo instalável (PWA)",
-        "Carrinho interno com checkout",
+      desc: "Recursos completos para crescer",
+      included: [
+        "Produtos ilimitados",
+        "Múltiplos cardápios",
+        "Categorias ilimitadas",
+        "Checkout 100% online (sem WhatsApp)",
         "Rastreio de pedidos em tempo real",
-        "CRM de clientes completo",
-        "Relatórios e métricas avançadas",
-        "Adicionais com regras (min/max)",
-        "Confirmação animada + tela de acompanhamento",
-        "Prioridade no suporte",
+        "Analytics avançado (faturamento, ticket médio, top produtos)",
+        "CRM de clientes (LTV, histórico, WhatsApp)",
+        "Relatórios exportáveis (CSV)",
+        "App personalizado instalável",
+        "Domínio customizado",
+        "Suporte prioritário 24/7",
+        "Painel de pedidos premium",
       ],
+      locked: [],
       cta: "Assinar Pro",
       highlight: true,
     },
@@ -393,10 +403,16 @@ function PricingSection() {
                   </div>
                   <div className="h-px bg-gray-100" />
                   <ul className="space-y-3">
-                    {p.features.map((f, j) => (
+                    {p.included.map((f, j) => (
                       <li key={j} className="flex items-start gap-3 text-sm text-gray-700">
                         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" style={{ color: p.highlight ? "#1e40af" : "#22c55e" }} />
                         {f}
+                      </li>
+                    ))}
+                    {p.locked.map((f, j) => (
+                      <li key={`locked-${j}`} className="flex items-start gap-3 text-sm text-gray-400">
+                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gray-300" />
+                        <span className="line-through">{f}</span>
                       </li>
                     ))}
                   </ul>
