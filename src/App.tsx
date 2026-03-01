@@ -36,6 +36,7 @@ import SuperAdminUsers from "@/pages/superadmin/Users";
 import SuperAdminActivityLogs from "@/pages/superadmin/ActivityLogs";
 import SuperAdminPrintMonitoring from "@/pages/superadmin/PrintMonitoring";
 import PublicMenu from "@/pages/public/PublicMenu";
+import Landing from "@/pages/Landing";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,7 @@ const App = () => (
             <PrintEngineProvider>
             <Routes>
               <Route path="/" element={<Navigate to="/admin" replace />} />
+              <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
               <Route path="/m/:slug" element={<PublicMenu />} />
