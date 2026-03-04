@@ -410,6 +410,7 @@ export type Database = {
           is_published: boolean | null
           logo_url: string | null
           name: string
+          show_all_category: boolean | null
           show_banner: boolean | null
           show_categories: boolean | null
           show_featured: boolean | null
@@ -430,6 +431,7 @@ export type Database = {
           is_published?: boolean | null
           logo_url?: string | null
           name: string
+          show_all_category?: boolean | null
           show_banner?: boolean | null
           show_categories?: boolean | null
           show_featured?: boolean | null
@@ -450,6 +452,7 @@ export type Database = {
           is_published?: boolean | null
           logo_url?: string | null
           name?: string
+          show_all_category?: boolean | null
           show_banner?: boolean | null
           show_categories?: boolean | null
           show_featured?: boolean | null
