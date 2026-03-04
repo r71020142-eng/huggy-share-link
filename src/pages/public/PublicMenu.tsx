@@ -113,13 +113,25 @@ export default function PublicMenu() {
       .from("stores").select("id, name, slug, address, whatsapp, logo_url, banner_url, theme_color, is_open, delivery_enabled, pickup_enabled, min_order, estimated_time, promo_banner, operating_hours, plan_type, created_at").eq("id", menuData.store_id).single();
     setStore(storeData);
 
-    const [{ data: prods }, { data: cats }, { data: hoods }] = await Promise.all([
-      supabase.from("products").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("sort_order"),
+    const [{ data: menuProds }, { data: allProds }, { data: cats }, { data: hoods }] = await Promise.all([
+      supabase.from("menu_products").select("product_id, sort_order, is_available").eq("menu_id", menuData.id).eq("is_available", true).order("sort_order"),
+      supabase.from("products").select("*").eq("store_id", menuData.store_id).eq("is_active", true),
       supabase.from("categories").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("sort_order"),
       supabase.from("neighborhoods").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("name"),
     ]);
 
-    setProducts(prods || []);
+    // If menu has products linked via menu_products, use that order; otherwise fallback to all products
+    let orderedProducts: Product[] = [];
+    if (menuProds && menuProds.length > 0) {
+      const productMap = new Map((allProds || []).map((p) => [p.id, p]));
+      orderedProducts = menuProds
+        .map((mp) => productMap.get(mp.product_id))
+        .filter((p): p is Product => !!p);
+    } else {
+      orderedProducts = (allProds || []).sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    }
+
+    setProducts(orderedProducts);
     setCategories(cats || []);
     setNeighborhoods(hoods || []);
     setLoading(false);
