@@ -35,19 +35,40 @@ export default function Register() {
     }
 
     if (authData.user) {
-      // Create the store
-      const slug = storeName
+      // Create the store with unique slug
+      const baseSlug = storeName
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
 
-      const { error: storeError } = await supabase.from("stores").insert({
-        name: storeName,
-        slug,
-        owner_id: authData.user.id,
-      });
+      // Try base slug first, then append random suffix on conflict
+      let slug = baseSlug;
+      let storeError: any = null;
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const { error } = await supabase.from("stores").insert({
+          name: storeName,
+          slug,
+          owner_id: authData.user.id,
+        });
+
+        if (!error) {
+          storeError = null;
+          break;
+        }
+
+        // 409 = conflict (duplicate slug), retry with suffix
+        if (error.code === "23505" || error.message?.includes("duplicate")) {
+          const suffix = Math.random().toString(36).substring(2, 6);
+          slug = `${baseSlug}-${suffix}`;
+          storeError = error;
+        } else {
+          storeError = error;
+          break;
+        }
+      }
 
       if (storeError) {
         toast.error("Erro ao criar loja: " + storeError.message);
