@@ -152,23 +152,47 @@ export class WebUSBAdapter implements PrinterAdapter {
       }
     }
 
+    // Try to reset device before claiming (helps release stale claims)
     try {
-      await device.claimInterface(0);
-    } catch (e: any) {
-      // Interface might already be claimed, try to release and reclaim
+      if (typeof device.reset === "function") {
+        await device.reset();
+      }
+    } catch {
+      // reset() not supported on all devices, continue
+    }
+
+    // Try to claim an interface — iterate all available interfaces
+    let claimedInterface: number | null = null;
+    const interfaces = device.configuration?.interfaces || [];
+    
+    for (const iface of interfaces) {
+      const ifaceNum = iface.interfaceNumber;
       try {
-        await device.releaseInterface(0);
-        await device.claimInterface(0);
+        await device.claimInterface(ifaceNum);
+        claimedInterface = ifaceNum;
+        break;
       } catch {
-        await device.close();
-        throw new Error(
-          "Não foi possível acessar a interface USB. Desconecte e reconecte a impressora, ou tente WebSerial."
-        );
+        // Try release + reclaim
+        try {
+          await device.releaseInterface(ifaceNum);
+          await device.claimInterface(ifaceNum);
+          claimedInterface = ifaceNum;
+          break;
+        } catch {
+          continue;
+        }
       }
     }
 
-    // Find bulk OUT endpoint
-    const iface = device.configuration?.interfaces?.[0];
+    if (claimedInterface === null) {
+      await device.close();
+      throw new Error(
+        "Não foi possível acessar a interface USB. Desconecte e reconecte a impressora fisicamente, feche outros programas que a usam (ex: driver POS), ou tente Conectar via Serial."
+      );
+    }
+
+    // Find bulk OUT endpoint on the claimed interface
+    const iface = interfaces.find((i: any) => i.interfaceNumber === claimedInterface);
     const alt = iface?.alternates?.[0];
     const ep = alt?.endpoints?.find((e: any) => e.direction === "out");
     this.endpoint = ep?.endpointNumber ?? 0;
