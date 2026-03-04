@@ -352,13 +352,15 @@ export default function PublicMenu() {
       {/* Categories */}
       {categories.length > 0 && (
         <div className="mt-4 flex gap-2 overflow-x-auto px-4 pb-2 scrollbar-hide">
-          <button
-            onClick={() => setActiveCategory(null)}
-            className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!activeCategory ? "text-white shadow-md" : "bg-muted text-muted-foreground"}`}
-            style={!activeCategory ? { backgroundColor: themeColor } : {}}
-          >
-            Todos
-          </button>
+          {(menu?.show_all_category !== false) && (
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-all ${!activeCategory ? "text-white shadow-md" : "bg-muted text-muted-foreground"}`}
+              style={!activeCategory ? { backgroundColor: themeColor } : {}}
+            >
+              Todos
+            </button>
+          )}
           {categories.map((cat) => (
             <button
               key={cat.id}

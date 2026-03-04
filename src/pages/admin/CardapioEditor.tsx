@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft, Plus, X, Search, GripVertical } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Plus, X, Search, GripVertical, Star } from "lucide-react";
 import { MobilePreview } from "@/components/admin/MobilePreview";
 import { toast } from "sonner";
 import {
@@ -46,10 +47,12 @@ interface MenuProduct {
 function SortableProductItem({
   mp,
   onRemove,
+  onToggleFeatured,
   formatBRL,
 }: {
   mp: MenuProduct;
   onRemove: (id: string) => void;
+  onToggleFeatured: (productId: string, current: boolean) => void;
   formatBRL: (v: number) => string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: mp.id });
@@ -60,6 +63,8 @@ function SortableProductItem({
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : undefined,
   };
+
+  const isFeatured = mp.product?.is_featured ?? false;
 
   return (
     <div
@@ -84,7 +89,13 @@ function SortableProductItem({
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <Badge variant="default" className="bg-green-600 text-white text-xs">Disponível</Badge>
+        <button
+          onClick={() => mp.product && onToggleFeatured(mp.product.id, isFeatured)}
+          className={`p-1.5 rounded-md transition-colors ${isFeatured ? "text-amber-500 bg-amber-500/10" : "text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"}`}
+          title={isFeatured ? "Remover dos destaques" : "Destacar no topo"}
+        >
+          <Star className={`h-4 w-4 ${isFeatured ? "fill-current" : ""}`} />
+        </button>
         <button onClick={() => onRemove(mp.id)} className="text-destructive hover:text-destructive/80 p-1">
           <X className="h-4 w-4" />
         </button>
@@ -105,6 +116,7 @@ export default function CardapioEditor() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAllCategory, setShowAllCategory] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -123,7 +135,10 @@ export default function CardapioEditor() {
   const fetchMenu = async () => {
     if (!store || !menuId) return;
     const { data } = await supabase.from("menus").select("*").eq("id", menuId).eq("store_id", store.id).single();
-    if (data) setMenu(data);
+    if (data) {
+      setMenu(data);
+      setShowAllCategory((data as any).show_all_category ?? true);
+    }
     setLoading(false);
   };
 
@@ -182,6 +197,48 @@ export default function CardapioEditor() {
     fetchMenuProducts();
   };
 
+  const toggleFeatured = async (productId: string, currentFeatured: boolean) => {
+    const { error } = await supabase
+      .from("products")
+      .update({ is_featured: !currentFeatured })
+      .eq("id", productId);
+
+    if (error) {
+      toast.error("Erro ao atualizar destaque");
+      return;
+    }
+
+    toast.success(!currentFeatured ? "Produto destacado! ⭐" : "Destaque removido");
+
+    // Update local state
+    setMenuProducts((prev) =>
+      prev.map((mp) =>
+        mp.product_id === productId
+          ? { ...mp, product: mp.product ? { ...mp.product, is_featured: !currentFeatured } : mp.product }
+          : mp
+      )
+    );
+    setAllProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, is_featured: !currentFeatured } : p))
+    );
+  };
+
+  const toggleShowAllCategory = async (value: boolean) => {
+    if (!menuId) return;
+    setShowAllCategory(value);
+    const { error } = await supabase
+      .from("menus")
+      .update({ show_all_category: value } as any)
+      .eq("id", menuId);
+
+    if (error) {
+      toast.error("Erro ao salvar configuração");
+      setShowAllCategory(!value);
+    } else {
+      toast.success(value ? 'Categoria "Todos" ativada' : 'Categoria "Todos" desativada');
+    }
+  };
+
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -204,6 +261,8 @@ export default function CardapioEditor() {
     (p) => !menuProductIds.includes(p.id) &&
       (searchQuery === "" || p.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const featuredCount = menuProducts.filter((mp) => mp.product?.is_featured).length;
 
   if (loading) {
     return (
@@ -270,10 +329,26 @@ export default function CardapioEditor() {
         <ScrollArea className="flex-1">
           {activeTab === "produtos" && (
             <div className="p-6 space-y-6">
+              {/* Settings bar */}
+              <div className="flex items-center justify-between rounded-lg border bg-card p-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">Exibir categoria "Todos"</span>
+                  <span className="text-xs text-muted-foreground">(filtro padrão no cardápio público)</span>
+                </div>
+                <Switch checked={showAllCategory} onCheckedChange={toggleShowAllCategory} />
+              </div>
+
+              {featuredCount > 0 && (
+                <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-500/10 rounded-lg px-3 py-2">
+                  <Star className="h-4 w-4 fill-current" />
+                  <span>{featuredCount} produto(s) em destaque — aparecerão primeiro no cardápio</span>
+                </div>
+              )}
+
               {menuProducts.length > 0 && (
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    NO CARDÁPIO — ARRASTE PARA REORDENAR
+                    NO CARDÁPIO — ARRASTE PARA REORDENAR · ⭐ PARA DESTACAR
                   </h3>
                   <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={menuProducts.map((mp) => mp.id)} strategy={verticalListSortingStrategy}>
@@ -283,6 +358,7 @@ export default function CardapioEditor() {
                             key={mp.id}
                             mp={mp}
                             onRemove={removeFromMenu}
+                            onToggleFeatured={toggleFeatured}
                             formatBRL={formatBRL}
                           />
                         ))}
