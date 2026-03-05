@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { formatBRL } from "@/lib/utils";
 import { useCashSession } from "@/hooks/useCashSession";
 import { useStore } from "@/hooks/useStore";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Wallet, Lock, Unlock, Clock } from "lucide-react";
+import { Wallet, Lock, Unlock, Clock, CheckCircle2 } from "lucide-react";
 
 export default function CashSessionPage() {
   const { store } = useStore();
@@ -20,15 +21,44 @@ export default function CashSessionPage() {
   const [opening, setOpening] = useState(false);
 
   // Live summary
-  const [summary, setSummary] = useState<{ byMethod: Record<string, { count: number; total: number }>; grandTotal: number } | null>(null);
+  const [summary, setSummary] = useState<{ byMethod: Record<string, { count: number; total: number }>; grandTotal: number; totalOrders: number } | null>(null);
 
-  useEffect(() => {
+  const refreshSummary = useCallback(() => {
     if (activeSession) {
       getSessionSummary(activeSession.id).then(setSummary);
     } else {
       setSummary(null);
     }
   }, [activeSession]);
+
+  useEffect(() => {
+    refreshSummary();
+  }, [refreshSummary]);
+
+  // Realtime: listen for new order_payments linked to this session
+  useEffect(() => {
+    if (!activeSession || !store) return;
+
+    const channel = supabase
+      .channel(`cash-session-${activeSession.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "order_payments",
+          filter: `cash_session_id=eq.${activeSession.id}`,
+        },
+        () => {
+          refreshSummary();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeSession, store, refreshSummary]);
 
   const handleOpen = async () => {
     setOpening(true);
@@ -86,24 +116,41 @@ export default function CashSessionPage() {
             </div>
 
             {summary && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
-                <div>
-                  <p className="text-xs text-muted-foreground">💵 Dinheiro</p>
-                  <p className="font-bold">{formatBRL(summary.byMethod["cash"]?.total || 0)}</p>
+              <>
+                {/* Completed orders counter */}
+                <div className="flex items-center gap-3 pt-4 border-t">
+                  <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/40">
+                    <CheckCircle2 className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Pedidos finalizados nesta sessão</p>
+                    <p className="text-2xl font-bold text-green-700 dark:text-green-400">{summary.totalOrders}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">💎 Pix</p>
-                  <p className="font-bold">{formatBRL(summary.byMethod["pix"]?.total || 0)}</p>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
+                  <div>
+                    <p className="text-xs text-muted-foreground">💵 Dinheiro</p>
+                    <p className="font-bold">{formatBRL(summary.byMethod["cash"]?.total || 0)}</p>
+                    <p className="text-xs text-muted-foreground">{summary.byMethod["cash"]?.count || 0} pedidos</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">💎 Pix</p>
+                    <p className="font-bold">{formatBRL(summary.byMethod["pix"]?.total || 0)}</p>
+                    <p className="text-xs text-muted-foreground">{summary.byMethod["pix"]?.count || 0} pedidos</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">💳 Cartão</p>
+                    <p className="font-bold">{formatBRL((summary.byMethod["credit"]?.total || 0) + (summary.byMethod["debit"]?.total || 0))}</p>
+                    <p className="text-xs text-muted-foreground">{(summary.byMethod["credit"]?.count || 0) + (summary.byMethod["debit"]?.count || 0)} pedidos</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Vendas</p>
+                    <p className="font-bold text-primary">{formatBRL(summary.grandTotal)}</p>
+                    <p className="text-xs text-muted-foreground">{summary.totalOrders} pedidos</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">💳 Cartão</p>
-                  <p className="font-bold">{formatBRL((summary.byMethod["credit"]?.total || 0) + (summary.byMethod["debit"]?.total || 0))}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Vendas</p>
-                  <p className="font-bold text-primary">{formatBRL(summary.grandTotal)}</p>
-                </div>
-              </div>
+              </>
             )}
           </CardContent>
         </Card>
