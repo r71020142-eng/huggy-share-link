@@ -109,8 +109,9 @@ export function useCashSession() {
       summary[p.payment_method].total += Number(p.amount);
     });
 
+    const totalOrders = (payments || []).length;
     const grandTotal = Object.values(summary).reduce((s, v) => s + v.total, 0);
-    return { byMethod: summary, grandTotal };
+    return { byMethod: summary, grandTotal, totalOrders };
   };
 
   // Cash movements (sangria / suprimento)
