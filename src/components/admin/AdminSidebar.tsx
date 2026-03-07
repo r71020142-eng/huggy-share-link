@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -28,6 +28,7 @@ import logoAnoto from "@/assets/logo-anoto.png";
 import { useStore } from "@/hooks/useStore";
 import { useCashSession } from "@/hooks/useCashSession";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -84,6 +85,18 @@ export function AdminSidebar() {
   const location = useLocation();
   const isCashActive = location.pathname.startsWith("/admin/cash");
   const [cashOpen, setCashOpen] = useState(isCashActive);
+  const [whatsappActive, setWhatsappActive] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!store) { setWhatsappActive(null); return; }
+    supabase
+      .from("store_whatsapp_integrations")
+      .select("active")
+      .eq("store_id", store.id)
+      .eq("provider", "zapi")
+      .maybeSingle()
+      .then(({ data }) => setWhatsappActive(data?.active ?? null));
+  }, [store]);
 
   return (
     <Sidebar className="border-r-0">
@@ -163,6 +176,9 @@ export function AdminSidebar() {
                       <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                       {item.proOnly && <ProBadge />}
+                      {item.title === "WhatsApp" && whatsappActive !== null && (
+                        <span className={`ml-auto h-2 w-2 rounded-full ${whatsappActive ? "bg-green-500" : "bg-red-500"}`} title={whatsappActive ? "Integração ativa" : "Integração inativa"} />
+                      )}
                       {item.title === "Planos" && isPro && (
                         <Badge variant="secondary" className="ml-auto bg-primary text-primary-foreground text-[10px] px-1.5 py-0">
                           PRO ✓
