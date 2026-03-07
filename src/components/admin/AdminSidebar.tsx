@@ -21,6 +21,7 @@ import {
   History,
   Printer,
   HandCoins,
+  MessageSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import logoAnoto from "@/assets/logo-anoto.png";
@@ -64,6 +65,7 @@ const navItems = [
   { title: "CRM", url: "/admin/crm", icon: Users, proOnly: true },
   { title: "Relatórios", url: "/admin/reports", icon: BarChart3, proOnly: true },
   { title: "Impressão", url: "/admin/printing", icon: Printer, proOnly: false },
+  { title: "WhatsApp", url: "/admin/whatsapp", icon: MessageSquare, proOnly: false },
   { title: "Configurações", url: "/admin/settings", icon: Settings, proOnly: false },
   { title: "Planos", url: "/admin/plans", icon: Sparkles, proOnly: false },
 ];

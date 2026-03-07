@@ -28,6 +28,7 @@ import CashMovementsPage from "@/pages/admin/cash/CashMovementsPage";
 import CashClosePage from "@/pages/admin/cash/CashClosePage";
 import CashHistoryPage from "@/pages/admin/cash/CashHistoryPage";
 import Fiados from "@/pages/admin/Fiados";
+import WhatsAppIntegration from "@/pages/admin/WhatsAppIntegration";
 import SuperAdminLogin from "@/pages/superadmin/Login";
 import SuperAdminDashboard from "@/pages/superadmin/Dashboard";
 import SuperAdminKeys from "@/pages/superadmin/Keys";
@@ -92,6 +93,7 @@ const App = () => (
                 <Route path="cash/history" element={<CashHistoryPage />} />
                 <Route path="fiados" element={<Fiados />} />
                 <Route path="printing" element={<Printing />} />
+                <Route path="whatsapp" element={<WhatsAppIntegration />} />
                 <Route path="crm" element={<CRM />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<Settings />} />
