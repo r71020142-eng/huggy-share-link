@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.print-agent-auth]
 verify_jwt = false
+
+[functions.create-whatsapp-draft-order]
+verify_jwt = false
