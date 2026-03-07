@@ -1224,6 +1224,54 @@ export type Database = {
           },
         ]
       }
+      store_whatsapp_integrations: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          instance_id: string
+          phone_e164: string | null
+          provider: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          instance_id: string
+          phone_e164?: string | null
+          provider?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          instance_id?: string
+          phone_e164?: string | null
+          provider?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_whatsapp_integrations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_whatsapp_integrations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           address: string | null
@@ -1313,6 +1361,79 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      whatsapp_events: {
+        Row: {
+          customer_name: string | null
+          customer_phone: string | null
+          error_message: string | null
+          external_message_id: string
+          id: string
+          instance_id: string
+          message_text: string | null
+          order_id: string | null
+          payload_raw: Json | null
+          processed_at: string | null
+          provider: string
+          received_at: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          customer_name?: string | null
+          customer_phone?: string | null
+          error_message?: string | null
+          external_message_id: string
+          id?: string
+          instance_id: string
+          message_text?: string | null
+          order_id?: string | null
+          payload_raw?: Json | null
+          processed_at?: string | null
+          provider?: string
+          received_at?: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          customer_name?: string | null
+          customer_phone?: string | null
+          error_message?: string | null
+          external_message_id?: string
+          id?: string
+          instance_id?: string
+          message_text?: string | null
+          order_id?: string | null
+          payload_raw?: Json | null
+          processed_at?: string | null
+          provider?: string
+          received_at?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_events_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "whatsapp_events_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
