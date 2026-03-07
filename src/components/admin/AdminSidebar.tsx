@@ -29,7 +29,6 @@ import { useStore } from "@/hooks/useStore";
 import { useCashSession } from "@/hooks/useCashSession";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 import {
   Sidebar,
