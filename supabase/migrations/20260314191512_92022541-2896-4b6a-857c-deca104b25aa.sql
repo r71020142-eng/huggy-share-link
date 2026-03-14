@@ -1,0 +1,1 @@
+UPDATE public.stores SET plan_type = 'pro' WHERE id = 'bf3ba375-edcb-4ad5-8264-ef30ebc8f793';
