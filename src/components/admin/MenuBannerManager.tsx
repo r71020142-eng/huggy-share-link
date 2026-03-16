@@ -219,6 +219,28 @@ function SortableBannerItem({
             </div>
           )}
 
+          {linkType === "category" && (
+            <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border p-1">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCategoryId(c.id)}
+                  className={`flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                    selectedCategoryId === c.id
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <span className="text-sm shrink-0">{c.icon || "📁"}</span>
+                  <span className="truncate">{c.name}</span>
+                </button>
+              ))}
+              {categories.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">Nenhuma categoria encontrada</p>
+              )}
+            </div>
+          )
+
           <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleSave}>
             Salvar
           </Button>
