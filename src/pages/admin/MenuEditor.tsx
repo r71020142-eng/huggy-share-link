@@ -134,7 +134,6 @@ export default function MenuEditor() {
     const { error } = await supabase.from("menus").update({
       theme_color: themeColor,
       logo_url: logoUrl,
-      banner_url: bannerUrl,
       font_family: fontFamily,
       bg_color: bgColor,
       text_color: textColor,
