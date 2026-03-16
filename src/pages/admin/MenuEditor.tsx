@@ -123,7 +123,7 @@ export default function MenuEditor() {
       setShowFeatured((data as any).show_featured ?? true);
       setShowSearch((data as any).show_search ?? true);
       setLogoUrl(data.logo_url);
-      setBannerUrl(data.banner_url);
+      // banner_url is now managed by MenuBannerManager
     }
     setLoading(false);
   };
