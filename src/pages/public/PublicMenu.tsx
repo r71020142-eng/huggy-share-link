@@ -384,22 +384,26 @@ export default function PublicMenu() {
 
         if (allBanners.length === 1 || !isCarousel) {
           const banner = allBanners[0];
-          const img = (
+          const isClickable = banner.link_url || banner.link_product_id;
+          const handleSingleClick = () => {
+            if (banner.link_product_id) {
+              const p = products.find((pr) => pr.id === banner.link_product_id);
+              if (p) setSelectedProduct(p);
+            } else if (banner.link_url) {
+              if (banner.link_url.startsWith("http")) window.open(banner.link_url, "_blank", "noopener");
+              else window.location.href = banner.link_url;
+            }
+          };
+          return (
             <motion.img
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               src={banner.image_url}
               alt=""
-              className={`h-48 w-full object-cover ${banner.link_url ? "cursor-pointer" : ""}`}
-              onClick={() => {
-                if (banner.link_url) {
-                  if (banner.link_url.startsWith("http")) window.open(banner.link_url, "_blank", "noopener");
-                  else window.location.href = banner.link_url;
-                }
-              }}
+              className={`h-48 w-full object-cover ${isClickable ? "cursor-pointer" : ""}`}
+              onClick={handleSingleClick}
             />
           );
-          return img;
         }
 
         return <BannerCarousel banners={allBanners} themeColor={themeColor} onProductClick={(pid) => {
