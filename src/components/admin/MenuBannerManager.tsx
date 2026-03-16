@@ -161,7 +161,7 @@ function SortableBannerItem({
         <div className="pl-7 space-y-3">
           {/* Link type selector */}
           <div className="flex gap-2">
-            {(["none", "url", "product"] as const).map((type) => (
+            {(["none", "url", "product", "category"] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setLinkType(type)}
@@ -171,7 +171,7 @@ function SortableBannerItem({
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                {type === "none" ? "Sem link" : type === "url" ? "Link externo" : "Produto"}
+                {type === "none" ? "Sem link" : type === "url" ? "Link externo" : type === "product" ? "Produto" : "Categoria"}
               </button>
             ))}
           </div>
