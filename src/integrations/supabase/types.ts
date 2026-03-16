@@ -1058,6 +1058,7 @@ export type Database = {
           category_id: string | null
           created_at: string
           description: string | null
+          free_additionals_limits: Json | null
           id: string
           image_url: string | null
           is_active: boolean | null
@@ -1074,6 +1075,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          free_additionals_limits?: Json | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
@@ -1090,6 +1092,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string
           description?: string | null
+          free_additionals_limits?: Json | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null

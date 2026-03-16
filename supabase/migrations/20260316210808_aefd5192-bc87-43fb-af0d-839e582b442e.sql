@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN free_additionals_limits jsonb DEFAULT NULL;
