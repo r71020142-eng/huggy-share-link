@@ -30,16 +30,19 @@ interface BannerItem {
   image_url: string;
   link_url?: string | null;
   link_product_id?: string | null;
+  link_category_id?: string | null;
 }
 
 function BannerCarousel({
   banners,
   themeColor,
   onProductClick,
+  onCategoryClick,
 }: {
   banners: BannerItem[];
   themeColor: string;
   onProductClick?: (productId: string) => void;
+  onCategoryClick?: (categoryId: string) => void;
 }) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
@@ -54,6 +57,8 @@ function BannerCarousel({
     const b = banners[current];
     if (b?.link_product_id && onProductClick) {
       onProductClick(b.link_product_id);
+    } else if (b?.link_category_id && onCategoryClick) {
+      onCategoryClick(b.link_category_id);
     } else if (b?.link_url) {
       if (b.link_url.startsWith("http")) {
         window.open(b.link_url, "_blank", "noopener");
@@ -63,7 +68,7 @@ function BannerCarousel({
     }
   };
 
-  const isClickable = banners[current]?.link_url || banners[current]?.link_product_id;
+  const isClickable = banners[current]?.link_url || banners[current]?.link_product_id || banners[current]?.link_category_id;
 
   return (
     <div className="relative h-48 w-full overflow-hidden">
@@ -375,7 +380,7 @@ export default function PublicMenu() {
       {(() => {
         const isCarousel = (menu as any)?.banner_mode === "carousel";
         const allBanners: BannerItem[] = menuBanners.length > 0
-          ? menuBanners.map((b: any) => ({ image_url: b.image_url, link_url: b.link_url }))
+          ? menuBanners.map((b: any) => ({ image_url: b.image_url, link_url: b.link_url, link_product_id: b.link_product_id, link_category_id: b.link_category_id }))
           : (menu?.banner_url || store?.banner_url)
             ? [{ image_url: menu?.banner_url || store?.banner_url }]
             : [];
@@ -384,11 +389,14 @@ export default function PublicMenu() {
 
         if (allBanners.length === 1 || !isCarousel) {
           const banner = allBanners[0];
-          const isClickable = banner.link_url || banner.link_product_id;
+          const isClickable = banner.link_url || banner.link_product_id || banner.link_category_id;
           const handleSingleClick = () => {
             if (banner.link_product_id) {
               const p = products.find((pr) => pr.id === banner.link_product_id);
               if (p) setSelectedProduct(p);
+            } else if (banner.link_category_id) {
+              setActiveCategory(banner.link_category_id);
+              document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" });
             } else if (banner.link_url) {
               if (banner.link_url.startsWith("http")) window.open(banner.link_url, "_blank", "noopener");
               else window.location.href = banner.link_url;
@@ -409,6 +417,9 @@ export default function PublicMenu() {
         return <BannerCarousel banners={allBanners} themeColor={themeColor} onProductClick={(pid) => {
           const p = products.find((pr) => pr.id === pid);
           if (p) setSelectedProduct(p);
+        }} onCategoryClick={(catId) => {
+          setActiveCategory(catId);
+          document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" });
         }} />;
       })()}
 
@@ -532,7 +543,7 @@ export default function PublicMenu() {
       })()}
 
       {/* Cardápio */}
-      <div className="mt-6 px-4">
+      <div id="products-section" className="mt-6 px-4">
         <h2 className="text-lg font-bold mb-3">Cardápio</h2>
         <div className="space-y-3">
           {filteredProducts.map((product, i) => (

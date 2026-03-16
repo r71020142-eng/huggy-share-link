@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Trash2, Image as ImageIcon, Link2, Package } from "lucide-react";
+import { GripVertical, Trash2, Image as ImageIcon, Link2, Package, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -32,6 +32,7 @@ interface MenuBanner {
   image_url: string;
   link_url: string | null;
   link_product_id: string | null;
+  link_category_id: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;
@@ -44,6 +45,12 @@ interface SimpleProduct {
   price: number;
 }
 
+interface SimpleCategory {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 interface Props {
   menuId: string;
   storeId: string;
@@ -54,26 +61,30 @@ interface Props {
 function SortableBannerItem({
   banner,
   products,
+  categories,
   onRemove,
   onToggleActive,
   onUpdateLink,
 }: {
   banner: MenuBanner;
   products: SimpleProduct[];
+  categories: SimpleCategory[];
   onRemove: (id: string) => void;
   onToggleActive: (id: string, current: boolean) => void;
-  onUpdateLink: (id: string, linkUrl: string | null, productId: string | null) => void;
+  onUpdateLink: (id: string, linkUrl: string | null, productId: string | null, categoryId: string | null) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: banner.id });
   const [editing, setEditing] = useState(false);
-  const [linkType, setLinkType] = useState<"none" | "url" | "product">(
-    banner.link_product_id ? "product" : banner.link_url ? "url" : "none"
+  const [linkType, setLinkType] = useState<"none" | "url" | "product" | "category">(
+    banner.link_product_id ? "product" : banner.link_category_id ? "category" : banner.link_url ? "url" : "none"
   );
   const [linkValue, setLinkValue] = useState(banner.link_url || "");
   const [selectedProductId, setSelectedProductId] = useState(banner.link_product_id || "");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(banner.link_category_id || "");
   const [productSearch, setProductSearch] = useState("");
 
   const linkedProduct = products.find((p) => p.id === banner.link_product_id);
+  const linkedCategory = categories.find((c) => c.id === banner.link_category_id);
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -88,11 +99,13 @@ function SortableBannerItem({
 
   const handleSave = () => {
     if (linkType === "url") {
-      onUpdateLink(banner.id, linkValue || null, null);
+      onUpdateLink(banner.id, linkValue || null, null, null);
     } else if (linkType === "product") {
-      onUpdateLink(banner.id, null, selectedProductId || null);
+      onUpdateLink(banner.id, null, selectedProductId || null, null);
+    } else if (linkType === "category") {
+      onUpdateLink(banner.id, null, null, selectedCategoryId || null);
     } else {
-      onUpdateLink(banner.id, null, null);
+      onUpdateLink(banner.id, null, null, null);
     }
     setEditing(false);
   };
@@ -111,7 +124,12 @@ function SortableBannerItem({
               <Package className="h-3 w-3 shrink-0" /> {linkedProduct.name}
             </p>
           )}
-          {banner.link_url && !banner.link_product_id && !editing && (
+          {linkedCategory && !editing && (
+            <p className="text-xs text-primary truncate flex items-center gap-1">
+              <FolderOpen className="h-3 w-3 shrink-0" /> {linkedCategory.icon || "📁"} {linkedCategory.name}
+            </p>
+          )}
+          {banner.link_url && !banner.link_product_id && !banner.link_category_id && !editing && (
             <p className="text-xs text-primary truncate flex items-center gap-1">
               <Link2 className="h-3 w-3 shrink-0" /> {banner.link_url}
             </p>
@@ -121,7 +139,7 @@ function SortableBannerItem({
           <button
             onClick={() => setEditing(!editing)}
             className={`p-1.5 rounded-md transition-colors ${
-              banner.link_url || banner.link_product_id
+              banner.link_url || banner.link_product_id || banner.link_category_id
                 ? "text-primary bg-primary/10"
                 : "text-muted-foreground hover:text-primary hover:bg-primary/10"
             }`}
@@ -143,7 +161,7 @@ function SortableBannerItem({
         <div className="pl-7 space-y-3">
           {/* Link type selector */}
           <div className="flex gap-2">
-            {(["none", "url", "product"] as const).map((type) => (
+            {(["none", "url", "product", "category"] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setLinkType(type)}
@@ -153,7 +171,7 @@ function SortableBannerItem({
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                {type === "none" ? "Sem link" : type === "url" ? "Link externo" : "Produto"}
+                {type === "none" ? "Sem link" : type === "url" ? "Link externo" : type === "product" ? "Produto" : "Categoria"}
               </button>
             ))}
           </div>
@@ -201,6 +219,28 @@ function SortableBannerItem({
             </div>
           )}
 
+          {linkType === "category" && (
+            <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border p-1">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => setSelectedCategoryId(c.id)}
+                  className={`flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                    selectedCategoryId === c.id
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <span className="text-sm shrink-0">{c.icon || "📁"}</span>
+                  <span className="truncate">{c.name}</span>
+                </button>
+              ))}
+              {categories.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">Nenhuma categoria encontrada</p>
+              )}
+            </div>
+          )}
+
           <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleSave}>
             Salvar
           </Button>
@@ -213,6 +253,7 @@ function SortableBannerItem({
 export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeChange }: Props) {
   const [banners, setBanners] = useState<MenuBanner[]>([]);
   const [products, setProducts] = useState<SimpleProduct[]>([]);
+  const [categories, setCategories] = useState<SimpleCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
 
@@ -242,10 +283,21 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     setProducts((data as SimpleProduct[]) || []);
   }, [storeId]);
 
+  const fetchCategories = useCallback(async () => {
+    const { data } = await supabase
+      .from("categories")
+      .select("id, name, icon")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .order("sort_order");
+    setCategories((data as SimpleCategory[]) || []);
+  }, [storeId]);
+
   useEffect(() => {
     fetchBanners();
     fetchProducts();
-  }, [fetchBanners, fetchProducts]);
+    fetchCategories();
+  }, [fetchBanners, fetchProducts, fetchCategories]);
 
   const handleImageUpload = async (url: string | null) => {
     if (!url) return;
@@ -278,13 +330,14 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     toast.success(!current ? "Banner ativado" : "Banner desativado");
   };
 
-  const updateLink = async (id: string, linkUrl: string | null, productId: string | null) => {
+  const updateLink = async (id: string, linkUrl: string | null, productId: string | null, categoryId: string | null) => {
     await supabase.from("menu_banners").update({
       link_url: linkUrl,
       link_product_id: productId,
+      link_category_id: categoryId,
     } as any).eq("id", id);
     setBanners((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, link_url: linkUrl, link_product_id: productId } : b))
+      prev.map((b) => (b.id === id ? { ...b, link_url: linkUrl, link_product_id: productId, link_category_id: categoryId } : b))
     );
     toast.success("Link atualizado");
   };
@@ -342,6 +395,7 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
                   key={banner.id}
                   banner={banner}
                   products={products}
+                  categories={categories}
                   onRemove={removeBanner}
                   onToggleActive={toggleActive}
                   onUpdateLink={updateLink}

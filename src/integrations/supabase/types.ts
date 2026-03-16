@@ -363,6 +363,7 @@ export type Database = {
           id: string
           image_url: string
           is_active: boolean | null
+          link_category_id: string | null
           link_product_id: string | null
           link_url: string | null
           menu_id: string
@@ -374,6 +375,7 @@ export type Database = {
           id?: string
           image_url: string
           is_active?: boolean | null
+          link_category_id?: string | null
           link_product_id?: string | null
           link_url?: string | null
           menu_id: string
@@ -385,6 +387,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean | null
+          link_category_id?: string | null
           link_product_id?: string | null
           link_url?: string | null
           menu_id?: string
@@ -392,6 +395,13 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "menu_banners_link_category_id_fkey"
+            columns: ["link_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "menu_banners_link_product_id_fkey"
             columns: ["link_product_id"]
