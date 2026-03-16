@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { formatBRL } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Plus, Minus, X } from "lucide-react";
+import { Plus, Minus, X, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -47,17 +47,50 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
     setLoadingAdditionals(false);
   };
 
-  const freeAdditionalsCount = selectedAdditionals.reduce((sum, s) => {
+  // --- Free additionals limits ---
+  const perCategoryLimits = (product as any)?.free_additionals_limits as Record<string, number> | null | undefined;
+  const globalMaxFree = (product as any)?.max_free_additionals as number | null | undefined;
+
+  // Count free selected per category
+  const freeCountByCategory = selectedAdditionals.reduce((acc, s) => {
     const price = Number(s.additional.price) || 0;
-    return price === 0 ? sum + s.quantity : sum;
-  }, 0);
-  const maxFree = (product as any)?.max_free_additionals as number | null | undefined;
-  const freeLimit = maxFree != null ? maxFree : Infinity;
-  const freeSlotsFull = freeAdditionalsCount >= freeLimit;
+    if (price === 0) {
+      const cat = s.additional.category || "Complemento";
+      acc[cat] = (acc[cat] || 0) + s.quantity;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+
+  const totalFreeCount = Object.values(freeCountByCategory).reduce((a, b) => a + b, 0);
+  const globalFreeLimit = globalMaxFree != null ? globalMaxFree : Infinity;
+  const globalFull = totalFreeCount >= globalFreeLimit;
+
+  const isCategoryFull = (category: string): boolean => {
+    // Per-category limit takes priority
+    if (perCategoryLimits && perCategoryLimits[category] != null) {
+      return (freeCountByCategory[category] || 0) >= perCategoryLimits[category];
+    }
+    // Fall back to global limit
+    return globalFull;
+  };
+
+  const getCategoryLimit = (category: string): number | null => {
+    if (perCategoryLimits && perCategoryLimits[category] != null) {
+      return perCategoryLimits[category];
+    }
+    if (globalMaxFree != null) return globalMaxFree;
+    return null;
+  };
+
+  const isFreeBlocked = (additional: ProductAdditional): boolean => {
+    const price = Number(additional.price) || 0;
+    if (price > 0) return false;
+    const cat = additional.category || "Complemento";
+    return isCategoryFull(cat);
+  };
 
   const toggleAdditional = (additional: ProductAdditional) => {
-    const price = Number(additional.price) || 0;
-    if (price === 0 && freeSlotsFull) return; // can't add more free
+    if (isFreeBlocked(additional)) return;
     setSelectedAdditionals((prev) => {
       const existing = prev.find((s) => s.additional.id === additional.id);
       if (existing) {
@@ -71,18 +104,15 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
     setSelectedAdditionals((prev) =>
       prev.map((s) => {
         if (s.additional.id !== additionalId) return s;
-        const price = Number(s.additional.price) || 0;
         const newQty = s.quantity + delta;
         const maxQty = s.additional.max_qty || 10;
         if (newQty <= 0) return null as any;
         if (newQty > maxQty) return s;
-        // Block increasing free additionals beyond limit
-        if (delta > 0 && price === 0 && freeSlotsFull) return s;
+        if (delta > 0 && isFreeBlocked(s.additional)) return s;
         return { ...s, quantity: newQty };
       }).filter(Boolean)
     );
   };
-
 
   if (!product) return null;
 
@@ -137,60 +167,87 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
         {/* Additionals */}
         {!loadingAdditionals && Object.keys(groupedAdditionals).length > 0 && (
           <div className="px-4 pb-4 space-y-4">
-            {maxFree != null && maxFree !== Infinity && (
-              <p className="text-xs font-medium text-muted-foreground">
-                Adicionais grátis: {freeAdditionalsCount}/{maxFree}
-              </p>
-            )}
-            {Object.entries(groupedAdditionals).map(([category, items]) => (
-              <div key={category}>
-                <h3 className="font-bold text-sm mb-2">{category}</h3>
-                <div className="divide-y rounded-lg border">
-                  {items.map((add) => {
-                    const selected = selectedAdditionals.find((s) => s.additional.id === add.id);
-                    const price = Number(add.price) || 0;
-                    return (
-                      <div key={add.id} className="flex items-center justify-between p-3">
-                        <div>
-                          <p className="text-sm font-medium">{add.name}</p>
-                          <p className="text-xs" style={{ color: price > 0 ? themeColor : "#16a34a" }}>
-                            {price > 0 ? `+ ${formatBRL(price)}` : "Grátis"}
-                          </p>
-                        </div>
-                        {selected ? (
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => updateAdditionalQty(add.id, -1)}
-                              className="flex h-7 w-7 items-center justify-center rounded-full text-white"
-                              style={{ backgroundColor: themeColor }}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="w-5 text-center text-sm font-medium">{selected.quantity}</span>
-                            <button
-                              onClick={() => updateAdditionalQty(add.id, 1)}
-                              className="flex h-7 w-7 items-center justify-center rounded-full text-white"
-                              style={{ backgroundColor: themeColor }}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
+            {Object.entries(groupedAdditionals).map(([category, items]) => {
+              const catLimit = getCategoryLimit(category);
+              const catFreeCount = freeCountByCategory[category] || 0;
+              const hasFreeItems = items.some((a) => (Number(a.price) || 0) === 0);
+              const catFull = hasFreeItems && catLimit != null && catFreeCount >= catLimit;
+
+              return (
+                <div key={category}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-sm">{category}</h3>
+                    {hasFreeItems && catLimit != null && (
+                      <span
+                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          catFull
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-muted text-muted-foreground"
+                        }`}
+                      >
+                        {catFreeCount}/{catLimit} grátis
+                      </span>
+                    )}
+                  </div>
+
+                  {catFull && (
+                    <div className="flex items-center gap-1.5 mb-2 rounded-lg bg-destructive/10 px-3 py-2">
+                      <AlertCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
+                      <p className="text-xs font-medium text-destructive">
+                        Limite de adicionais grátis atingido nesta categoria
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="divide-y rounded-lg border">
+                    {items.map((add) => {
+                      const selected = selectedAdditionals.find((s) => s.additional.id === add.id);
+                      const price = Number(add.price) || 0;
+                      const blocked = price === 0 && catFull && !selected;
+                      return (
+                        <div key={add.id} className={`flex items-center justify-between p-3 ${blocked ? "opacity-50" : ""}`}>
+                          <div>
+                            <p className="text-sm font-medium">{add.name}</p>
+                            <p className="text-xs" style={{ color: price > 0 ? themeColor : "#16a34a" }}>
+                              {price > 0 ? `+ ${formatBRL(price)}` : "Grátis"}
+                            </p>
                           </div>
-                        ) : (
-                          <button
-                            onClick={() => toggleAdditional(add)}
-                            disabled={price === 0 && freeSlotsFull}
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
-                            style={{ backgroundColor: themeColor }}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
+                          {selected ? (
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => updateAdditionalQty(add.id, -1)}
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-white"
+                                style={{ backgroundColor: themeColor }}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              <span className="w-5 text-center text-sm font-medium">{selected.quantity}</span>
+                              <button
+                                onClick={() => updateAdditionalQty(add.id, 1)}
+                                disabled={price === 0 && isCategoryFull(category)}
+                                className="flex h-7 w-7 items-center justify-center rounded-full text-white disabled:opacity-40"
+                                style={{ backgroundColor: themeColor }}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => toggleAdditional(add)}
+                              disabled={blocked}
+                              className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
+                              style={{ backgroundColor: themeColor }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

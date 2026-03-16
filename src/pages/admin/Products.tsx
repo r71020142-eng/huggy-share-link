@@ -62,6 +62,32 @@ export default function Products() {
   const [selectedSourceProductId, setSelectedSourceProductId] = useState<string>("");
   const [copySearchQuery, setCopySearchQuery] = useState("");
 
+  // Per-category free limits state
+  const [categoryLimits, setCategoryLimits] = useState<Record<string, string>>({});
+
+  // Group additionals by category
+  const groupedAdditionals = additionals.reduce((groups: Record<string, Additional[]>, add) => {
+    const cat = (add as any).category || "geral";
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(add);
+    return groups;
+  }, {} as Record<string, Additional[]>);
+
+  // Load category limits when expanding additionals
+  useEffect(() => {
+    if (expandedAdditionals) {
+      const product = products.find((p) => p.id === expandedAdditionals);
+      const limits = (product as any)?.free_additionals_limits as Record<string, number> | null;
+      if (limits) {
+        const mapped: Record<string, string> = {};
+        Object.entries(limits).forEach(([k, v]) => { mapped[k] = String(v); });
+        setCategoryLimits(mapped);
+      } else {
+        setCategoryLimits({});
+      }
+    }
+  }, [expandedAdditionals, products]);
+
   useEffect(() => {
     if (store) {
       fetchProducts();
@@ -336,12 +362,6 @@ export default function Products() {
   );
 
 
-  const groupedAdditionals = additionals.reduce<Record<string, Additional[]>>((acc, a) => {
-    const cat = (a as any).category || "geral";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(a);
-    return acc;
-  }, {});
 
   if (!store) return null;
 
@@ -431,6 +451,24 @@ export default function Products() {
     </div>
   );
 
+
+  const saveCategoryLimits = async () => {
+    if (!expandedAdditionals) return;
+    const limits: Record<string, number> = {};
+    Object.entries(categoryLimits).forEach(([cat, val]) => {
+      const n = parseInt(val);
+      if (!isNaN(n) && n >= 0) limits[cat] = n;
+    });
+    const payload = Object.keys(limits).length > 0 ? limits : null;
+    const { error } = await supabase
+      .from("products")
+      .update({ free_additionals_limits: payload } as any)
+      .eq("id", expandedAdditionals);
+    if (error) toast.error("Erro ao salvar limites");
+    else toast.success("Limites por categoria salvos!");
+    fetchProducts();
+  };
+
   const renderAdditionals = (product: Product) => {
     if (expandedAdditionals !== product.id) return null;
 
@@ -494,7 +532,20 @@ export default function Products() {
 
         {Object.entries(groupedAdditionals).map(([cat, items]) => (
           <div key={cat} className="space-y-2">
-            <h4 className="text-xs font-bold uppercase text-muted-foreground">{cat}</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold uppercase text-muted-foreground">{cat}</h4>
+              <div className="flex items-center gap-1.5">
+                <Label className="text-[10px] text-muted-foreground whitespace-nowrap">Máx grátis</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  placeholder="∞"
+                  value={categoryLimits[cat] ?? ""}
+                  onChange={(e) => setCategoryLimits((prev) => ({ ...prev, [cat]: e.target.value }))}
+                  className="w-16 h-7 text-xs"
+                />
+              </div>
+            </div>
             {items.map((a) => (
               <div key={a.id} className="flex items-center justify-between rounded-lg border p-3">
                 <div className="flex items-center gap-2">
@@ -518,6 +569,14 @@ export default function Products() {
             ))}
           </div>
         ))}
+
+        {Object.keys(groupedAdditionals).length > 0 && (
+          <div className="flex justify-end">
+            <Button size="sm" variant="outline" onClick={saveCategoryLimits}>
+              Salvar limites por categoria
+            </Button>
+          </div>
+        )}
 
         {additionals.length === 0 && !showAddForm && (
           <p className="text-sm text-muted-foreground text-center py-4">Nenhum adicional cadastrado.</p>
