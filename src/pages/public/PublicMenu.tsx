@@ -115,12 +115,15 @@ export default function PublicMenu() {
       .from("stores").select("id, name, slug, address, whatsapp, logo_url, banner_url, theme_color, is_open, delivery_enabled, pickup_enabled, min_order, estimated_time, promo_banner, operating_hours, plan_type, created_at").eq("id", menuData.store_id).single();
     setStore(storeData);
 
-    const [{ data: menuProds }, { data: allProds }, { data: cats }, { data: hoods }] = await Promise.all([
+    const [{ data: menuProds }, { data: allProds }, { data: cats }, { data: hoods }, { data: bannerData }] = await Promise.all([
       supabase.from("menu_products").select("product_id, sort_order, is_available").eq("menu_id", menuData.id).eq("is_available", true).order("sort_order"),
       supabase.from("products").select("*").eq("store_id", menuData.store_id).eq("is_active", true),
       supabase.from("categories").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("sort_order"),
       supabase.from("neighborhoods").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("name"),
+      supabase.from("menu_banners").select("*").eq("menu_id", menuData.id).eq("is_active", true).order("sort_order"),
     ]);
+
+    setMenuBanners(bannerData || []);
 
     // If menu has products linked via menu_products, use that order; otherwise fallback to all products
     let orderedProducts: Product[] = [];
