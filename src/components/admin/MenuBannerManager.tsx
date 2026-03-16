@@ -256,7 +256,6 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
   const [categories, setCategories] = useState<SimpleCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
-  const [adding, setAdding] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
