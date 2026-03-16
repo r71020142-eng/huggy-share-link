@@ -34,6 +34,8 @@ export default function PublicMenu() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [loading, setLoading] = useState(true);
+  const [menuBanners, setMenuBanners] = useState<any[]>([]);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
