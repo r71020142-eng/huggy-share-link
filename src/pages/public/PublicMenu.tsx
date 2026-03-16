@@ -387,11 +387,14 @@ export default function PublicMenu() {
 
         if (allBanners.length === 1 || !isCarousel) {
           const banner = allBanners[0];
-          const isClickable = banner.link_url || banner.link_product_id;
+          const isClickable = banner.link_url || banner.link_product_id || banner.link_category_id;
           const handleSingleClick = () => {
             if (banner.link_product_id) {
               const p = products.find((pr) => pr.id === banner.link_product_id);
               if (p) setSelectedProduct(p);
+            } else if (banner.link_category_id) {
+              setActiveCategory(banner.link_category_id);
+              document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" });
             } else if (banner.link_url) {
               if (banner.link_url.startsWith("http")) window.open(banner.link_url, "_blank", "noopener");
               else window.location.href = banner.link_url;
