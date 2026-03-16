@@ -124,7 +124,12 @@ function SortableBannerItem({
               <Package className="h-3 w-3 shrink-0" /> {linkedProduct.name}
             </p>
           )}
-          {banner.link_url && !banner.link_product_id && !editing && (
+          {linkedCategory && !editing && (
+            <p className="text-xs text-primary truncate flex items-center gap-1">
+              <FolderOpen className="h-3 w-3 shrink-0" /> {linkedCategory.icon || "📁"} {linkedCategory.name}
+            </p>
+          )}
+          {banner.link_url && !banner.link_product_id && !banner.link_category_id && !editing && (
             <p className="text-xs text-primary truncate flex items-center gap-1">
               <Link2 className="h-3 w-3 shrink-0" /> {banner.link_url}
             </p>
