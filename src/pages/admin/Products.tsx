@@ -38,6 +38,7 @@ export default function Products() {
   const [editImageUrl, setEditImageUrl] = useState("");
   const [editIsActive, setEditIsActive] = useState(true);
   const [editIsFeatured, setEditIsFeatured] = useState(false);
+  const [editMaxFreeAdditionals, setEditMaxFreeAdditionals] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // New product inline
