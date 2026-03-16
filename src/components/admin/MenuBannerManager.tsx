@@ -239,6 +239,7 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
                   banner={banner}
                   onRemove={removeBanner}
                   onToggleActive={toggleActive}
+                  onUpdateLink={updateLink}
                 />
               ))}
             </div>
