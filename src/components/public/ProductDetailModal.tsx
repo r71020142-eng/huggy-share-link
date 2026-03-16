@@ -137,6 +137,11 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
         {/* Additionals */}
         {!loadingAdditionals && Object.keys(groupedAdditionals).length > 0 && (
           <div className="px-4 pb-4 space-y-4">
+            {maxFree != null && maxFree !== Infinity && (
+              <p className="text-xs font-medium text-muted-foreground">
+                Adicionais grátis: {freeAdditionalsCount}/{maxFree}
+              </p>
+            )}
             {Object.entries(groupedAdditionals).map(([category, items]) => (
               <div key={category}>
                 <h3 className="font-bold text-sm mb-2">{category}</h3>
