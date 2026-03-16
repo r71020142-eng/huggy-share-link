@@ -396,6 +396,7 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
                   key={banner.id}
                   banner={banner}
                   products={products}
+                  categories={categories}
                   onRemove={removeBanner}
                   onToggleActive={toggleActive}
                   onUpdateLink={updateLink}
