@@ -316,6 +316,14 @@ export default function CardapioEditor() {
               Produtos ({menuProducts.length})
             </button>
             <button
+              onClick={() => setActiveTab("banners")}
+              className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
+                activeTab === "banners" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span className="flex items-center justify-center gap-1"><ImageIcon className="h-3.5 w-3.5" /> Banners</span>
+            </button>
+            <button
               onClick={() => setActiveTab("categorias")}
               className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
                 activeTab === "categorias" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
