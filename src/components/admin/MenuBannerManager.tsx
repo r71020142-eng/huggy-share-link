@@ -32,6 +32,7 @@ interface MenuBanner {
   image_url: string;
   link_url: string | null;
   link_product_id: string | null;
+  link_category_id: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;
