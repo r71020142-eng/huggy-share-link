@@ -239,7 +239,7 @@ function SortableBannerItem({
                 <p className="text-xs text-muted-foreground text-center py-2">Nenhuma categoria encontrada</p>
               )}
             </div>
-          )
+          )}
 
           <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleSave}>
             Salvar
