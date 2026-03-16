@@ -518,39 +518,19 @@ export default function MenuEditor() {
 
               <div className="space-y-3">
                 <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Banner do Cardápio</h3>
-                  <p className="text-sm text-muted-foreground">Imagem de destaque no topo do cardápio. Recomendado: 1200×400px.</p>
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Banners do Cardápio</h3>
+                  <p className="text-sm text-muted-foreground">Adicione múltiplos banners com links clicáveis. Ative o carrossel para rotação automática.</p>
                 </div>
-                {bannerUrl && (
-                  <div className="space-y-2">
-                    <div className="overflow-hidden rounded-lg border">
-                      <img src={bannerUrl} alt="Banner" className="aspect-[3/1] w-full object-cover" />
-                    </div>
-                    <div className="flex gap-3">
-                      <button onClick={() => bannerInputRef.current?.click()} className="text-sm font-medium text-primary hover:underline">Trocar banner</button>
-                      <span className="text-muted-foreground">·</span>
-                      <button onClick={() => handleRemoveImage("banner")} className="text-sm font-medium text-destructive hover:underline">Remover</button>
-                    </div>
-                  </div>
-                )}
-                <button
-                  onClick={() => bannerInputRef.current?.click()}
-                  disabled={uploadingBanner}
-                  className="flex w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-8 text-muted-foreground transition-colors hover:border-primary/50 hover:bg-muted"
-                >
-                  {uploadingBanner ? <Loader2 className="h-8 w-8 animate-spin" /> : (
-                    <>
-                      <Upload className="mb-2 h-8 w-8" />
-                      <span className="font-medium">Enviar novo banner</span>
-                      <span className="text-xs">JPG ou PNG — recomendado 1200×400px</span>
-                    </>
-                  )}
-                </button>
-                <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleUpload(file, "banner");
-                  e.target.value = "";
-                }} />
+                <MenuBannerManager
+                  menuId={menuId!}
+                  storeId={store!.id}
+                  bannerMode={(menu as any)?.banner_mode || "single"}
+                  onBannerModeChange={async (mode) => {
+                    await supabase.from("menus").update({ banner_mode: mode } as any).eq("id", menuId!);
+                    setMenu((prev: any) => prev ? { ...prev, banner_mode: mode } : prev);
+                    toast.success(mode === "carousel" ? "Carrossel ativado!" : "Modo banner único ativado");
+                  }}
+                />
               </div>
             </div>
           )}
