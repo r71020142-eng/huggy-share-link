@@ -179,6 +179,12 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     toast.success(!current ? "Banner ativado" : "Banner desativado");
   };
 
+  const updateLink = async (id: string, url: string) => {
+    await supabase.from("menu_banners").update({ link_url: url || null } as any).eq("id", id);
+    setBanners((prev) => prev.map((b) => (b.id === id ? { ...b, link_url: url || null } : b)));
+    toast.success("Link atualizado");
+  };
+
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
