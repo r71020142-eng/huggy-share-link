@@ -150,31 +150,28 @@ export default function MenuEditor() {
     setSaving(false);
   };
 
-  const handleUpload = async (file: File, type: "logo" | "banner") => {
+  const handleUploadLogo = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Arquivo muito grande (máx 5MB)");
       return;
     }
-    const setUploading = type === "logo" ? setUploadingLogo : setUploadingBanner;
-    setUploading(true);
+    setUploadingLogo(true);
     const ext = file.name.split(".").pop();
-    const fileName = `${type}s/${store?.id}/${Date.now()}.${ext}`;
+    const fileName = `logos/${store?.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("store-assets").upload(fileName, file, { cacheControl: "3600", upsert: false });
     if (error) {
       toast.error("Erro ao enviar imagem");
-      setUploading(false);
+      setUploadingLogo(false);
       return;
     }
     const { data: { publicUrl } } = supabase.storage.from("store-assets").getPublicUrl(fileName);
-    if (type === "logo") setLogoUrl(publicUrl);
-    else setBannerUrl(publicUrl);
-    setUploading(false);
-    toast.success(`${type === "logo" ? "Logo" : "Banner"} enviado!`);
+    setLogoUrl(publicUrl);
+    setUploadingLogo(false);
+    toast.success("Logo enviada!");
   };
 
-  const handleRemoveImage = (type: "logo" | "banner") => {
-    if (type === "logo") setLogoUrl(null);
-    else setBannerUrl(null);
+  const handleRemoveLogo = () => {
+    setLogoUrl(null);
   };
 
   const applyTemplate = (template: typeof TEMPLATES[0]) => {
