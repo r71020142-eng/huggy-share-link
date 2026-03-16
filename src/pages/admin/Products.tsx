@@ -336,12 +336,6 @@ export default function Products() {
   );
 
 
-  const groupedAdditionals = additionals.reduce<Record<string, Additional[]>>((acc, a) => {
-    const cat = (a as any).category || "geral";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(a);
-    return acc;
-  }, {});
 
   if (!store) return null;
 
