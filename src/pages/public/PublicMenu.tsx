@@ -37,10 +37,12 @@ function BannerCarousel({
   banners,
   themeColor,
   onProductClick,
+  onCategoryClick,
 }: {
   banners: BannerItem[];
   themeColor: string;
   onProductClick?: (productId: string) => void;
+  onCategoryClick?: (categoryId: string) => void;
 }) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
