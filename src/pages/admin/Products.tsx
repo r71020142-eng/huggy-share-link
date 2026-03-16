@@ -425,31 +425,6 @@ export default function Products() {
     </div>
   );
 
-  // Per-category free limits state
-  const [categoryLimits, setCategoryLimits] = useState<Record<string, string>>({});
-
-  // Group additionals by category
-  const groupedAdditionals = additionals.reduce((groups, add) => {
-    const cat = (add as any).category || "geral";
-    if (!groups[cat]) groups[cat] = [];
-    groups[cat].push(add);
-    return groups;
-  }, {} as Record<string, Additional[]>);
-
-  // Load category limits when expanding additionals
-  useEffect(() => {
-    if (expandedAdditionals) {
-      const product = products.find((p) => p.id === expandedAdditionals);
-      const limits = (product as any)?.free_additionals_limits as Record<string, number> | null;
-      if (limits) {
-        const mapped: Record<string, string> = {};
-        Object.entries(limits).forEach(([k, v]) => { mapped[k] = String(v); });
-        setCategoryLimits(mapped);
-      } else {
-        setCategoryLimits({});
-      }
-    }
-  }, [expandedAdditionals, products]);
 
   const saveCategoryLimits = async () => {
     if (!expandedAdditionals) return;
