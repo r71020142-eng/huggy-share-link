@@ -253,7 +253,9 @@ function SortableBannerItem({
 export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeChange }: Props) {
   const [banners, setBanners] = useState<MenuBanner[]>([]);
   const [products, setProducts] = useState<SimpleProduct[]>([]);
+  const [categories, setCategories] = useState<SimpleCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState(false);
   const [adding, setAdding] = useState(false);
 
   const sensors = useSensors(
