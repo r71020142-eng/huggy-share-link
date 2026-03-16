@@ -61,23 +61,26 @@ interface Props {
 function SortableBannerItem({
   banner,
   products,
+  categories,
   onRemove,
   onToggleActive,
   onUpdateLink,
 }: {
   banner: MenuBanner;
   products: SimpleProduct[];
+  categories: SimpleCategory[];
   onRemove: (id: string) => void;
   onToggleActive: (id: string, current: boolean) => void;
-  onUpdateLink: (id: string, linkUrl: string | null, productId: string | null) => void;
+  onUpdateLink: (id: string, linkUrl: string | null, productId: string | null, categoryId: string | null) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: banner.id });
   const [editing, setEditing] = useState(false);
-  const [linkType, setLinkType] = useState<"none" | "url" | "product">(
-    banner.link_product_id ? "product" : banner.link_url ? "url" : "none"
+  const [linkType, setLinkType] = useState<"none" | "url" | "product" | "category">(
+    banner.link_product_id ? "product" : banner.link_category_id ? "category" : banner.link_url ? "url" : "none"
   );
   const [linkValue, setLinkValue] = useState(banner.link_url || "");
   const [selectedProductId, setSelectedProductId] = useState(banner.link_product_id || "");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(banner.link_category_id || "");
   const [productSearch, setProductSearch] = useState("");
 
   const linkedProduct = products.find((p) => p.id === banner.link_product_id);
