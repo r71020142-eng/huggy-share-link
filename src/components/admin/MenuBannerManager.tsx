@@ -84,6 +84,7 @@ function SortableBannerItem({
   const [productSearch, setProductSearch] = useState("");
 
   const linkedProduct = products.find((p) => p.id === banner.link_product_id);
+  const linkedCategory = categories.find((c) => c.id === banner.link_category_id);
 
   const style = {
     transform: CSS.Transform.toString(transform),
