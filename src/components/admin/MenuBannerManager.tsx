@@ -139,7 +139,7 @@ function SortableBannerItem({
           <button
             onClick={() => setEditing(!editing)}
             className={`p-1.5 rounded-md transition-colors ${
-              banner.link_url || banner.link_product_id
+              banner.link_url || banner.link_product_id || banner.link_category_id
                 ? "text-primary bg-primary/10"
                 : "text-muted-foreground hover:text-primary hover:bg-primary/10"
             }`}
