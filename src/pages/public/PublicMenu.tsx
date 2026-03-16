@@ -26,6 +26,49 @@ interface CartItem {
   additionals?: { id?: string; name: string; price: number; quantity: number }[];
 }
 
+function BannerCarousel({ banners, themeColor }: { banners: string[]; themeColor: string }) {
+  const [current, setCurrent] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval>>(null);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    timerRef.current = setInterval(() => setCurrent((c) => (c + 1) % banners.length), 4000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [banners.length]);
+
+  return (
+    <div className="relative h-48 w-full overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={current}
+          src={banners[current]}
+          alt=""
+          className="absolute inset-0 h-48 w-full object-cover"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        />
+      </AnimatePresence>
+      {banners.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+          {banners.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => { setCurrent(i); if (timerRef.current) clearInterval(timerRef.current); }}
+              className="h-2 rounded-full transition-all"
+              style={{
+                width: i === current ? 20 : 8,
+                backgroundColor: i === current ? themeColor : "rgba(255,255,255,0.5)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PublicMenu() {
   const { slug } = useParams<{ slug: string }>();
   const [menu, setMenu] = useState<any>(null);
