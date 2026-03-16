@@ -178,7 +178,8 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
                         ) : (
                           <button
                             onClick={() => toggleAdditional(add)}
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-white"
+                            disabled={price === 0 && freeSlotsFull}
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
                             style={{ backgroundColor: themeColor }}
                           >
                             <Plus className="h-4 w-4" />
