@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Check, Upload, X, Loader2, ExternalLink, Palette, Type, LayoutGrid, Image, Globe, Share2, Sparkles, Copy, QrCode } from "lucide-react";
 import { MobilePreview } from "@/components/admin/MobilePreview";
 import { toast } from "sonner";
+import { MenuBannerManager } from "@/components/admin/MenuBannerManager";
 import type { Database } from "@/integrations/supabase/types";
 
 type Menu = Database["public"]["Tables"]["menus"]["Row"];
