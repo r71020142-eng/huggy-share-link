@@ -110,6 +110,7 @@ export default function Products() {
     setEditImageUrl(p.image_url || "");
     setEditIsActive(p.is_active ?? true);
     setEditIsFeatured(p.is_featured ?? false);
+    setEditMaxFreeAdditionals(p.max_free_additionals != null ? String(p.max_free_additionals) : "");
   };
 
   const startNew = () => {
@@ -122,6 +123,7 @@ export default function Products() {
     setEditImageUrl("");
     setEditIsActive(true);
     setEditIsFeatured(false);
+    setEditMaxFreeAdditionals("");
   };
 
   const cancelEdit = () => {
