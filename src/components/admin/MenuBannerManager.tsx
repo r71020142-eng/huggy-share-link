@@ -331,13 +331,14 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     toast.success(!current ? "Banner ativado" : "Banner desativado");
   };
 
-  const updateLink = async (id: string, linkUrl: string | null, productId: string | null) => {
+  const updateLink = async (id: string, linkUrl: string | null, productId: string | null, categoryId: string | null) => {
     await supabase.from("menu_banners").update({
       link_url: linkUrl,
       link_product_id: productId,
+      link_category_id: categoryId,
     } as any).eq("id", id);
     setBanners((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, link_url: linkUrl, link_product_id: productId } : b))
+      prev.map((b) => (b.id === id ? { ...b, link_url: linkUrl, link_product_id: productId, link_category_id: categoryId } : b))
     );
     toast.success("Link atualizado");
   };
