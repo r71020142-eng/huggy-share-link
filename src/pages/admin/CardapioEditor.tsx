@@ -111,7 +111,7 @@ export default function CardapioEditor() {
   const { store } = useStore();
   const [menu, setMenu] = useState<Menu | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"produtos" | "categorias">("produtos");
+  const [activeTab, setActiveTab] = useState<"produtos" | "categorias" | "banners">("produtos");
 
   const [menuProducts, setMenuProducts] = useState<MenuProduct[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
