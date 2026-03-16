@@ -55,6 +55,8 @@ function BannerCarousel({
     const b = banners[current];
     if (b?.link_product_id && onProductClick) {
       onProductClick(b.link_product_id);
+    } else if (b?.link_category_id && onCategoryClick) {
+      onCategoryClick(b.link_category_id);
     } else if (b?.link_url) {
       if (b.link_url.startsWith("http")) {
         window.open(b.link_url, "_blank", "noopener");
@@ -64,7 +66,7 @@ function BannerCarousel({
     }
   };
 
-  const isClickable = banners[current]?.link_url || banners[current]?.link_product_id;
+  const isClickable = banners[current]?.link_url || banners[current]?.link_product_id || banners[current]?.link_category_id;
 
   return (
     <div className="relative h-48 w-full overflow-hidden">
