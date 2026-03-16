@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Plus, X, Search, GripVertical, Star } from "lucide-react";
+import { ArrowLeft, Plus, X, Search, GripVertical, Star, Image as ImageIcon } from "lucide-react";
 import { MobilePreview } from "@/components/admin/MobilePreview";
+import { MenuBannerManager } from "@/components/admin/MenuBannerManager";
 import { toast } from "sonner";
 import {
   DndContext,
