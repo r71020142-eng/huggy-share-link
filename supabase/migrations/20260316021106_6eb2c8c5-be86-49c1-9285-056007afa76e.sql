@@ -1,0 +1,1 @@
+ALTER TABLE public.menu_banners ADD COLUMN link_product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;
