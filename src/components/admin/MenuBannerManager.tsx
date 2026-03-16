@@ -99,11 +99,13 @@ function SortableBannerItem({
 
   const handleSave = () => {
     if (linkType === "url") {
-      onUpdateLink(banner.id, linkValue || null, null);
+      onUpdateLink(banner.id, linkValue || null, null, null);
     } else if (linkType === "product") {
-      onUpdateLink(banner.id, null, selectedProductId || null);
+      onUpdateLink(banner.id, null, selectedProductId || null, null);
+    } else if (linkType === "category") {
+      onUpdateLink(banner.id, null, null, selectedCategoryId || null);
     } else {
-      onUpdateLink(banner.id, null, null);
+      onUpdateLink(banner.id, null, null, null);
     }
     setEditing(false);
   };
