@@ -504,7 +504,7 @@ export default function MenuEditor() {
                 </button>
                 <input ref={logoInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) handleUpload(file, "logo");
+                  if (file) handleUploadLogo(file);
                   e.target.value = "";
                 }} />
               </div>
