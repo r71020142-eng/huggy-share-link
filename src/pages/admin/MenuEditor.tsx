@@ -102,11 +102,8 @@ export default function MenuEditor() {
   const [showFeatured, setShowFeatured] = useState(true);
   const [showSearch, setShowSearch] = useState(true);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
-  const [uploadingBanner, setUploadingBanner] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
-  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (store && menuId) fetchMenu();
