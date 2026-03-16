@@ -29,9 +29,18 @@ interface CartItem {
 interface BannerItem {
   image_url: string;
   link_url?: string | null;
+  link_product_id?: string | null;
 }
 
-function BannerCarousel({ banners, themeColor }: { banners: BannerItem[]; themeColor: string }) {
+function BannerCarousel({
+  banners,
+  themeColor,
+  onProductClick,
+}: {
+  banners: BannerItem[];
+  themeColor: string;
+  onProductClick?: (productId: string) => void;
+}) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
 
@@ -42,15 +51,19 @@ function BannerCarousel({ banners, themeColor }: { banners: BannerItem[]; themeC
   }, [banners.length]);
 
   const handleClick = () => {
-    const link = banners[current]?.link_url;
-    if (link) {
-      if (link.startsWith("http")) {
-        window.open(link, "_blank", "noopener");
+    const b = banners[current];
+    if (b?.link_product_id && onProductClick) {
+      onProductClick(b.link_product_id);
+    } else if (b?.link_url) {
+      if (b.link_url.startsWith("http")) {
+        window.open(b.link_url, "_blank", "noopener");
       } else {
-        window.location.href = link;
+        window.location.href = b.link_url;
       }
     }
   };
+
+  const isClickable = banners[current]?.link_url || banners[current]?.link_product_id;
 
   return (
     <div className="relative h-48 w-full overflow-hidden">
@@ -59,7 +72,7 @@ function BannerCarousel({ banners, themeColor }: { banners: BannerItem[]; themeC
           key={current}
           src={banners[current].image_url}
           alt=""
-          className={`absolute inset-0 h-48 w-full object-cover ${banners[current].link_url ? "cursor-pointer" : ""}`}
+          className={`absolute inset-0 h-48 w-full object-cover ${isClickable ? "cursor-pointer" : ""}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -389,7 +402,10 @@ export default function PublicMenu() {
           return img;
         }
 
-        return <BannerCarousel banners={allBanners} themeColor={themeColor} />;
+        return <BannerCarousel banners={allBanners} themeColor={themeColor} onProductClick={(pid) => {
+          const p = products.find((pr) => pr.id === pid);
+          if (p) setSelectedProduct(p);
+        }} />;
       })()}
 
       {/* Store info bar */}

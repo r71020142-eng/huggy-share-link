@@ -3,10 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Trash2, Plus, Image as ImageIcon, Link2, ExternalLink } from "lucide-react";
+import { GripVertical, Trash2, Image as ImageIcon, Link2, Package } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -32,9 +31,17 @@ interface MenuBanner {
   store_id: string;
   image_url: string;
   link_url: string | null;
+  link_product_id: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;
+}
+
+interface SimpleProduct {
+  id: string;
+  name: string;
+  image_url: string | null;
+  price: number;
 }
 
 interface Props {
@@ -46,24 +53,48 @@ interface Props {
 
 function SortableBannerItem({
   banner,
+  products,
   onRemove,
   onToggleActive,
   onUpdateLink,
 }: {
   banner: MenuBanner;
+  products: SimpleProduct[];
   onRemove: (id: string) => void;
   onToggleActive: (id: string, current: boolean) => void;
-  onUpdateLink: (id: string, url: string) => void;
+  onUpdateLink: (id: string, linkUrl: string | null, productId: string | null) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: banner.id });
-  const [editingLink, setEditingLink] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [linkType, setLinkType] = useState<"none" | "url" | "product">(
+    banner.link_product_id ? "product" : banner.link_url ? "url" : "none"
+  );
   const [linkValue, setLinkValue] = useState(banner.link_url || "");
+  const [selectedProductId, setSelectedProductId] = useState(banner.link_product_id || "");
+  const [productSearch, setProductSearch] = useState("");
+
+  const linkedProduct = products.find((p) => p.id === banner.link_product_id);
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : undefined,
+  };
+
+  const filteredProducts = products.filter((p) =>
+    productSearch === "" || p.name.toLowerCase().includes(productSearch.toLowerCase())
+  );
+
+  const handleSave = () => {
+    if (linkType === "url") {
+      onUpdateLink(banner.id, linkValue || null, null);
+    } else if (linkType === "product") {
+      onUpdateLink(banner.id, null, selectedProductId || null);
+    } else {
+      onUpdateLink(banner.id, null, null);
+    }
+    setEditing(false);
   };
 
   return (
@@ -75,7 +106,12 @@ function SortableBannerItem({
         <img src={banner.image_url} alt="Banner" className="h-16 w-28 rounded-lg object-cover" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">Banner #{banner.sort_order + 1}</p>
-          {banner.link_url && !editingLink && (
+          {linkedProduct && !editing && (
+            <p className="text-xs text-primary truncate flex items-center gap-1">
+              <Package className="h-3 w-3 shrink-0" /> {linkedProduct.name}
+            </p>
+          )}
+          {banner.link_url && !banner.link_product_id && !editing && (
             <p className="text-xs text-primary truncate flex items-center gap-1">
               <Link2 className="h-3 w-3 shrink-0" /> {banner.link_url}
             </p>
@@ -83,9 +119,13 @@ function SortableBannerItem({
         </div>
         <div className="flex items-center gap-1.5">
           <button
-            onClick={() => setEditingLink(!editingLink)}
-            className={`p-1.5 rounded-md transition-colors ${banner.link_url ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}
-            title="Adicionar link"
+            onClick={() => setEditing(!editing)}
+            className={`p-1.5 rounded-md transition-colors ${
+              banner.link_url || banner.link_product_id
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-primary hover:bg-primary/10"
+            }`}
+            title="Configurar link"
           >
             <Link2 className="h-4 w-4" />
           </button>
@@ -98,23 +138,70 @@ function SortableBannerItem({
           </button>
         </div>
       </div>
-      {editingLink && (
-        <div className="flex items-center gap-2 pl-7">
-          <Input
-            value={linkValue}
-            onChange={(e) => setLinkValue(e.target.value)}
-            placeholder="https://... ou /m/slug?categoria=..."
-            className="h-8 text-xs"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-8 text-xs shrink-0"
-            onClick={() => {
-              onUpdateLink(banner.id, linkValue);
-              setEditingLink(false);
-            }}
-          >
+
+      {editing && (
+        <div className="pl-7 space-y-3">
+          {/* Link type selector */}
+          <div className="flex gap-2">
+            {(["none", "url", "product"] as const).map((type) => (
+              <button
+                key={type}
+                onClick={() => setLinkType(type)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  linkType === type
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                {type === "none" ? "Sem link" : type === "url" ? "Link externo" : "Produto"}
+              </button>
+            ))}
+          </div>
+
+          {linkType === "url" && (
+            <Input
+              value={linkValue}
+              onChange={(e) => setLinkValue(e.target.value)}
+              placeholder="https://exemplo.com/promocao"
+              className="h-8 text-xs"
+            />
+          )}
+
+          {linkType === "product" && (
+            <div className="space-y-2">
+              <Input
+                value={productSearch}
+                onChange={(e) => setProductSearch(e.target.value)}
+                placeholder="Buscar produto..."
+                className="h-8 text-xs"
+              />
+              <div className="max-h-40 overflow-y-auto space-y-1 rounded-md border p-1">
+                {filteredProducts.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedProductId(p.id)}
+                    className={`flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
+                      selectedProductId === p.id
+                        ? "bg-primary/10 text-primary font-medium"
+                        : "hover:bg-muted"
+                    }`}
+                  >
+                    {p.image_url ? (
+                      <img src={p.image_url} alt="" className="h-7 w-7 rounded object-cover shrink-0" />
+                    ) : (
+                      <div className="h-7 w-7 rounded bg-muted flex items-center justify-center text-[10px] shrink-0">📦</div>
+                    )}
+                    <span className="truncate">{p.name}</span>
+                  </button>
+                ))}
+                {filteredProducts.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">Nenhum produto encontrado</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleSave}>
             Salvar
           </Button>
         </div>
@@ -125,6 +212,7 @@ function SortableBannerItem({
 
 export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeChange }: Props) {
   const [banners, setBanners] = useState<MenuBanner[]>([]);
+  const [products, setProducts] = useState<SimpleProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
 
@@ -140,13 +228,24 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
       .eq("menu_id", menuId)
       .eq("store_id", storeId)
       .order("sort_order");
-    setBanners((data as MenuBanner[]) || []);
+    setBanners((data as unknown as MenuBanner[]) || []);
     setLoading(false);
   }, [menuId, storeId]);
 
+  const fetchProducts = useCallback(async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("id, name, image_url, price")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .order("name");
+    setProducts((data as SimpleProduct[]) || []);
+  }, [storeId]);
+
   useEffect(() => {
     fetchBanners();
-  }, [fetchBanners]);
+    fetchProducts();
+  }, [fetchBanners, fetchProducts]);
 
   const handleImageUpload = async (url: string | null) => {
     if (!url) return;
@@ -179,9 +278,14 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     toast.success(!current ? "Banner ativado" : "Banner desativado");
   };
 
-  const updateLink = async (id: string, url: string) => {
-    await supabase.from("menu_banners").update({ link_url: url || null } as any).eq("id", id);
-    setBanners((prev) => prev.map((b) => (b.id === id ? { ...b, link_url: url || null } : b)));
+  const updateLink = async (id: string, linkUrl: string | null, productId: string | null) => {
+    await supabase.from("menu_banners").update({
+      link_url: linkUrl,
+      link_product_id: productId,
+    } as any).eq("id", id);
+    setBanners((prev) =>
+      prev.map((b) => (b.id === id ? { ...b, link_url: linkUrl, link_product_id: productId } : b))
+    );
     toast.success("Link atualizado");
   };
 
@@ -237,6 +341,7 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
                 <SortableBannerItem
                   key={banner.id}
                   banner={banner}
+                  products={products}
                   onRemove={removeBanner}
                   onToggleActive={toggleActive}
                   onUpdateLink={updateLink}

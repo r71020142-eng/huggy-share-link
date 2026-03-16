@@ -363,6 +363,7 @@ export type Database = {
           id: string
           image_url: string
           is_active: boolean | null
+          link_product_id: string | null
           link_url: string | null
           menu_id: string
           sort_order: number | null
@@ -373,6 +374,7 @@ export type Database = {
           id?: string
           image_url: string
           is_active?: boolean | null
+          link_product_id?: string | null
           link_url?: string | null
           menu_id: string
           sort_order?: number | null
@@ -383,12 +385,20 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean | null
+          link_product_id?: string | null
           link_url?: string | null
           menu_id?: string
           sort_order?: number | null
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "menu_banners_link_product_id_fkey"
+            columns: ["link_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "menu_banners_menu_id_fkey"
             columns: ["menu_id"]
