@@ -484,7 +484,7 @@ export default function MenuEditor() {
                       <div className="mt-1 flex gap-3">
                         <button onClick={() => logoInputRef.current?.click()} className="text-sm font-medium text-primary hover:underline">Trocar logo</button>
                         <span className="text-muted-foreground">·</span>
-                        <button onClick={() => handleRemoveImage("logo")} className="text-sm font-medium text-destructive hover:underline">Remover</button>
+                        <button onClick={handleRemoveLogo} className="text-sm font-medium text-destructive hover:underline">Remover</button>
                       </div>
                     </div>
                   </div>
