@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN max_free_additionals integer DEFAULT NULL;
