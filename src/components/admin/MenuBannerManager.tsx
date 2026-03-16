@@ -297,7 +297,8 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
   useEffect(() => {
     fetchBanners();
     fetchProducts();
-  }, [fetchBanners, fetchProducts]);
+    fetchCategories();
+  }, [fetchBanners, fetchProducts, fetchCategories]);
 
   const handleImageUpload = async (url: string | null) => {
     if (!url) return;
