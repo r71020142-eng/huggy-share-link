@@ -163,6 +163,7 @@ export default function Products() {
       description: editDescription || null,
       is_active: editIsActive,
       is_featured: editIsFeatured,
+      max_free_additionals: editMaxFreeAdditionals ? parseInt(editMaxFreeAdditionals) : null,
       store_id: store.id,
     };
 
