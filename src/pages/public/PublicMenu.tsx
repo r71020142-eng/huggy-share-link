@@ -378,7 +378,7 @@ export default function PublicMenu() {
       {(() => {
         const isCarousel = (menu as any)?.banner_mode === "carousel";
         const allBanners: BannerItem[] = menuBanners.length > 0
-          ? menuBanners.map((b: any) => ({ image_url: b.image_url, link_url: b.link_url }))
+          ? menuBanners.map((b: any) => ({ image_url: b.image_url, link_url: b.link_url, link_product_id: b.link_product_id, link_category_id: b.link_category_id }))
           : (menu?.banner_url || store?.banner_url)
             ? [{ image_url: menu?.banner_url || store?.banner_url }]
             : [];
