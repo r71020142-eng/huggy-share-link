@@ -47,7 +47,17 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
     setLoadingAdditionals(false);
   };
 
+  const freeAdditionalsCount = selectedAdditionals.reduce((sum, s) => {
+    const price = Number(s.additional.price) || 0;
+    return price === 0 ? sum + s.quantity : sum;
+  }, 0);
+  const maxFree = (product as any)?.max_free_additionals as number | null | undefined;
+  const freeLimit = maxFree != null ? maxFree : Infinity;
+  const freeSlotsFull = freeAdditionalsCount >= freeLimit;
+
   const toggleAdditional = (additional: ProductAdditional) => {
+    const price = Number(additional.price) || 0;
+    if (price === 0 && freeSlotsFull) return; // can't add more free
     setSelectedAdditionals((prev) => {
       const existing = prev.find((s) => s.additional.id === additional.id);
       if (existing) {
@@ -55,6 +65,22 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
       }
       return [...prev, { additional, quantity: 1 }];
     });
+  };
+
+  const updateAdditionalQty = (additionalId: string, delta: number) => {
+    setSelectedAdditionals((prev) =>
+      prev.map((s) => {
+        if (s.additional.id !== additionalId) return s;
+        const price = Number(s.additional.price) || 0;
+        const newQty = s.quantity + delta;
+        const maxQty = s.additional.max_qty || 10;
+        if (newQty <= 0) return null as any;
+        if (newQty > maxQty) return s;
+        // Block increasing free additionals beyond limit
+        if (delta > 0 && price === 0 && freeSlotsFull) return s;
+        return { ...s, quantity: newQty };
+      }).filter(Boolean)
+    );
   };
 
   const updateAdditionalQty = (additionalId: string, delta: number) => {
