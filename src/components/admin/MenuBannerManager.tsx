@@ -284,6 +284,16 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     setProducts((data as SimpleProduct[]) || []);
   }, [storeId]);
 
+  const fetchCategories = useCallback(async () => {
+    const { data } = await supabase
+      .from("categories")
+      .select("id, name, icon")
+      .eq("store_id", storeId)
+      .eq("is_active", true)
+      .order("sort_order");
+    setCategories((data as SimpleCategory[]) || []);
+  }, [storeId]);
+
   useEffect(() => {
     fetchBanners();
     fetchProducts();
