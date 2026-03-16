@@ -402,7 +402,10 @@ export default function PublicMenu() {
           return img;
         }
 
-        return <BannerCarousel banners={allBanners} themeColor={themeColor} />;
+        return <BannerCarousel banners={allBanners} themeColor={themeColor} onProductClick={(pid) => {
+          const p = products.find((pr) => pr.id === pid);
+          if (p) setSelectedProduct(p);
+        }} />;
       })()}
 
       {/* Store info bar */}
