@@ -26,7 +26,12 @@ interface CartItem {
   additionals?: { id?: string; name: string; price: number; quantity: number }[];
 }
 
-function BannerCarousel({ banners, themeColor }: { banners: string[]; themeColor: string }) {
+interface BannerItem {
+  image_url: string;
+  link_url?: string | null;
+}
+
+function BannerCarousel({ banners, themeColor }: { banners: BannerItem[]; themeColor: string }) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
 
@@ -36,18 +41,30 @@ function BannerCarousel({ banners, themeColor }: { banners: string[]; themeColor
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [banners.length]);
 
+  const handleClick = () => {
+    const link = banners[current]?.link_url;
+    if (link) {
+      if (link.startsWith("http")) {
+        window.open(link, "_blank", "noopener");
+      } else {
+        window.location.href = link;
+      }
+    }
+  };
+
   return (
     <div className="relative h-48 w-full overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.img
           key={current}
-          src={banners[current]}
+          src={banners[current].image_url}
           alt=""
-          className="absolute inset-0 h-48 w-full object-cover"
+          className={`absolute inset-0 h-48 w-full object-cover ${banners[current].link_url ? "cursor-pointer" : ""}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
+          onClick={handleClick}
         />
       </AnimatePresence>
       {banners.length > 1 && (
