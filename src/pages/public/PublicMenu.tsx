@@ -415,6 +415,9 @@ export default function PublicMenu() {
         return <BannerCarousel banners={allBanners} themeColor={themeColor} onProductClick={(pid) => {
           const p = products.find((pr) => pr.id === pid);
           if (p) setSelectedProduct(p);
+        }} onCategoryClick={(catId) => {
+          setActiveCategory(catId);
+          document.getElementById("products-section")?.scrollIntoView({ behavior: "smooth" });
         }} />;
       })()}
 
