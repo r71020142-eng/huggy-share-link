@@ -361,22 +361,32 @@ export default function PublicMenu() {
       {/* Header banner - multiple banners with carousel support */}
       {(() => {
         const isCarousel = (menu as any)?.banner_mode === "carousel";
-        const allBanners = menuBanners.length > 0
-          ? menuBanners.map((b: any) => b.image_url)
-          : (menu?.banner_url || store?.banner_url) ? [menu?.banner_url || store?.banner_url] : [];
+        const allBanners: BannerItem[] = menuBanners.length > 0
+          ? menuBanners.map((b: any) => ({ image_url: b.image_url, link_url: b.link_url }))
+          : (menu?.banner_url || store?.banner_url)
+            ? [{ image_url: menu?.banner_url || store?.banner_url }]
+            : [];
 
         if (allBanners.length === 0) return null;
 
         if (allBanners.length === 1 || !isCarousel) {
-          return (
+          const banner = allBanners[0];
+          const img = (
             <motion.img
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              src={allBanners[0]}
+              src={banner.image_url}
               alt=""
-              className="h-48 w-full object-cover"
+              className={`h-48 w-full object-cover ${banner.link_url ? "cursor-pointer" : ""}`}
+              onClick={() => {
+                if (banner.link_url) {
+                  if (banner.link_url.startsWith("http")) window.open(banner.link_url, "_blank", "noopener");
+                  else window.location.href = banner.link_url;
+                }
+              }}
             />
           );
+          return img;
         }
 
         return <BannerCarousel banners={allBanners} themeColor={themeColor} />;
