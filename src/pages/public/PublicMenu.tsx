@@ -26,7 +26,12 @@ interface CartItem {
   additionals?: { id?: string; name: string; price: number; quantity: number }[];
 }
 
-function BannerCarousel({ banners, themeColor }: { banners: string[]; themeColor: string }) {
+interface BannerItem {
+  image_url: string;
+  link_url?: string | null;
+}
+
+function BannerCarousel({ banners, themeColor }: { banners: BannerItem[]; themeColor: string }) {
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>(null);
 
@@ -36,18 +41,30 @@ function BannerCarousel({ banners, themeColor }: { banners: string[]; themeColor
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [banners.length]);
 
+  const handleClick = () => {
+    const link = banners[current]?.link_url;
+    if (link) {
+      if (link.startsWith("http")) {
+        window.open(link, "_blank", "noopener");
+      } else {
+        window.location.href = link;
+      }
+    }
+  };
+
   return (
     <div className="relative h-48 w-full overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.img
           key={current}
-          src={banners[current]}
+          src={banners[current].image_url}
           alt=""
-          className="absolute inset-0 h-48 w-full object-cover"
+          className={`absolute inset-0 h-48 w-full object-cover ${banners[current].link_url ? "cursor-pointer" : ""}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
+          onClick={handleClick}
         />
       </AnimatePresence>
       {banners.length > 1 && (
@@ -344,22 +361,32 @@ export default function PublicMenu() {
       {/* Header banner - multiple banners with carousel support */}
       {(() => {
         const isCarousel = (menu as any)?.banner_mode === "carousel";
-        const allBanners = menuBanners.length > 0
-          ? menuBanners.map((b: any) => b.image_url)
-          : (menu?.banner_url || store?.banner_url) ? [menu?.banner_url || store?.banner_url] : [];
+        const allBanners: BannerItem[] = menuBanners.length > 0
+          ? menuBanners.map((b: any) => ({ image_url: b.image_url, link_url: b.link_url }))
+          : (menu?.banner_url || store?.banner_url)
+            ? [{ image_url: menu?.banner_url || store?.banner_url }]
+            : [];
 
         if (allBanners.length === 0) return null;
 
         if (allBanners.length === 1 || !isCarousel) {
-          return (
+          const banner = allBanners[0];
+          const img = (
             <motion.img
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              src={allBanners[0]}
+              src={banner.image_url}
               alt=""
-              className="h-48 w-full object-cover"
+              className={`h-48 w-full object-cover ${banner.link_url ? "cursor-pointer" : ""}`}
+              onClick={() => {
+                if (banner.link_url) {
+                  if (banner.link_url.startsWith("http")) window.open(banner.link_url, "_blank", "noopener");
+                  else window.location.href = banner.link_url;
+                }
+              }}
             />
           );
+          return img;
         }
 
         return <BannerCarousel banners={allBanners} themeColor={themeColor} />;

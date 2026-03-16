@@ -3,9 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Trash2, Plus, Image as ImageIcon } from "lucide-react";
+import { GripVertical, Trash2, Plus, Image as ImageIcon, Link2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -47,12 +48,16 @@ function SortableBannerItem({
   banner,
   onRemove,
   onToggleActive,
+  onUpdateLink,
 }: {
   banner: MenuBanner;
   onRemove: (id: string) => void;
   onToggleActive: (id: string, current: boolean) => void;
+  onUpdateLink: (id: string, url: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: banner.id });
+  const [editingLink, setEditingLink] = useState(false);
+  const [linkValue, setLinkValue] = useState(banner.link_url || "");
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -62,26 +67,58 @@ function SortableBannerItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-3 rounded-lg border bg-card p-3">
-      <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
-      </button>
-      <img src={banner.image_url} alt="Banner" className="h-16 w-28 rounded-lg object-cover" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">Banner #{banner.sort_order + 1}</p>
-        {banner.link_url && (
-          <p className="text-xs text-muted-foreground truncate">{banner.link_url}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-2">
-        <Switch
-          checked={banner.is_active}
-          onCheckedChange={() => onToggleActive(banner.id, banner.is_active)}
-        />
-        <button onClick={() => onRemove(banner.id)} className="text-destructive hover:text-destructive/80 p-1">
-          <Trash2 className="h-4 w-4" />
+    <div ref={setNodeRef} style={style} className="rounded-lg border bg-card p-3 space-y-2">
+      <div className="flex items-center gap-3">
+        <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-none">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
         </button>
+        <img src={banner.image_url} alt="Banner" className="h-16 w-28 rounded-lg object-cover" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">Banner #{banner.sort_order + 1}</p>
+          {banner.link_url && !editingLink && (
+            <p className="text-xs text-primary truncate flex items-center gap-1">
+              <Link2 className="h-3 w-3 shrink-0" /> {banner.link_url}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setEditingLink(!editingLink)}
+            className={`p-1.5 rounded-md transition-colors ${banner.link_url ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-primary hover:bg-primary/10"}`}
+            title="Adicionar link"
+          >
+            <Link2 className="h-4 w-4" />
+          </button>
+          <Switch
+            checked={banner.is_active}
+            onCheckedChange={() => onToggleActive(banner.id, banner.is_active)}
+          />
+          <button onClick={() => onRemove(banner.id)} className="text-destructive hover:text-destructive/80 p-1">
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+      {editingLink && (
+        <div className="flex items-center gap-2 pl-7">
+          <Input
+            value={linkValue}
+            onChange={(e) => setLinkValue(e.target.value)}
+            placeholder="https://... ou /m/slug?categoria=..."
+            className="h-8 text-xs"
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs shrink-0"
+            onClick={() => {
+              onUpdateLink(banner.id, linkValue);
+              setEditingLink(false);
+            }}
+          >
+            Salvar
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -142,6 +179,12 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
     toast.success(!current ? "Banner ativado" : "Banner desativado");
   };
 
+  const updateLink = async (id: string, url: string) => {
+    await supabase.from("menu_banners").update({ link_url: url || null } as any).eq("id", id);
+    setBanners((prev) => prev.map((b) => (b.id === id ? { ...b, link_url: url || null } : b)));
+    toast.success("Link atualizado");
+  };
+
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -196,6 +239,7 @@ export function MenuBannerManager({ menuId, storeId, bannerMode, onBannerModeCha
                   banner={banner}
                   onRemove={removeBanner}
                   onToggleActive={toggleActive}
+                  onUpdateLink={updateLink}
                 />
               ))}
             </div>
