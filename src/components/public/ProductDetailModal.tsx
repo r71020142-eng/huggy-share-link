@@ -83,18 +83,6 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
     );
   };
 
-  const updateAdditionalQty = (additionalId: string, delta: number) => {
-    setSelectedAdditionals((prev) =>
-      prev.map((s) => {
-        if (s.additional.id !== additionalId) return s;
-        const newQty = s.quantity + delta;
-        const maxQty = s.additional.max_qty || 10;
-        if (newQty <= 0) return null as any;
-        if (newQty > maxQty) return s;
-        return { ...s, quantity: newQty };
-      }).filter(Boolean)
-    );
-  };
 
   if (!product) return null;
 
