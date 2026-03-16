@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Trash2, Plus, Image as ImageIcon } from "lucide-react";
+import { GripVertical, Trash2, Plus, Image as ImageIcon, Link2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import {
   DndContext,
