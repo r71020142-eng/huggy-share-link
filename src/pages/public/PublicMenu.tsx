@@ -298,16 +298,29 @@ export default function PublicMenu() {
 
   return (
     <div className="min-h-screen bg-background pb-24" style={{ paddingBottom: "env(safe-area-inset-bottom, 24px)" }}>
-      {/* Header banner */}
-      {(menu?.banner_url || store?.banner_url) && (
-        <motion.img
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          src={menu?.banner_url || store?.banner_url}
-          alt=""
-          className="h-48 w-full object-cover"
-        />
-      )}
+      {/* Header banner - multiple banners with carousel support */}
+      {(() => {
+        const isCarousel = (menu as any)?.banner_mode === "carousel";
+        const allBanners = menuBanners.length > 0
+          ? menuBanners.map((b: any) => b.image_url)
+          : (menu?.banner_url || store?.banner_url) ? [menu?.banner_url || store?.banner_url] : [];
+
+        if (allBanners.length === 0) return null;
+
+        if (allBanners.length === 1 || !isCarousel) {
+          return (
+            <motion.img
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              src={allBanners[0]}
+              alt=""
+              className="h-48 w-full object-cover"
+            />
+          );
+        }
+
+        return <BannerCarousel banners={allBanners} themeColor={themeColor} />;
+      })()}
 
       {/* Store info bar */}
       <div className="px-4 py-3" style={{ backgroundColor: themeColor }}>
