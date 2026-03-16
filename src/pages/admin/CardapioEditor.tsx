@@ -414,6 +414,21 @@ export default function CardapioEditor() {
             </div>
           )}
 
+          {activeTab === "banners" && (
+            <div className="p-6">
+              <MenuBannerManager
+                menuId={menuId!}
+                storeId={store!.id}
+                bannerMode={(menu as any)?.banner_mode || "single"}
+                onBannerModeChange={async (mode) => {
+                  await supabase.from("menus").update({ banner_mode: mode } as any).eq("id", menuId!);
+                  setMenu((prev: any) => prev ? { ...prev, banner_mode: mode } : prev);
+                  toast.success(mode === "carousel" ? "Carrossel ativado!" : "Modo banner único ativado");
+                }}
+              />
+            </div>
+          )}
+
           {activeTab === "categorias" && (
             <div className="p-6 space-y-4">
               {categories.length === 0 ? (
