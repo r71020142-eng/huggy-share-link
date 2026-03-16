@@ -400,7 +400,7 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 flex-wrap">
         <label className="flex items-center gap-2 text-sm">
           <Checkbox checked={editIsActive} onCheckedChange={(v) => setEditIsActive(!!v)} />
           Ativo
@@ -409,6 +409,17 @@ export default function Products() {
           <Checkbox checked={editIsFeatured} onCheckedChange={(v) => setEditIsFeatured(!!v)} />
           Destaque
         </label>
+        <div className="flex items-center gap-2">
+          <Label className="text-xs whitespace-nowrap">Limite adicionais grátis</Label>
+          <Input
+            type="number"
+            min="0"
+            placeholder="Sem limite"
+            value={editMaxFreeAdditionals}
+            onChange={(e) => setEditMaxFreeAdditionals(e.target.value)}
+            className="w-24 h-8"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end gap-2">
