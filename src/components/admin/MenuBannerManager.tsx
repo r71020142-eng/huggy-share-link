@@ -45,6 +45,12 @@ interface SimpleProduct {
   price: number;
 }
 
+interface SimpleCategory {
+  id: string;
+  name: string;
+  icon: string | null;
+}
+
 interface Props {
   menuId: string;
   storeId: string;
