@@ -1062,6 +1062,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           is_featured: boolean | null
+          max_free_additionals: number | null
           name: string
           price: number
           sort_order: number | null
@@ -1077,6 +1078,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          max_free_additionals?: number | null
           name: string
           price: number
           sort_order?: number | null
@@ -1092,6 +1094,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           is_featured?: boolean | null
+          max_free_additionals?: number | null
           name?: string
           price?: number
           sort_order?: number | null

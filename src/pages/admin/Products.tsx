@@ -38,6 +38,7 @@ export default function Products() {
   const [editImageUrl, setEditImageUrl] = useState("");
   const [editIsActive, setEditIsActive] = useState(true);
   const [editIsFeatured, setEditIsFeatured] = useState(false);
+  const [editMaxFreeAdditionals, setEditMaxFreeAdditionals] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // New product inline
@@ -109,6 +110,7 @@ export default function Products() {
     setEditImageUrl(p.image_url || "");
     setEditIsActive(p.is_active ?? true);
     setEditIsFeatured(p.is_featured ?? false);
+    setEditMaxFreeAdditionals(p.max_free_additionals != null ? String(p.max_free_additionals) : "");
   };
 
   const startNew = () => {
@@ -121,6 +123,7 @@ export default function Products() {
     setEditImageUrl("");
     setEditIsActive(true);
     setEditIsFeatured(false);
+    setEditMaxFreeAdditionals("");
   };
 
   const cancelEdit = () => {
@@ -160,6 +163,7 @@ export default function Products() {
       description: editDescription || null,
       is_active: editIsActive,
       is_featured: editIsFeatured,
+      max_free_additionals: editMaxFreeAdditionals ? parseInt(editMaxFreeAdditionals) : null,
       store_id: store.id,
     };
 
@@ -396,7 +400,7 @@ export default function Products() {
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 flex-wrap">
         <label className="flex items-center gap-2 text-sm">
           <Checkbox checked={editIsActive} onCheckedChange={(v) => setEditIsActive(!!v)} />
           Ativo
@@ -405,6 +409,17 @@ export default function Products() {
           <Checkbox checked={editIsFeatured} onCheckedChange={(v) => setEditIsFeatured(!!v)} />
           Destaque
         </label>
+        <div className="flex items-center gap-2">
+          <Label className="text-xs whitespace-nowrap">Limite adicionais grátis</Label>
+          <Input
+            type="number"
+            min="0"
+            placeholder="Sem limite"
+            value={editMaxFreeAdditionals}
+            onChange={(e) => setEditMaxFreeAdditionals(e.target.value)}
+            className="w-24 h-8"
+          />
+        </div>
       </div>
 
       <div className="flex justify-end gap-2">

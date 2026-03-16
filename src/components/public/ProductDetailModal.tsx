@@ -47,7 +47,17 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
     setLoadingAdditionals(false);
   };
 
+  const freeAdditionalsCount = selectedAdditionals.reduce((sum, s) => {
+    const price = Number(s.additional.price) || 0;
+    return price === 0 ? sum + s.quantity : sum;
+  }, 0);
+  const maxFree = (product as any)?.max_free_additionals as number | null | undefined;
+  const freeLimit = maxFree != null ? maxFree : Infinity;
+  const freeSlotsFull = freeAdditionalsCount >= freeLimit;
+
   const toggleAdditional = (additional: ProductAdditional) => {
+    const price = Number(additional.price) || 0;
+    if (price === 0 && freeSlotsFull) return; // can't add more free
     setSelectedAdditionals((prev) => {
       const existing = prev.find((s) => s.additional.id === additional.id);
       if (existing) {
@@ -61,14 +71,18 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
     setSelectedAdditionals((prev) =>
       prev.map((s) => {
         if (s.additional.id !== additionalId) return s;
+        const price = Number(s.additional.price) || 0;
         const newQty = s.quantity + delta;
         const maxQty = s.additional.max_qty || 10;
         if (newQty <= 0) return null as any;
         if (newQty > maxQty) return s;
+        // Block increasing free additionals beyond limit
+        if (delta > 0 && price === 0 && freeSlotsFull) return s;
         return { ...s, quantity: newQty };
       }).filter(Boolean)
     );
   };
+
 
   if (!product) return null;
 
@@ -123,6 +137,11 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
         {/* Additionals */}
         {!loadingAdditionals && Object.keys(groupedAdditionals).length > 0 && (
           <div className="px-4 pb-4 space-y-4">
+            {maxFree != null && maxFree !== Infinity && (
+              <p className="text-xs font-medium text-muted-foreground">
+                Adicionais grátis: {freeAdditionalsCount}/{maxFree}
+              </p>
+            )}
             {Object.entries(groupedAdditionals).map(([category, items]) => (
               <div key={category}>
                 <h3 className="font-bold text-sm mb-2">{category}</h3>
@@ -159,7 +178,8 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
                         ) : (
                           <button
                             onClick={() => toggleAdditional(add)}
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-white"
+                            disabled={price === 0 && freeSlotsFull}
+                            className="flex h-8 w-8 items-center justify-center rounded-full text-white disabled:opacity-40"
                             style={{ backgroundColor: themeColor }}
                           >
                             <Plus className="h-4 w-4" />
