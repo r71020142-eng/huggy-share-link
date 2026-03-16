@@ -357,6 +357,61 @@ export type Database = {
           },
         ]
       }
+      menu_banners: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          is_active: boolean | null
+          link_url: string | null
+          menu_id: string
+          sort_order: number | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          is_active?: boolean | null
+          link_url?: string | null
+          menu_id: string
+          sort_order?: number | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean | null
+          link_url?: string | null
+          menu_id?: string
+          sort_order?: number | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_banners_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_banners_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_products: {
         Row: {
           created_at: string
@@ -401,6 +456,7 @@ export type Database = {
       }
       menus: {
         Row: {
+          banner_mode: string | null
           banner_url: string | null
           bg_color: string | null
           created_at: string
@@ -422,6 +478,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          banner_mode?: string | null
           banner_url?: string | null
           bg_color?: string | null
           created_at?: string
@@ -443,6 +500,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          banner_mode?: string | null
           banner_url?: string | null
           bg_color?: string | null
           created_at?: string

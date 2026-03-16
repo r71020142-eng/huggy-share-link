@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { formatBRL } from "@/lib/utils";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,49 @@ interface CartItem {
   additionals?: { id?: string; name: string; price: number; quantity: number }[];
 }
 
+function BannerCarousel({ banners, themeColor }: { banners: string[]; themeColor: string }) {
+  const [current, setCurrent] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval>>(null);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    timerRef.current = setInterval(() => setCurrent((c) => (c + 1) % banners.length), 4000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [banners.length]);
+
+  return (
+    <div className="relative h-48 w-full overflow-hidden">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={current}
+          src={banners[current]}
+          alt=""
+          className="absolute inset-0 h-48 w-full object-cover"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+        />
+      </AnimatePresence>
+      {banners.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+          {banners.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => { setCurrent(i); if (timerRef.current) clearInterval(timerRef.current); }}
+              className="h-2 rounded-full transition-all"
+              style={{
+                width: i === current ? 20 : 8,
+                backgroundColor: i === current ? themeColor : "rgba(255,255,255,0.5)",
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PublicMenu() {
   const { slug } = useParams<{ slug: string }>();
   const [menu, setMenu] = useState<any>(null);
@@ -34,6 +77,8 @@ export default function PublicMenu() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [loading, setLoading] = useState(true);
+  const [menuBanners, setMenuBanners] = useState<any[]>([]);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -113,12 +158,15 @@ export default function PublicMenu() {
       .from("stores").select("id, name, slug, address, whatsapp, logo_url, banner_url, theme_color, is_open, delivery_enabled, pickup_enabled, min_order, estimated_time, promo_banner, operating_hours, plan_type, created_at").eq("id", menuData.store_id).single();
     setStore(storeData);
 
-    const [{ data: menuProds }, { data: allProds }, { data: cats }, { data: hoods }] = await Promise.all([
+    const [{ data: menuProds }, { data: allProds }, { data: cats }, { data: hoods }, { data: bannerData }] = await Promise.all([
       supabase.from("menu_products").select("product_id, sort_order, is_available").eq("menu_id", menuData.id).eq("is_available", true).order("sort_order"),
       supabase.from("products").select("*").eq("store_id", menuData.store_id).eq("is_active", true),
       supabase.from("categories").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("sort_order"),
       supabase.from("neighborhoods").select("*").eq("store_id", menuData.store_id).eq("is_active", true).order("name"),
+      supabase.from("menu_banners").select("*").eq("menu_id", menuData.id).eq("is_active", true).order("sort_order"),
     ]);
+
+    setMenuBanners(bannerData || []);
 
     // If menu has products linked via menu_products, use that order; otherwise fallback to all products
     let orderedProducts: Product[] = [];
@@ -293,16 +341,29 @@ export default function PublicMenu() {
 
   return (
     <div className="min-h-screen bg-background pb-24" style={{ paddingBottom: "env(safe-area-inset-bottom, 24px)" }}>
-      {/* Header banner */}
-      {(menu?.banner_url || store?.banner_url) && (
-        <motion.img
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          src={menu?.banner_url || store?.banner_url}
-          alt=""
-          className="h-48 w-full object-cover"
-        />
-      )}
+      {/* Header banner - multiple banners with carousel support */}
+      {(() => {
+        const isCarousel = (menu as any)?.banner_mode === "carousel";
+        const allBanners = menuBanners.length > 0
+          ? menuBanners.map((b: any) => b.image_url)
+          : (menu?.banner_url || store?.banner_url) ? [menu?.banner_url || store?.banner_url] : [];
+
+        if (allBanners.length === 0) return null;
+
+        if (allBanners.length === 1 || !isCarousel) {
+          return (
+            <motion.img
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              src={allBanners[0]}
+              alt=""
+              className="h-48 w-full object-cover"
+            />
+          );
+        }
+
+        return <BannerCarousel banners={allBanners} themeColor={themeColor} />;
+      })()}
 
       {/* Store info bar */}
       <div className="px-4 py-3" style={{ backgroundColor: themeColor }}>

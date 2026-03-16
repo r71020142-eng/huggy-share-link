@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Plus, X, Search, GripVertical, Star } from "lucide-react";
+import { ArrowLeft, Plus, X, Search, GripVertical, Star, Image as ImageIcon } from "lucide-react";
 import { MobilePreview } from "@/components/admin/MobilePreview";
+import { MenuBannerManager } from "@/components/admin/MenuBannerManager";
 import { toast } from "sonner";
 import {
   DndContext,
@@ -110,7 +111,7 @@ export default function CardapioEditor() {
   const { store } = useStore();
   const [menu, setMenu] = useState<Menu | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"produtos" | "categorias">("produtos");
+  const [activeTab, setActiveTab] = useState<"produtos" | "categorias" | "banners">("produtos");
 
   const [menuProducts, setMenuProducts] = useState<MenuProduct[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -315,6 +316,14 @@ export default function CardapioEditor() {
               Produtos ({menuProducts.length})
             </button>
             <button
+              onClick={() => setActiveTab("banners")}
+              className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
+                activeTab === "banners" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span className="flex items-center justify-center gap-1"><ImageIcon className="h-3.5 w-3.5" /> Banners</span>
+            </button>
+            <button
               onClick={() => setActiveTab("categorias")}
               className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
                 activeTab === "categorias" ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
@@ -402,6 +411,21 @@ export default function CardapioEditor() {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "banners" && (
+            <div className="p-6">
+              <MenuBannerManager
+                menuId={menuId!}
+                storeId={store!.id}
+                bannerMode={(menu as any)?.banner_mode || "single"}
+                onBannerModeChange={async (mode) => {
+                  await supabase.from("menus").update({ banner_mode: mode } as any).eq("id", menuId!);
+                  setMenu((prev: any) => prev ? { ...prev, banner_mode: mode } : prev);
+                  toast.success(mode === "carousel" ? "Carrossel ativado!" : "Modo banner único ativado");
+                }}
+              />
             </div>
           )}
 
