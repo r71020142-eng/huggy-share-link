@@ -543,7 +543,7 @@ export default function PublicMenu() {
       })()}
 
       {/* Cardápio */}
-      <div className="mt-6 px-4">
+      <div id="products-section" className="mt-6 px-4">
         <h2 className="text-lg font-bold mb-3">Cardápio</h2>
         <div className="space-y-3">
           {filteredProducts.map((product, i) => (
