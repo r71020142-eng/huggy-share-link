@@ -50,6 +50,7 @@ export default function Products() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [addName, setAddName] = useState("");
   const [addCategory, setAddCategory] = useState("");
+  const [addDescription, setAddDescription] = useState("");
   const [addPrice, setAddPrice] = useState("0");
   const [addMaxQty, setAddMaxQty] = useState("1");
   const [addIsRequired, setAddIsRequired] = useState(false);
@@ -234,6 +235,7 @@ export default function Products() {
     setShowAddForm(true);
     setEditingAdditionalId(null);
     setAddName("");
+    setAddDescription("");
     setAddCategory("");
     setAddPrice("0");
     setAddMaxQty("1");
@@ -245,6 +247,7 @@ export default function Products() {
     setShowAddForm(true);
     setEditingAdditionalId(a.id);
     setAddName(a.name);
+    setAddDescription((a as any).description || "");
     setAddCategory((a as any).category || "");
     setAddPrice(String(a.price ?? 0));
     setAddMaxQty(String(a.max_qty ?? 1));
@@ -256,6 +259,7 @@ export default function Products() {
     if (!store || !expandedAdditionals || !addName.trim()) return;
     const payload = {
       name: addName,
+      description: addDescription || null,
       category: addCategory || "geral",
       price: parseFloat(addPrice) || 0,
       max_qty: parseInt(addMaxQty) || 1,
@@ -500,6 +504,10 @@ export default function Products() {
                 <Label className="text-xs font-semibold uppercase text-muted-foreground">Categoria</Label>
                 <Input value={addCategory} onChange={(e) => setAddCategory(e.target.value)} placeholder="complementos" />
               </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold uppercase text-muted-foreground">Descrição / Ingredientes</Label>
+              <Input value={addDescription} onChange={(e) => setAddDescription(e.target.value)} placeholder="Ex: Molho, muçarela, presunto, tomate..." />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
