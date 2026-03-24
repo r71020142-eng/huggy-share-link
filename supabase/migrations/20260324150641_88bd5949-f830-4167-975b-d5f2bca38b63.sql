@@ -1,0 +1,1 @@
+ALTER TABLE public.product_additionals ADD COLUMN description text DEFAULT NULL;
