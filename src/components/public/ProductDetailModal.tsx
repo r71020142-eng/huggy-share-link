@@ -206,9 +206,12 @@ export function ProductDetailModal({ product, open, onClose, onAdd, themeColor }
                       const blocked = price === 0 && catFull && !selected;
                       return (
                         <div key={add.id} className={`flex items-center justify-between p-3 ${blocked ? "opacity-50" : ""}`}>
-                          <div>
+                          <div className="flex-1 min-w-0 mr-2">
                             <p className="text-sm font-medium">{add.name}</p>
-                            <p className="text-xs" style={{ color: price > 0 ? themeColor : "#16a34a" }}>
+                            {(add as any).description && (
+                              <p className="text-[11px] text-muted-foreground leading-tight mt-0.5 line-clamp-2">{(add as any).description}</p>
+                            )}
+                            <p className="text-xs mt-0.5" style={{ color: price > 0 ? themeColor : "#16a34a" }}>
                               {price > 0 ? `+ ${formatBRL(price)}` : "Grátis"}
                             </p>
                           </div>
