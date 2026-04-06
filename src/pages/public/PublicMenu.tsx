@@ -186,9 +186,39 @@ export default function PublicMenu() {
     if (!isPreview) query = query.eq("is_published", true);
     const { data: menuData } = await query.single();
 
-    if (!menuData) { setNotFound(true); setLoading(false); return; }
-    setMenu(menuData);
+    if (!menuData) {
+      // Fallback: try to find a published primary menu by store slug
+      const { data: storeBySlug } = await supabase
+        .from("stores")
+        .select("id")
+        .eq("slug", slug!)
+        .single();
 
+      if (storeBySlug) {
+        let fallbackQuery = supabase
+          .from("menus")
+          .select("*")
+          .eq("store_id", storeBySlug.id);
+        if (!isPreview) fallbackQuery = fallbackQuery.eq("is_published", true);
+        const { data: storeMenus } = await fallbackQuery.order("is_primary", { ascending: false }).limit(1);
+        const primaryMenu = storeMenus?.[0] ?? null;
+
+        if (primaryMenu) {
+          // Redirect to the correct menu slug to keep URL consistent
+          window.history.replaceState(null, "", `/m/${primaryMenu.slug}${window.location.search}`);
+          setMenu(primaryMenu);
+          await loadMenuData(primaryMenu);
+          return;
+        }
+      }
+
+      setNotFound(true); setLoading(false); return;
+    }
+    setMenu(menuData);
+    await loadMenuData(menuData);
+  };
+
+  const loadMenuData = async (menuData: Database["public"]["Tables"]["menus"]["Row"]) => {
     const { data: storeData } = await supabase
       .from("stores").select("id, name, slug, address, whatsapp, logo_url, banner_url, theme_color, is_open, delivery_enabled, pickup_enabled, min_order, estimated_time, promo_banner, operating_hours, plan_type, created_at").eq("id", menuData.store_id).single();
     setStore(storeData);
