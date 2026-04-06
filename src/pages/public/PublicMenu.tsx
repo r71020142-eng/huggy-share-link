@@ -198,10 +198,10 @@ export default function PublicMenu() {
         let fallbackQuery = supabase
           .from("menus")
           .select("*")
-          .eq("store_id", storeBySlug.id)
-          .eq("is_primary", true);
+          .eq("store_id", storeBySlug.id);
         if (!isPreview) fallbackQuery = fallbackQuery.eq("is_published", true);
-        const { data: primaryMenu } = await fallbackQuery.single();
+        const { data: storeMenus } = await fallbackQuery.order("is_primary", { ascending: false }).limit(1);
+        const primaryMenu = storeMenus?.[0] ?? null;
 
         if (primaryMenu) {
           // Redirect to the correct menu slug to keep URL consistent
