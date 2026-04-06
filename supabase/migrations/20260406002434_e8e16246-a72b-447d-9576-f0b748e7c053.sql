@@ -1,0 +1,1 @@
+DROP TRIGGER IF EXISTS trigger_auto_create_print_job ON public.orders;
