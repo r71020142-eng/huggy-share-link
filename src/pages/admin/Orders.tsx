@@ -106,6 +106,17 @@ export default function Orders() {
   const isFirstLoad = useRef(true);
   const knownOrderIds = useRef<Set<string>>(new Set());
 
+  const getShareableAppOrigin = () => {
+    const currentOrigin = window.location.origin;
+    const { hostname } = window.location;
+
+    if (hostname.includes("id-preview--") || hostname.endsWith("lovable.dev")) {
+      return "https://anoto.lovable.app";
+    }
+
+    return currentOrigin;
+  };
+
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -180,7 +191,7 @@ export default function Orders() {
       toast({ title: "Sem código de rastreio", description: "Este pedido não possui código de rastreio.", variant: "destructive" });
       return;
     }
-    const url = `${window.location.origin}/m/${store.slug}?tracking=${order.tracking_code}`;
+    const url = `${getShareableAppOrigin()}/m/${store.slug}?tracking=${order.tracking_code}`;
     navigator.clipboard.writeText(url).then(() => {
       toast({ title: "✅ Link copiado!", description: "Link de rastreio copiado para a área de transferência." });
     }).catch(() => {
