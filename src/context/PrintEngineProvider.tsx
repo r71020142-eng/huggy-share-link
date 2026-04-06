@@ -213,6 +213,58 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
     });
     realtimeRef.current = realtime;
 
+    // Shared catch-up function: polls backend for pending jobs missed by realtime
+    const catchUpPending = async () => {
+      try {
+        const pendingJobs = await api.fetchPending(storeId);
+        let storeData = storeCache.current[storeId];
+        if (!storeData) {
+          storeData = await api.fetchStore(storeId);
+          storeCache.current[storeId] = storeData;
+        }
+
+        let enqueued = 0;
+        for (const pj of pendingJobs) {
+          if (printed.has(pj.order_id) || queue.hasOrder(pj.order_id)) continue;
+          const orderData = pj.orders || null;
+          if (!orderData || !orderData.id) {
+            // Fetch order directly if join data is missing
+            const { data: fetchedOrder } = await supabase
+              .from("orders")
+              .select("*")
+              .eq("id", pj.order_id)
+              .eq("store_id", storeId)
+              .maybeSingle();
+            if (!fetchedOrder) continue;
+            const items = await api.fetchOrderItems(pj.order_id);
+            await queue.enqueue(pj.order_id, storeId, {
+              order: fetchedOrder,
+              items,
+              store: storeData,
+              copies: 1,
+              mode: "both",
+            });
+          } else {
+            const items = await api.fetchOrderItems(pj.order_id);
+            await queue.enqueue(pj.order_id, storeId, {
+              order: orderData,
+              items,
+              store: storeData,
+              copies: 1,
+              mode: "both",
+            });
+          }
+          enqueued++;
+        }
+        if (enqueued > 0) {
+          console.log(`[PrintEngine] Catch-up: enqueued ${enqueued} missed job(s)`);
+          worker.nudge();
+        }
+      } catch (e) {
+        console.warn("[PrintEngine] Catch-up poll failed:", e);
+      }
+    };
+
     // Boot sequence
     (async () => {
       await printed.init();
@@ -224,30 +276,16 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
       worker.start();
       realtime.start();
 
-      // Load pending jobs from backend
-      try {
-        const pendingJobs = await api.fetchPending(storeId);
-        const storeData = await api.fetchStore(storeId);
-        storeCache.current[storeId] = storeData;
-
-        for (const pj of pendingJobs) {
-          if (printed.has(pj.order_id) || queue.hasOrder(pj.order_id)) continue;
-          const items = await api.fetchOrderItems(pj.order_id);
-          await queue.enqueue(pj.order_id, storeId, {
-            order: pj.orders || {},
-            items,
-            store: storeData,
-            copies: 1,
-            mode: "both",
-          });
-        }
-        worker.nudge();
-      } catch (e) {
-        console.warn("[PrintEngine] Failed to load pending jobs:", e);
-      }
+      // Initial load of pending jobs
+      await catchUpPending();
 
       setState(prev => ({ ...prev, initialized: true }));
     })();
+
+    // Periodic fallback poll every 30s to catch jobs missed by realtime
+    const catchUpInterval = setInterval(() => {
+      catchUpPending();
+    }, 30_000);
 
     return () => {
       unsubStatus();
@@ -256,6 +294,7 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
       worker.stop();
       heartbeat.stop();
       realtime.stop();
+      clearInterval(catchUpInterval);
       bootedStoreRef.current = null;
     };
   }, [storeId]);
