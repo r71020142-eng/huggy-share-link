@@ -191,6 +191,17 @@ export default function OrderDetailDialog({ order, open, onOpenChange }: OrderDe
               </div>
             </>
           )}
+          {/* Print button */}
+          <Separator />
+          <Button
+            onClick={handlePrint}
+            disabled={printing}
+            className="w-full gap-2"
+            variant="outline"
+          >
+            <Printer className="h-4 w-4" />
+            {printing ? "Enviando..." : "Imprimir Pedido"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
