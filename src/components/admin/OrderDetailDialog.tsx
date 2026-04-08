@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Clock, MapPin, Phone, CreditCard, Truck, Store as StoreIcon, User, FileText, Package } from "lucide-react";
+import { Clock, MapPin, Phone, CreditCard, Truck, Store as StoreIcon, User, FileText, Package, Printer } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { formatBRL } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type OrderItem = Database["public"]["Tables"]["order_items"]["Row"];
