@@ -53,9 +53,29 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDialogProps) {
+  const [printing, setPrinting] = useState(false);
+
   if (!order) return null;
 
   const items = order.order_items || [];
+
+  const handlePrint = async () => {
+    setPrinting(true);
+    try {
+      const idempotencyKey = `manual-${order.id}-${Date.now()}`;
+      const { error } = await supabase.from("print_jobs").insert({
+        order_id: order.id,
+        store_id: order.store_id,
+        idempotency_key: idempotencyKey,
+        status: "pending",
+      });
+      if (error) throw error;
+      toast.success("Pedido enviado para impressão!");
+    } catch (e: any) {
+      toast.error("Erro ao enviar para impressão: " + e.message);
+    }
+    setPrinting(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
