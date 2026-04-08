@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Clock, MapPin, Phone, CreditCard, Truck, Store as StoreIcon, User, FileText, Package } from "lucide-react";
+import { Clock, MapPin, Phone, CreditCard, Truck, Store as StoreIcon, User, FileText, Package, Printer } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { formatBRL } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 type Order = Database["public"]["Tables"]["orders"]["Row"];
 type OrderItem = Database["public"]["Tables"]["order_items"]["Row"];
@@ -50,9 +53,29 @@ const formatDate = (dateStr: string) => {
 };
 
 export default function OrderDetailDialog({ order, open, onOpenChange }: OrderDetailDialogProps) {
+  const [printing, setPrinting] = useState(false);
+
   if (!order) return null;
 
   const items = order.order_items || [];
+
+  const handlePrint = async () => {
+    setPrinting(true);
+    try {
+      const idempotencyKey = `manual-${order.id}-${Date.now()}`;
+      const { error } = await supabase.from("print_jobs").insert({
+        order_id: order.id,
+        store_id: order.store_id,
+        idempotency_key: idempotencyKey,
+        status: "pending",
+      });
+      if (error) throw error;
+      toast.success("Pedido enviado para impressão!");
+    } catch (e: any) {
+      toast.error("Erro ao enviar para impressão: " + e.message);
+    }
+    setPrinting(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -168,6 +191,17 @@ export default function OrderDetailDialog({ order, open, onOpenChange }: OrderDe
               </div>
             </>
           )}
+          {/* Print button */}
+          <Separator />
+          <Button
+            onClick={handlePrint}
+            disabled={printing}
+            className="w-full gap-2"
+            variant="outline"
+          >
+            <Printer className="h-4 w-4" />
+            {printing ? "Enviando..." : "Imprimir Pedido"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
