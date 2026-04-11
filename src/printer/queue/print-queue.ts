@@ -12,6 +12,10 @@ export class PrintQueue {
   private jobs: PrintJob[] = [];
   private listeners: Set<QueueListener> = new Set();
 
+  private sortJobs(): void {
+    this.jobs.sort((a, b) => a.createdAt - b.createdAt);
+  }
+
   /** Load persisted queue from IndexedDB */
   async init(): Promise<void> {
     this.jobs = await QueueStorage.getAll();
@@ -22,6 +26,7 @@ export class PrintQueue {
         await QueueStorage.save(job);
       }
     }
+    this.sortJobs();
     this.notify();
   }
 
@@ -37,12 +42,19 @@ export class PrintQueue {
   }
 
   /** Add a new print job */
-  async enqueue(orderId: string, storeId: string, payload: PrintPayload): Promise<PrintJob> {
+  async enqueue(
+    orderId: string,
+    storeId: string,
+    payload: PrintPayload,
+    options?: { backendJobId?: string; allowReprint?: boolean }
+  ): Promise<PrintJob> {
     const job: PrintJob = {
       id: `pj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       orderId,
       storeId,
       payload,
+      backendJobId: options?.backendJobId,
+      allowReprint: options?.allowReprint ?? false,
       attempts: 0,
       maxAttempts: 5,
       status: "pending",
@@ -50,6 +62,7 @@ export class PrintQueue {
     };
     await QueueStorage.save(job);
     this.jobs.push(job);
+    this.sortJobs();
     this.notify();
     return job;
   }

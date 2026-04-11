@@ -84,7 +84,7 @@ export class QueueWorker {
     }
 
     // Deduplication check
-    if (this.printed.has(job.orderId)) {
+    if (!job.allowReprint && this.printed.has(job.orderId)) {
       await this.queue.updateStatus(job.id, "done");
       this.emit("skipped-duplicate", { orderId: job.orderId });
       this.tick();
@@ -112,7 +112,11 @@ export class QueueWorker {
 
       // Confirm on backend
       try {
-        await this.api.confirmPrint(job.orderId, job.storeId);
+        if (job.backendJobId) {
+          await this.api.confirmJob(job.backendJobId);
+        } else {
+          await this.api.confirmPrint(job.orderId, job.storeId);
+        }
       } catch {
         this.emit("backend-confirm-failed", { orderId: job.orderId });
       }
@@ -141,6 +145,12 @@ export class QueueWorker {
       const errorMsg = e.message || "Erro desconhecido";
       await this.queue.updateStatus(job.id, "failed", errorMsg);
       this.emit("error", { orderId: job.orderId, error: errorMsg, attempts: job.attempts + 1 });
+
+      if (job.backendJobId) {
+        this.api.markJobFailed(job.backendJobId, errorMsg).catch(() => {});
+      } else {
+        this.api.markFailed(job.orderId, job.storeId, errorMsg).catch(() => {});
+      }
 
       // Log failure to print_logs
       this.api.logPrint(

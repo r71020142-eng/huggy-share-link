@@ -12,6 +12,8 @@ export interface PrintJob {
   orderId: string;
   storeId: string;
   payload: PrintPayload;
+  backendJobId?: string;
+  allowReprint?: boolean;
   attempts: number;
   maxAttempts: number;
   status: PrintJobStatus;

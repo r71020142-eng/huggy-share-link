@@ -167,6 +167,7 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
     // Realtime subscription for new print jobs (filtered by store_id)
     const realtime = new PrintRealtime(storeId, async (printJob) => {
       console.log("[PrintEngine] Realtime print_job received:", printJob.id, "order:", printJob.order_id, "store:", printJob.store_id);
+      const isManualReprint = typeof printJob.idempotency_key === "string" && printJob.idempotency_key.startsWith("manual-");
       
       // CRITICAL: Double-check store_id matches
       if (printJob.store_id !== storeId) {
@@ -178,7 +179,7 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
         console.log("[PrintEngine] Auto-print disabled, skipping");
         return;
       }
-      if (printed.has(printJob.order_id)) {
+      if (!isManualReprint && printed.has(printJob.order_id)) {
         console.log("[PrintEngine] Already printed, skipping:", printJob.order_id);
         return;
       }
@@ -204,7 +205,10 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
         }
 
         const payload: PrintPayload = { order: orderData, items, store: storeData, copies: 1, mode: "both" };
-        await queue.enqueue(printJob.order_id, storeId, payload);
+        await queue.enqueue(printJob.order_id, storeId, payload, {
+          backendJobId: printJob.id,
+          allowReprint: isManualReprint,
+        });
         console.log("[PrintEngine] Enqueued order for printing:", printJob.order_id);
         worker.nudge();
       } catch (e: any) {
@@ -225,7 +229,8 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
 
         let enqueued = 0;
         for (const pj of pendingJobs) {
-          if (printed.has(pj.order_id) || queue.hasOrder(pj.order_id)) continue;
+          const isManualReprint = typeof pj.idempotency_key === "string" && pj.idempotency_key.startsWith("manual-");
+          if ((!isManualReprint && printed.has(pj.order_id)) || queue.hasOrder(pj.order_id)) continue;
           const orderData = pj.orders || null;
           if (!orderData || !orderData.id) {
             // Fetch order directly if join data is missing
@@ -243,6 +248,9 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
               store: storeData,
               copies: 1,
               mode: "both",
+            }, {
+              backendJobId: pj.id,
+              allowReprint: isManualReprint,
             });
           } else {
             const items = await api.fetchOrderItems(pj.order_id);
@@ -252,6 +260,9 @@ export function PrintEngineProvider({ children }: { children: ReactNode }) {
               store: storeData,
               copies: 1,
               mode: "both",
+            }, {
+              backendJobId: pj.id,
+              allowReprint: isManualReprint,
             });
           }
           enqueued++;
