@@ -10,7 +10,7 @@ export class PrintApiClient {
   async fetchPending(storeId: string): Promise<any[]> {
     const { data, error } = await supabase
       .from("print_jobs")
-      .select("id, store_id, order_id, status, attempts, created_at, orders(id, store_id, tracking_code, customer_name, customer_phone, customer_address, order_type, subtotal, delivery_fee, total, payment_method, payment_status, notes, created_at, status)")
+      .select("id, store_id, order_id, idempotency_key, status, attempts, created_at, orders(id, store_id, tracking_code, customer_name, customer_phone, customer_address, order_type, subtotal, delivery_fee, total, payment_method, payment_status, notes, created_at, status)")
       .eq("store_id", storeId)
       .eq("status", "pending")
       .order("created_at", { ascending: true })
@@ -34,6 +34,19 @@ export class PrintApiClient {
     if (error) throw error;
   }
 
+  /** Confirm a specific print job as done */
+  async confirmJob(jobId: string): Promise<void> {
+    const { error } = await supabase
+      .from("print_jobs")
+      .update({
+        status: "done",
+        printed_at: new Date().toISOString(),
+      })
+      .eq("id", jobId);
+
+    if (error) throw error;
+  }
+
   /** Mark a print job as failed on backend */
   async markFailed(orderId: string, storeId: string, errorMsg: string): Promise<void> {
     const { error } = await supabase
@@ -44,6 +57,19 @@ export class PrintApiClient {
       })
       .eq("order_id", orderId)
       .eq("store_id", storeId);
+
+    if (error) throw error;
+  }
+
+  /** Mark a specific print job as failed */
+  async markJobFailed(jobId: string, errorMsg: string): Promise<void> {
+    const { error } = await supabase
+      .from("print_jobs")
+      .update({
+        status: "failed",
+        error_message: errorMsg,
+      })
+      .eq("id", jobId);
 
     if (error) throw error;
   }
