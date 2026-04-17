@@ -179,12 +179,16 @@ export class PrintApiClient {
 
   /** Log a print event (success or failure) */
   async logPrint(storeId: string, orderId: string, jobId: string | null, status: "success" | "failed", attempts: number, errorMessage?: string): Promise<void> {
+    // Only persist job_id if it's a real backend UUID (not a local queue id like "pj_xxx")
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const safeJobId = jobId && UUID_RE.test(jobId) ? jobId : null;
+
     const { error } = await supabase
       .from("print_logs")
       .insert({
         store_id: storeId,
         order_id: orderId,
-        job_id: jobId,
+        job_id: safeJobId,
         status,
         attempts,
         error_message: errorMessage,
