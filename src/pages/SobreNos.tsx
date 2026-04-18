@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Heart, Target, Users } from "lucide-react";
-import logoLanding from "@/assets/logo-anoto-landing.png";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 function Header() {
   return (
@@ -36,80 +35,94 @@ function Footer() {
 }
 
 export default function SobreNos() {
-  const values = [
-    { icon: Heart, title: "Feito com cuidado", desc: "Cada detalhe pensado pra rotina real do balcão." },
-    { icon: Target, title: "Sem taxa por pedido", desc: "Você paga o plano. Suas vendas são suas." },
-    { icon: Users, title: "Próximo de você", desc: "Atendimento humano, sem burocracia." },
-  ];
-
   return (
     <div className="min-h-screen bg-white">
       <Header />
 
+      {/* BLOCO 1 — ABERTURA */}
       <section className="bg-white">
-        <div className="mx-auto max-w-3xl px-5 py-16 md:py-24 text-center">
-          <img src={logoLanding} alt="Anotô" className="mx-auto w-[260px] md:w-[300px] h-auto object-contain mb-6" />
-          <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-orange-600">
+        <div className="mx-auto max-w-3xl px-6 pt-28 pb-32 md:pt-40 md:pb-44">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-orange-600">
             Sobre nós
           </span>
-          <h1 className="mt-3 text-[36px] md:text-[48px] font-bold leading-[1.1] tracking-tight text-gray-900">
-            Feito por quem entende{" "}
+          <h1 className="mt-6 text-[40px] md:text-[68px] font-bold leading-[1.05] tracking-tight text-gray-900">
+            Criado por quem vive o balcão{" "}
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: "linear-gradient(135deg, #4a1d05 0%, #c2410c 35%, #fb923c 55%, #7c2d12 100%)" }}
             >
-              do balcão.
+              todos os dias.
             </span>
           </h1>
-          <p className="mt-5 text-[17px] leading-relaxed text-gray-600">
-            O Anotô nasceu para dar ao pequeno empreendedor as mesmas armas das grandes redes —
-            sem cobrar comissão sobre cada venda.
+          <p className="mt-8 max-w-2xl text-[19px] md:text-[22px] leading-relaxed text-gray-600">
+            O Anotô nasceu pra resolver o caos de pedidos, sistemas quebrados
+            e taxas que só atrapalham quem quer vender.
           </p>
         </div>
       </section>
 
-      <section className="border-t border-gray-200 bg-[#FAFAFA]">
-        <div className="mx-auto max-w-3xl px-5 py-20 space-y-6 text-[16.5px] leading-relaxed text-gray-700">
-          <h2 className="text-[26px] font-bold tracking-tight text-gray-900">Nossa história</h2>
-          <p>
-            Começamos observando lanchonetes, açaiterias e pizzarias se perderem em cadernos,
-            grupos de WhatsApp e planilhas. O pedido entrava, mas a organização escapava — e
-            com ela, dinheiro, clientes e paciência.
-          </p>
-          <p>
-            Construímos o Anotô para resolver isso de um jeito direto: cardápio digital
-            profissional, painel de pedidos em tempo real, controle de caixa confiável e
-            impressão automática. Um lugar só. Sem gambiarra.
-          </p>
-          <p>
-            Acreditamos que tecnologia boa é a que some no fluxo do trabalho. Você atende seus
-            clientes; o Anotô cuida do resto.
-          </p>
-        </div>
-      </section>
-
-      <section className="border-t border-gray-200 bg-white">
-        <div className="mx-auto max-w-5xl px-5 py-20">
-          <h2 className="text-[26px] font-bold tracking-tight text-gray-900 mb-10">No que acreditamos</h2>
-          <div className="grid gap-px bg-gray-200 md:grid-cols-3">
-            {values.map((v) => (
-              <div key={v.title} className="bg-white p-7">
-                <v.icon className="h-6 w-6 text-orange-500" strokeWidth={1.75} />
-                <h3 className="mt-5 text-[17px] font-semibold text-gray-900">{v.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-gray-600">{v.desc}</p>
-              </div>
-            ))}
+      {/* BLOCO 2 — HISTÓRIA */}
+      <section className="border-t border-gray-100 bg-white">
+        <div className="mx-auto max-w-2xl px-6 py-28 md:py-40">
+          <div className="space-y-8 text-[20px] md:text-[24px] leading-[1.55] text-gray-900 font-medium">
+            <p>Quem tem lanchonete ou delivery sabe como é.</p>
+            <p className="text-gray-600">
+              Pedido chegando em vários lugares, anotação no papel,
+              erro na cozinha, taxa em cima de taxa.
+            </p>
+            <p className="text-orange-600">A gente cansou disso.</p>
+            <p className="text-gray-600">
+              O Anotô foi criado pra resolver exatamente esse problema:
+              centralizar tudo, simplificar a operação e deixar você focar
+              no que realmente importa — <span className="text-gray-900 font-semibold">vender.</span>
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="border-t border-gray-200 bg-[#FAFAFA]">
-        <div className="mx-auto max-w-3xl px-5 py-20 text-center">
-          <h2 className="text-[28px] md:text-[34px] font-bold tracking-tight text-gray-900">
-            Vamos crescer juntos.
+      {/* BLOCO 3 — POSICIONAMENTO */}
+      <section className="border-t border-gray-100 bg-[#FAFAFA]">
+        <div className="mx-auto max-w-2xl px-6 py-28 md:py-40">
+          <h2 className="text-[36px] md:text-[56px] font-bold leading-[1.05] tracking-tight text-gray-900">
+            Simples de verdade.
           </h2>
-          <Button size="lg" asChild className="mt-6 bg-orange-500 hover:bg-orange-600 text-white text-base px-7 h-12">
-            <Link to="/register">Criar conta grátis <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+          <div className="mt-10 space-y-5 text-[20px] md:text-[24px] leading-[1.5] text-gray-700">
+            <p>Sem integrações frágeis.</p>
+            <p>Sem múltiplos sistemas.</p>
+            <p>Sem gambiarra.</p>
+          </div>
+          <p className="mt-12 text-[20px] md:text-[24px] leading-[1.5] text-gray-900 font-medium">
+            Um único lugar pra cuidar do seu cardápio, pedidos e caixa.
+          </p>
+          <p className="mt-6 text-[18px] md:text-[20px] leading-relaxed text-gray-500">
+            Do jeito que deveria ser desde o começo.
+          </p>
+        </div>
+      </section>
+
+      {/* BLOCO 4 — FECHAMENTO + CTA */}
+      <section className="border-t border-gray-100 bg-white">
+        <div className="mx-auto max-w-2xl px-6 py-28 md:py-40 text-center">
+          <h2 className="text-[36px] md:text-[56px] font-bold leading-[1.05] tracking-tight text-gray-900">
+            Se é pra simplificar,{" "}
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(135deg, #4a1d05 0%, #c2410c 35%, #fb923c 55%, #7c2d12 100%)" }}
+            >
+              começa agora.
+            </span>
+          </h2>
+          <p className="mt-6 text-[17px] md:text-[19px] text-gray-500">
+            Leva menos de 2 minutos pra começar.
+          </p>
+          <Button
+            size="lg"
+            asChild
+            className="mt-10 bg-orange-500 hover:bg-orange-600 text-white text-base px-8 h-12"
+          >
+            <Link to="/register">
+              Criar conta grátis <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </section>
