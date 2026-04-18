@@ -60,7 +60,7 @@ function HeroSection() {
           </span>
           <h1 className="text-[40px] font-bold leading-[1.05] tracking-tight text-gray-900 md:text-[56px]">
             Venda mais e organize tudo,{" "}
-            <span className="text-orange-500">sem taxa por pedido.</span>
+            <span style={{ color: "#6D28D9" }}>sem taxa por pedido.</span>
           </h1>
           <p className="max-w-md text-[17px] leading-relaxed text-gray-600">
             Cardápio digital, pedidos em tempo real e controle de caixa em um só lugar.
