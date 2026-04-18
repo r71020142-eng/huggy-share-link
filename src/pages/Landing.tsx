@@ -519,48 +519,49 @@ function TestimonialsSection() {
     { name: "Roberto S.", biz: "Dono de Pizzaria", text: "O caixa integrado me deu controle real do faturamento. Antes eu não sabia quanto entrava por dia. Hoje tenho clareza total.", img: testimonialRoberto },
   ];
   return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 90% -10%, rgba(255,122,26,0.12), transparent 55%), radial-gradient(800px 500px at 0% 110%, rgba(124,58,237,0.18), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
+      }}
+    >
+      <div className="relative mx-auto max-w-6xl px-4">
+        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             Depoimentos
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
-            Quem usa, recomenda
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Quem usa,{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
+              recomenda
+            </span>
           </h2>
-          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Veja o que donos de negócios como o seu dizem sobre o Anotô</p>
-        </div>
+        </motion.div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
-              className="relative flex flex-col rounded-3xl bg-white p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              initial={{ opacity: 0, y: 30 }}
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              {/* Stars */}
               <div className="mb-5 flex gap-1">
                 {[...Array(5)].map((_, j) => (
                   <Star key={j} className="h-4 w-4 fill-orange-400 text-orange-400" />
                 ))}
               </div>
-
-              {/* Quote */}
-              <p className="flex-1 text-[15px] text-gray-600 leading-relaxed italic">"{t.text}"</p>
-
-              {/* Author */}
-              <div className="mt-8 flex items-center gap-4 border-t border-gray-100 pt-6">
-                <img
-                  src={t.img}
-                  alt={t.name}
-                  className="h-14 w-14 rounded-full object-cover ring-2 ring-white shadow-md"
-                />
+              <p className="flex-1 text-[14.5px] leading-relaxed text-white/75">"{t.text}"</p>
+              <div className="my-5 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+              <div className="flex items-center gap-3">
+                <img src={t.img} alt={t.name} className="h-12 w-12 rounded-full object-cover ring-2 ring-orange-500/30" />
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.biz}</p>
+                  <p className="text-sm font-bold text-white">{t.name}</p>
+                  <p className="text-xs text-white/50">{t.biz}</p>
                 </div>
               </div>
             </motion.div>
