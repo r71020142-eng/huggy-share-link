@@ -383,6 +383,7 @@ export default function Landing() {
       <HowItWorksSection />
       <BenefitsSection />
       <TestimonialsSection />
+      <AboutSection />
       <PricingSection />
       <FAQSection />
       <FinalCTASection />
