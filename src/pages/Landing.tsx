@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   QrCode, ShoppingCart, ClipboardList, Monitor, MapPin, Printer, Users, BarChart3,
-  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock
+  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock,
+  type LucideIcon,
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
