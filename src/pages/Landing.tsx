@@ -191,247 +191,94 @@ function BenefitsSection() {
 
 /* ─── Funcionalidades ─── */
 function FeaturesSection() {
-  const medium = [
-    {
-      icon: QrCode,
-      title: "Cardápio digital",
-      headline: "Vire um app no celular do cliente",
-      desc: "Link, QR Code e PWA instalável. Sem App Store, sem fricção.",
-      meta: "PWA · QR · Link",
-    },
-    {
-      icon: ShoppingCart,
-      title: "Checkout direto",
-      headline: "Conversão em poucos toques",
-      desc: "Endereço, pagamento e confirmação em um fluxo só. Sem cadastro obrigatório.",
-      meta: "Pix · Cartão · Dinheiro",
-    },
-  ];
-
-  const small = [
-    { icon: BarChart3, title: "Relatórios inteligentes", desc: "Faturamento, ticket médio e ranking de produtos.", pro: true },
-    { icon: Users, title: "CRM de clientes", desc: "Histórico, LTV e disparo no WhatsApp.", pro: true },
-    { icon: Printer, title: "Impressão térmica", desc: "ESC/POS via USB ou rede, automático.", pro: false },
-    { icon: MapPin, title: "Entregas por bairro", desc: "Taxas e raio calculados no checkout.", pro: false },
-  ];
-
-  const cardBase =
-    "group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]";
-
-  const IconTile = ({ icon: Icon, size = "md" }: { icon: typeof Zap; size?: "md" | "lg" }) => (
-    <div
-      className={`relative flex shrink-0 items-center justify-center rounded-lg border border-orange-500/30 ${
-        size === "lg" ? "h-12 w-12" : "h-10 w-10"
-      }`}
-      style={{
-        background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
-      }}
-    >
-      <Icon className={size === "lg" ? "h-6 w-6 text-orange-400" : "h-[18px] w-[18px] text-orange-400"} strokeWidth={2.2} />
-    </div>
-  );
-
-  const ProTag = () => (
-    <span
-      className="inline-flex items-center rounded-md border border-orange-500/40 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-orange-300"
-      style={{ background: "linear-gradient(135deg, rgba(255,122,26,0.18), rgba(255,61,127,0.12))" }}
-    >
-      Pro
-    </span>
-  );
-
-  const kanbanOrders = [
-    { id: "#1287", name: "Ana Paula", items: "2 itens · R$ 48,90", status: "novo", time: "agora", color: "#FF7A1A" },
-    { id: "#1286", name: "João M.", items: "1 item · R$ 29,00", status: "preparo", time: "3 min", color: "#3B82F6" },
-    { id: "#1285", name: "Carlos R.", items: "4 itens · R$ 92,40", status: "entrega", time: "12 min", color: "#A855F7" },
+  const features = [
+    { icon: Zap, title: "Pedidos em tempo real", desc: "Recebimento instantâneo, fila organizada e atualização contínua entre dispositivos.", featured: true },
+    { icon: QrCode, title: "Cardápio digital", desc: "Link público, QR Code e PWA instalável. Atualizações refletem no mesmo instante." },
+    { icon: ShoppingCart, title: "Checkout rápido", desc: "Endereço, pagamento e confirmação em um único fluxo, sem cadastro obrigatório." },
+    { icon: ClipboardList, title: "Gestão de pedidos", desc: "Painel Kanban com etapas claras. Histórico completo por pedido e cliente." },
+    { icon: Monitor, title: "PDV / Caixa", desc: "Abertura, sangria, suprimento e fechamento com conciliação automática." },
+    { icon: BarChart3, title: "Relatórios", desc: "Faturamento, ticket médio e ranking de produtos por período.", pro: true },
+    { icon: Users, title: "CRM de clientes", desc: "Histórico, LTV e segmentação por frequência e ticket.", pro: true },
+    { icon: Printer, title: "Impressão térmica", desc: "Compatível com ESC/POS via USB ou rede. Impressão automática ao receber." },
   ];
 
   return (
-    <section
-      id="funcionalidades"
-      className="relative overflow-hidden py-28"
-      style={{
-        background:
-          "radial-gradient(1100px 600px at 8% -5%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(900px 500px at 100% 110%, rgba(30,64,175,0.22), transparent 55%), radial-gradient(700px 400px at 50% 50%, rgba(255,122,26,0.05), transparent 60%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-        }}
-      />
-
-      <div className="relative mx-auto max-w-6xl px-4">
-        <motion.div
-          className="mx-auto mb-16 max-w-3xl text-center"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
-            Plataforma
-          </span>
-          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
-            Um sistema completo para{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}
-            >
-              vender mais
-            </span>
-            <br className="hidden md:block" /> e operar melhor
-          </h2>
-          <p className="mt-5 text-[17px] leading-relaxed text-white/55">
-            Pedidos, cardápio, caixa e logística em uma única operação — sem gambiarra, sem taxa por pedido.
+    <section id="funcionalidades" className="bg-[#0B0D12] py-28">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="mb-16 max-w-2xl">
+          <p className="text-[12px] font-medium uppercase tracking-[0.16em] text-white/40">
+            Funcionalidades
           </p>
-        </motion.div>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-[40px] md:leading-[1.15]">
+            Tudo que você precisa para operar seu negócio.
+          </h2>
+          <p className="mt-4 text-[15px] leading-relaxed text-white/55">
+            Pedidos, cardápio, caixa e relatórios em uma única plataforma.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-6">
-          {/* MAIN CARD */}
-          <motion.div
-            className={`${cardBase} md:col-span-4 md:row-span-2 p-7 md:p-8`}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.55 }}
-          >
-            <div
-              className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-[0.18] blur-3xl transition-opacity duration-500 group-hover:opacity-30"
-              style={{ background: "radial-gradient(circle, #FF7A1A 0%, transparent 70%)" }}
-            />
-
-            <div className="relative flex h-full flex-col">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <IconTile icon={Zap} size="lg" />
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-widest text-orange-300/80">Engine de pedidos</p>
-                    <h3 className="mt-0.5 text-2xl font-bold leading-tight text-white md:text-[26px]">
-                      Pedidos em tempo real,<br className="hidden sm:block" /> sem perder nada no rush
-                    </h3>
-                  </div>
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
+          {features.map((f) => {
+            const Icon = f.icon;
+            return (
+              <div
+                key={f.title}
+                className={`group relative flex flex-col bg-[#101319] p-7 transition-colors duration-200 hover:bg-[#13171F] ${
+                  f.featured ? "sm:col-span-2 lg:col-span-2 lg:row-span-2" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <Icon className="h-5 w-5 text-white/70" strokeWidth={1.6} />
+                  {f.pro && (
+                    <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-orange-400/90">
+                      Pro
+                    </span>
+                  )}
                 </div>
-                <div className="hidden items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 sm:inline-flex">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                  </span>
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-300">Online</span>
-                </div>
-              </div>
 
-              <div className="mt-6 grid grid-cols-3 divide-x divide-white/[0.06] rounded-lg border border-white/[0.06] bg-black/20">
-                {[
-                  { label: "Pedidos hoje", value: "127", trend: "+18%" },
-                  { label: "Tempo médio", value: "4m 12s", trend: "-9%" },
-                  { label: "Conversão", value: "82%", trend: "+5%" },
-                ].map((s) => (
-                  <div key={s.label} className="px-4 py-3.5">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-white/40">{s.label}</p>
-                    <div className="mt-1 flex items-baseline gap-2">
-                      <p className="text-xl font-bold tabular-nums text-white">{s.value}</p>
-                      <span className="text-[10px] font-semibold text-emerald-400">{s.trend}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                <h3 className={`mt-6 font-medium text-white ${f.featured ? "text-lg" : "text-[15px]"}`}>
+                  {f.title}
+                </h3>
+                <p className={`mt-2 text-[13.5px] leading-relaxed text-white/50 ${f.featured ? "max-w-sm" : ""}`}>
+                  {f.desc}
+                </p>
 
-              <div className="mt-5 rounded-lg border border-white/[0.06] bg-black/30 p-3">
-                <div className="mb-2.5 flex items-center justify-between px-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Fila ao vivo</p>
-                  <p className="text-[10px] tabular-nums text-white/30">atualizado · 2s</p>
-                </div>
-                <div className="space-y-1.5">
-                  {kanbanOrders.map((o) => (
-                    <div
-                      key={o.id}
-                      className="flex items-center gap-3 rounded-md border border-white/[0.05] bg-white/[0.02] px-3 py-2.5 transition-colors hover:bg-white/[0.04]"
-                    >
-                      <div className="h-8 w-1 rounded-full" style={{ background: o.color, boxShadow: `0 0 8px ${o.color}80` }} />
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <span className="font-mono text-[11px] tabular-nums text-white/40">{o.id}</span>
-                        <span className="truncate text-[13px] font-medium text-white/90">{o.name}</span>
-                        <span className="hidden text-[12px] text-white/45 sm:inline">{o.items}</span>
+                {f.featured && (
+                  <div className="mt-8 flex flex-1 flex-col justify-end">
+                    <div className="rounded-md border border-white/[0.06] bg-black/30 p-4">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/40">
+                          Fila ao vivo
+                        </span>
+                        <span className="flex items-center gap-1.5 text-[11px] text-white/40">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                          ativo
+                        </span>
                       </div>
-                      <span
-                        className="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-                        style={{ color: o.color, borderColor: `${o.color}60`, background: `${o.color}15` }}
-                      >
-                        {o.status}
-                      </span>
-                      <span className="hidden w-10 text-right font-mono text-[10px] tabular-nums text-white/35 sm:inline">{o.time}</span>
+                      <div className="space-y-2.5">
+                        {[
+                          { id: "#1287", name: "Ana Paula", status: "Novo", time: "agora" },
+                          { id: "#1286", name: "João M.", status: "Preparo", time: "3 min" },
+                          { id: "#1285", name: "Carlos R.", status: "Entrega", time: "12 min" },
+                        ].map((o) => (
+                          <div key={o.id} className="flex items-center justify-between text-[13px]">
+                            <div className="flex items-center gap-3">
+                              <span className="font-mono tabular-nums text-white/35">{o.id}</span>
+                              <span className="text-white/85">{o.name}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-white/45">{o.status}</span>
+                              <span className="font-mono tabular-nums text-white/35">{o.time}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-1.5">
-                {["Kanban ao vivo", "Notificação instantânea", "Multi-dispositivo", "Realtime sync"].map((t) => (
-                  <span
-                    key={t}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[11px] font-medium text-white/65"
-                  >
-                    <CheckCircle2 className="h-3 w-3 text-orange-400" />
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* MEDIUM CARDS */}
-          {medium.map((f, i) => (
-            <motion.div
-              key={f.title}
-              className={`${cardBase} md:col-span-2 p-6`}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: 0.08 + i * 0.08 }}
-            >
-              <div className="flex items-start justify-between">
-                <IconTile icon={f.icon} />
-                <span className="font-mono text-[10px] uppercase tracking-wider text-white/30">0{i + 2}</span>
-              </div>
-              <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-300/80">{f.title}</p>
-              <h3 className="mt-1.5 text-[19px] font-bold leading-tight text-white">{f.headline}</h3>
-              <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
-              <p className="text-[13px] leading-relaxed text-white/55">{f.desc}</p>
-              <p className="mt-4 font-mono text-[10px] uppercase tracking-wider text-white/35">{f.meta}</p>
-            </motion.div>
-          ))}
-
-          {/* SMALL CARDS */}
-          {small.map((f, i) => (
-            <motion.div
-              key={f.title}
-              className={`${cardBase} md:col-span-3 p-5`}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.45, delay: 0.25 + i * 0.07 }}
-            >
-              <div className="flex items-start gap-4">
-                <IconTile icon={f.icon} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-[15px] font-bold text-white">{f.title}</h3>
-                    {f.pro && <ProTag />}
                   </div>
-                  <p className="mt-1 text-[12.5px] leading-relaxed text-white/55">{f.desc}</p>
-                </div>
-                <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-white/25 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-orange-400" />
+                )}
               </div>
-            </motion.div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
