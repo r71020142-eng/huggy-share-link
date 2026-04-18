@@ -23,7 +23,6 @@ function LandingHeader() {
           {[
             ["Funcionalidades", "#funcionalidades"],
             ["Como funciona", "#como-funciona"],
-            ["Sobre nós", "#sobre-nos"],
             ["Planos", "#planos"],
             ["FAQ", "#faq"],
           ].map(([label, href]) => (
@@ -339,40 +338,6 @@ function FAQSection() {
   );
 }
 
-/* ─── Sobre nós ─── */
-function AboutSection() {
-  return (
-    <section id="sobre-nos" className="border-t border-gray-200 bg-white">
-      <div className="mx-auto max-w-3xl px-5 py-24">
-        <div className="mb-8">
-          <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-gray-500">
-            Sobre nós
-          </span>
-          <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
-            Feito por quem entende do balcão.
-          </h2>
-        </div>
-        <div className="space-y-5 text-[16px] leading-relaxed text-gray-700">
-          <p>
-            O Anotô nasceu da rotina real de lanchonetes, açaiterias e pizzarias que
-            precisavam de uma ferramenta simples para organizar pedidos sem pagar
-            comissão por venda.
-          </p>
-          <p>
-            Nossa missão é dar ao pequeno empreendedor as mesmas armas das grandes
-            redes: cardápio digital profissional, controle de caixa confiável e
-            impressão automática — tudo em um só lugar, com preço justo.
-          </p>
-          <p>
-            Somos um time enxuto, obcecado por simplicidade e atendimento próximo.
-            Quando você cresce, a gente cresce junto.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function FinalCTASection() {
   return (
     <section className="border-t border-gray-200 bg-[#FAFAFA]">
@@ -396,6 +361,7 @@ function LandingFooter() {
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-5 py-8 text-center md:flex-row md:justify-between md:text-left">
         <span className="text-sm font-bold" style={{ color: "#FF7A1A" }}>Anotô</span>
         <div className="flex gap-5">
+          <Link to="/sobre-nos" className="text-[12.5px] text-gray-500 hover:text-gray-800 transition">Sobre Nós</Link>
           {["Termos", "Privacidade", "Suporte"].map((l) => (
             <a key={l} href="#" className="text-[12.5px] text-gray-500 hover:text-gray-800 transition">{l}</a>
           ))}
@@ -416,7 +382,6 @@ export default function Landing() {
       <HowItWorksSection />
       <BenefitsSection />
       <TestimonialsSection />
-      <AboutSection />
       <PricingSection />
       <FAQSection />
       <FinalCTASection />

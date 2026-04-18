@@ -38,6 +38,7 @@ import SuperAdminActivityLogs from "@/pages/superadmin/ActivityLogs";
 import SuperAdminPrintMonitoring from "@/pages/superadmin/PrintMonitoring";
 import PublicMenu from "@/pages/public/PublicMenu";
 import Landing from "@/pages/Landing";
+import SobreNos from "@/pages/SobreNos";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<HomeRoute />} />
               <Route path="/landing" element={<Landing />} />
+              <Route path="/sobre-nos" element={<SobreNos />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
               <Route path="/m/:slug" element={<PublicMenu />} />
