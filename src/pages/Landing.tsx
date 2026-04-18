@@ -6,7 +6,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   QrCode, ShoppingCart, ClipboardList, Monitor, MapPin, Printer, Users, BarChart3,
-  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock
+  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock,
+  type LucideIcon,
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
 import logoLanding from "@/assets/logo-anoto-landing.png";
@@ -156,96 +157,222 @@ function BenefitsSection() {
 /* ─── Funcionalidades ─── */
 function FeaturesSection() {
   const features = [
-    { icon: Zap, title: "Pedidos em tempo real", desc: "Recebimento instantâneo, fila organizada e atualização contínua entre dispositivos.", featured: true },
-    { icon: QrCode, title: "Cardápio digital", desc: "Link público, QR Code e PWA instalável. Atualizações refletem no mesmo instante." },
-    { icon: ShoppingCart, title: "Checkout rápido", desc: "Endereço, pagamento e confirmação em um único fluxo, sem cadastro obrigatório." },
-    { icon: ClipboardList, title: "Gestão de pedidos", desc: "Painel Kanban com etapas claras. Histórico completo por pedido e cliente." },
-    { icon: Monitor, title: "PDV / Caixa", desc: "Abertura, sangria, suprimento e fechamento com conciliação automática." },
-    { icon: BarChart3, title: "Relatórios", desc: "Faturamento, ticket médio e ranking de produtos por período.", pro: true },
-    { icon: Users, title: "CRM de clientes", desc: "Histórico, LTV e segmentação por frequência e ticket.", pro: true },
-    { icon: Printer, title: "Impressão térmica", desc: "Compatível com ESC/POS via USB ou rede. Impressão automática ao receber." },
+    { icon: QrCode, title: "Cardápio digital com QR Code", desc: "Link público, PWA instalável e atualizações instantâneas no menu." },
+    { icon: ShoppingCart, title: "Checkout intuitivo", desc: "Endereço, pagamento e confirmação em um único fluxo, sem fricção." },
+    { icon: BarChart3, title: "Relatórios inteligentes", desc: "Faturamento, ticket médio e ranking de produtos por período.", pro: true },
+    { icon: Users, title: "Gestão de clientes", desc: "CRM com histórico, LTV e segmentação por frequência.", pro: true },
+    { icon: Printer, title: "Impressão térmica", desc: "ESC/POS via USB ou rede, impressão automática ao receber.", size: "md" as const },
+    { icon: Monitor, title: "PDV e controle de caixa", desc: "Abertura, sangria, suprimento e fechamento conciliado.", size: "md" as const },
   ];
 
   return (
-    <section id="funcionalidades" className="bg-[#0B0D12] py-28">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-16 max-w-2xl">
-          <p className="text-[12px] font-medium uppercase tracking-[0.16em] text-white/40">
+    <section
+      id="funcionalidades"
+      className="relative overflow-hidden py-32"
+      style={{
+        background:
+          "radial-gradient(ellipse 80% 60% at 20% 0%, rgba(88,28,135,0.25), transparent 60%), radial-gradient(ellipse 70% 50% at 80% 100%, rgba(30,58,138,0.28), transparent 60%), linear-gradient(180deg, #0A0B14 0%, #0B0E1C 100%)",
+      }}
+    >
+      {/* subtle noise / grid overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-6xl px-6">
+        <div className="mx-auto mb-20 max-w-2xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-white/60 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
             Funcionalidades
-          </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-[40px] md:leading-[1.15]">
-            Tudo que você precisa para operar seu negócio.
+          </span>
+          <h2 className="mt-6 text-4xl font-semibold tracking-tight text-white md:text-[52px] md:leading-[1.05]">
+            Um sistema completo para{" "}
+            <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 bg-clip-text text-transparent">
+              vender mais
+            </span>{" "}
+            e operar melhor
           </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-white/55">
-            Pedidos, cardápio, caixa e relatórios em uma única plataforma.
+          <p className="mt-5 text-[16px] leading-relaxed text-white/55">
+            Tudo integrado em uma única plataforma — do pedido à impressão na cozinha,
+            sem gambiarras e sem múltiplos sistemas.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md bg-white/[0.06] sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f) => {
-            const Icon = f.icon;
-            return (
-              <div
-                key={f.title}
-                className={`group relative flex flex-col bg-[#101319] p-7 transition-colors duration-200 hover:bg-[#13171F] ${
-                  f.featured ? "sm:col-span-2 lg:col-span-2 lg:row-span-2" : ""
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <Icon className="h-5 w-5 text-white/70" strokeWidth={1.6} />
-                  {f.pro && (
-                    <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-orange-400/90">
-                      Pro
-                    </span>
-                  )}
-                </div>
-
-                <h3 className={`mt-6 font-medium text-white ${f.featured ? "text-lg" : "text-[15px]"}`}>
-                  {f.title}
-                </h3>
-                <p className={`mt-2 text-[13.5px] leading-relaxed text-white/50 ${f.featured ? "max-w-sm" : ""}`}>
-                  {f.desc}
-                </p>
-
-                {f.featured && (
-                  <div className="mt-8 flex flex-1 flex-col justify-end">
-                    <div className="rounded-md border border-white/[0.06] bg-black/30 p-4">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/40">
-                          Fila ao vivo
-                        </span>
-                        <span className="flex items-center gap-1.5 text-[11px] text-white/40">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                          ativo
-                        </span>
-                      </div>
-                      <div className="space-y-2.5">
-                        {[
-                          { id: "#1287", name: "Ana Paula", status: "Novo", time: "agora" },
-                          { id: "#1286", name: "João M.", status: "Preparo", time: "3 min" },
-                          { id: "#1285", name: "Carlos R.", status: "Entrega", time: "12 min" },
-                        ].map((o) => (
-                          <div key={o.id} className="flex items-center justify-between text-[13px]">
-                            <div className="flex items-center gap-3">
-                              <span className="font-mono tabular-nums text-white/35">{o.id}</span>
-                              <span className="text-white/85">{o.name}</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-white/45">{o.status}</span>
-                              <span className="font-mono tabular-nums text-white/35">{o.time}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+        {/* Asymmetric grid */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-6 md:grid-rows-[auto_auto]">
+          {/* Featured card */}
+          <FeatureCard
+            featured
+            icon={Zap}
+            title="Pedidos automatizados em tempo real"
+            desc="Recebimento instantâneo, fila ao vivo e atualização contínua entre todos os dispositivos. Sua operação inteira sincronizada."
+            className="md:col-span-4 md:row-span-2"
+            delay={0}
+          >
+            <div className="mt-8 rounded-xl border border-white/[0.08] bg-black/40 p-5 backdrop-blur-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-white/45">
+                  Fila ao vivo
+                </span>
+                <span className="flex items-center gap-1.5 text-[11px] text-white/50">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  </span>
+                  ativo
+                </span>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { id: "#1287", name: "Ana Paula", status: "Novo", time: "agora", color: "text-orange-300" },
+                  { id: "#1286", name: "João M.", status: "Preparo", time: "3 min", color: "text-amber-300" },
+                  { id: "#1285", name: "Carlos R.", status: "Entrega", time: "12 min", color: "text-blue-300" },
+                ].map((o) => (
+                  <div
+                    key={o.id}
+                    className="flex items-center justify-between rounded-md bg-white/[0.02] px-3 py-2 text-[13px] transition-colors hover:bg-white/[0.04]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono tabular-nums text-white/40">{o.id}</span>
+                      <span className="text-white/90">{o.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-[12px] font-medium ${o.color}`}>{o.status}</span>
+                      <span className="font-mono tabular-nums text-white/40">{o.time}</span>
                     </div>
                   </div>
-                )}
+                ))}
               </div>
-            );
-          })}
+            </div>
+          </FeatureCard>
+
+          {/* Two medium cards stacked next to featured */}
+          <FeatureCard
+            icon={features[0].icon}
+            title={features[0].title}
+            desc={features[0].desc}
+            className="md:col-span-2"
+            delay={80}
+          />
+          <FeatureCard
+            icon={features[1].icon}
+            title={features[1].title}
+            desc={features[1].desc}
+            className="md:col-span-2"
+            delay={140}
+          />
+
+          {/* Smaller cards row */}
+          <FeatureCard
+            icon={features[2].icon}
+            title={features[2].title}
+            desc={features[2].desc}
+            pro={features[2].pro}
+            className="md:col-span-2"
+            delay={200}
+          />
+          <FeatureCard
+            icon={features[3].icon}
+            title={features[3].title}
+            desc={features[3].desc}
+            pro={features[3].pro}
+            className="md:col-span-2"
+            delay={260}
+          />
+          <FeatureCard
+            icon={features[4].icon}
+            title={features[4].title}
+            desc={features[4].desc}
+            className="md:col-span-1"
+            delay={320}
+            compact
+          />
+          <FeatureCard
+            icon={features[5].icon}
+            title={features[5].title}
+            desc={features[5].desc}
+            className="md:col-span-1"
+            delay={380}
+            compact
+          />
         </div>
       </div>
     </section>
+  );
+}
+
+function FeatureCard({
+  icon: Icon,
+  title,
+  desc,
+  pro,
+  featured,
+  compact,
+  className = "",
+  delay = 0,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  pro?: boolean;
+  featured?: boolean;
+  compact?: boolean;
+  className?: string;
+  delay?: number;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.14] hover:bg-white/[0.05] hover:shadow-[0_20px_60px_-15px_rgba(124,58,237,0.35)] ${className}`}
+      style={{
+        animation: `featureCardIn 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms both`,
+      }}
+    >
+      {/* gradient sheen on hover */}
+      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-orange-400/10 via-transparent to-purple-500/10" />
+      </div>
+
+      <div className={`relative flex h-full flex-col ${compact ? "p-6" : featured ? "p-8" : "p-7"}`}>
+        <div className="flex items-center justify-between">
+          <div
+            className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 shadow-[0_8px_24px_-8px_rgba(251,146,60,0.6)] ${
+              featured ? "h-12 w-12" : "h-10 w-10"
+            }`}
+          >
+            <Icon className={featured ? "h-5 w-5 text-white" : "h-[18px] w-[18px] text-white"} strokeWidth={2} />
+          </div>
+          {pro && (
+            <span className="rounded-full bg-gradient-to-r from-orange-400 to-amber-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_4px_12px_-4px_rgba(251,146,60,0.6)]">
+              Pro
+            </span>
+          )}
+        </div>
+
+        <h3
+          className={`mt-6 font-semibold tracking-tight text-white ${
+            featured ? "text-[22px] leading-tight md:text-[26px]" : compact ? "text-[15px]" : "text-[17px]"
+          }`}
+        >
+          {title}
+        </h3>
+        <p
+          className={`mt-2 leading-relaxed text-white/55 ${
+            featured ? "max-w-md text-[15px]" : compact ? "text-[13px]" : "text-[14px]"
+          }`}
+        >
+          {desc}
+        </p>
+
+        {children && <div className="flex flex-1 flex-col justify-end">{children}</div>}
+      </div>
+    </div>
   );
 }
 
