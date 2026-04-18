@@ -1,20 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import {
-  QrCode, ShoppingCart, ClipboardList, Monitor, MapPin, Printer, Users, BarChart3,
-  Zap, LayoutList, CheckCircle2, Star, ChevronRight, Smartphone, ArrowRight, Lock,
-  type LucideIcon,
+  Smartphone, ListOrdered, Wallet, Printer, BarChart3, Zap,
+  ArrowRight, Check,
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
-import logoLanding from "@/assets/logo-anoto-landing.png";
-import logoIcon from "@/assets/logo-icon.png";
-import benefitOrdersApp from "@/assets/hero-app-screenshot.png";
-import benefitKanbanUI from "@/assets/benefit-kanban-ui.png";
-import benefitThermalPrinter from "@/assets/benefit-thermal-printer.png";
 import testimonialCarlos from "@/assets/testimonial-carlos.jpg";
 import testimonialAna from "@/assets/testimonial-ana.jpg";
 import testimonialRoberto from "@/assets/testimonial-roberto.jpg";
@@ -22,28 +13,28 @@ import testimonialRoberto from "@/assets/testimonial-roberto.jpg";
 /* ─── Header ─── */
 function LandingHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <a href="/" className="flex items-center">
-          <span className="text-lg font-extrabold" style={{ color: "#FF7A1A" }}>Anotô<span className="font-medium text-gray-500">, pedidos &amp; atendimento</span></span>
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3.5">
+        <a href="/" className="text-base font-bold tracking-tight" style={{ color: "#FF7A1A" }}>
+          Anotô
         </a>
-        <nav className="hidden gap-6 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {[
             ["Funcionalidades", "#funcionalidades"],
             ["Como funciona", "#como-funciona"],
             ["Planos", "#planos"],
             ["FAQ", "#faq"],
           ].map(([label, href]) => (
-            <a key={href} href={href} className="text-sm font-medium text-gray-600 transition hover:text-gray-900">
+            <a key={href} href={href} className="text-[13.5px] font-medium text-gray-600 transition hover:text-gray-900">
               {label}
             </a>
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
+          <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-700">
             <Link to="/login">Entrar</Link>
           </Button>
-          <Button asChild className="bg-blue-700 hover:bg-blue-800 text-white">
+          <Button asChild className="bg-orange-500 hover:bg-orange-600 text-white">
             <Link to="/register">Criar conta</Link>
           </Button>
         </div>
@@ -55,43 +46,97 @@ function LandingHeader() {
 /* ─── Hero ─── */
 function HeroSection() {
   return (
-    <section className="py-20 md:py-28">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-2">
-        <motion.div
-          className="space-y-6"
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          <img src={logoLanding} alt="Anotô - Pedidos e atendimento" style={{ width: "320px", height: "auto" }} />
-          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200 text-xs font-semibold">
-            Para lanchonetes, pizzarias, açaiterias e mais
-          </Badge>
-          <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-gray-900 md:text-5xl">
-            Cardápio em app nativo + pedidos + caixa,{" "}
-            <span style={{ color: "#1e40af" }}>tudo em um só lugar</span>
+    <section className="bg-white">
+      <div className="mx-auto grid max-w-5xl items-center gap-10 px-5 py-20 md:grid-cols-[1.1fr_1fr] md:py-28">
+        <div className="space-y-6">
+          <span className="inline-block text-[12px] font-semibold uppercase tracking-[0.14em] text-orange-600">
+            Sem taxa por pedido
+          </span>
+          <h1 className="text-[40px] font-bold leading-[1.05] tracking-tight text-gray-900 md:text-[56px]">
+            Venda mais e organize tudo,{" "}
+            <span className="text-orange-500">sem taxa por pedido.</span>
           </h1>
-          <p className="max-w-md text-lg text-gray-600">
-            Seu cardápio como um app instalável no celular do cliente. Receba pedidos, rastreie entregas em tempo real, organize na cozinha e feche o caixa. Sem taxa por pedido.
+          <p className="max-w-md text-[17px] leading-relaxed text-gray-600">
+            Cardápio digital, pedidos em tempo real e controle de caixa em um só lugar.
+            Simples como precisa ser.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
-              <a href={`https://wa.me/5531986570126?text=${encodeURIComponent("Oi, vim pelo site do Anotô. Gostaria de um teste para conhecer mais sobre.")}`} target="_blank" rel="noopener noreferrer">Testar agora <ArrowRight className="ml-1 h-4 w-4" /></a>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Button size="lg" asChild className="bg-orange-500 hover:bg-orange-600 text-white text-base px-7 h-12">
+              <Link to="/register">Criar conta grátis <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
             </Button>
-            <Button size="lg" variant="outline" asChild className="border-gray-300 text-gray-700">
+            <Button size="lg" variant="ghost" asChild className="text-gray-700 hover:text-gray-900 h-12">
               <a href="#como-funciona">Ver como funciona</a>
             </Button>
           </div>
-        </motion.div>
+          <p className="pt-1 text-[13px] text-gray-500">Leva menos de 2 minutos. Sem cartão de crédito.</p>
+        </div>
 
-        <motion.div
-          className="flex justify-center"
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-        >
-          <img src={heroDevices} alt="Anotô em notebook, tablet e celular" className="w-full max-w-lg h-auto object-contain" />
-        </motion.div>
+        <div className="flex justify-center">
+          <img src={heroDevices} alt="Anotô em notebook, tablet e celular" className="w-full max-w-md h-auto object-contain" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Prova direta ─── */
+function ProofSection() {
+  const items = [
+    { icon: Smartphone, title: "Receba pedidos no celular", desc: "Notificação instantânea, em qualquer dispositivo." },
+    { icon: ListOrdered, title: "Organize tudo em tempo real", desc: "Painel claro, do pedido à entrega." },
+    { icon: Wallet, title: "Feche o caixa sem erro", desc: "Controle total do seu faturamento diário." },
+  ];
+  return (
+    <section className="border-t border-gray-200 bg-[#FAFAFA]">
+      <div className="mx-auto max-w-5xl px-5 py-24">
+        <div className="mb-14 max-w-2xl">
+          <h2 className="text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
+            Tudo que você precisa pra vender.
+            <br />
+            <span className="text-gray-500">Sem complicação.</span>
+          </h2>
+        </div>
+        <div className="grid gap-px bg-gray-200 md:grid-cols-3">
+          {items.map((it, i) => (
+            <div key={i} className="bg-[#FAFAFA] p-7">
+              <it.icon className="h-6 w-6 text-orange-500" strokeWidth={1.75} />
+              <h3 className="mt-5 text-[17px] font-semibold text-gray-900">{it.title}</h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-gray-600">{it.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Como funciona ─── */
+function HowItWorksSection() {
+  const steps = [
+    { n: "01", title: "Crie sua loja", desc: "Cadastre-se em 2 minutos." },
+    { n: "02", title: "Monte seu cardápio", desc: "Categorias, produtos e preços." },
+    { n: "03", title: "Receba pedidos", desc: "Compartilhe seu link e venda." },
+  ];
+  return (
+    <section id="como-funciona" className="border-t border-gray-200 bg-white">
+      <div className="mx-auto max-w-5xl px-5 py-24">
+        <div className="mb-14 max-w-2xl">
+          <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-gray-500">
+            Como funciona
+          </span>
+          <h2 className="mt-3 text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
+            Três passos. Nada além disso.
+          </h2>
+        </div>
+        <div className="grid gap-8 md:grid-cols-3">
+          {steps.map((s) => (
+            <div key={s.n} className="border-t border-gray-300 pt-5">
+              <span className="font-mono text-[13px] tabular-nums text-orange-500">{s.n}</span>
+              <h3 className="mt-3 text-[18px] font-semibold text-gray-900">{s.title}</h3>
+              <p className="mt-1.5 text-[14px] text-gray-600">{s.desc}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -99,393 +144,29 @@ function HeroSection() {
 
 /* ─── Benefícios ─── */
 function BenefitsSection() {
-  const pillars = [
-    {
-      img: benefitOrdersApp,
-      title: "Zero taxa por pedido",
-      desc: "Você fica com 100% do valor de cada venda. Sem comissões escondidas, sem surpresas no final do mês.",
-      tag: "Margem 100%",
-    },
-    {
-      img: benefitKanbanUI,
-      title: "Pedidos organizados",
-      desc: "Painel Kanban em tempo real. Veja o fluxo completo do pedido, da entrada à entrega, sem perder nada.",
-      tag: "Realtime",
-    },
-    {
-      img: benefitThermalPrinter,
-      title: "Impressão automática",
-      desc: "Pedido chegou, já imprime na cozinha. Compatível com impressoras térmicas ESC/POS via USB ou rede.",
-      tag: "ESC/POS",
-    },
+  const items = [
+    "Pedidos em tempo real",
+    "Impressão automática",
+    "Controle total do fluxo",
+    "Relatórios claros",
   ];
-
   return (
-    <section className="bg-[#0B0D12] py-28 border-t border-white/[0.06]">
-      <div className="mx-auto max-w-6xl px-6">
-        <div className="mb-16 max-w-2xl">
-          <p className="text-[12px] font-medium uppercase tracking-[0.16em] text-white/40">Por que Anotô</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-[40px] md:leading-[1.15]">
-            Feito para quem vive o dia a dia do balcão.
+    <section id="funcionalidades" className="border-t border-gray-200 bg-[#FAFAFA]">
+      <div className="mx-auto grid max-w-5xl gap-12 px-5 py-24 md:grid-cols-2 md:items-center">
+        <div>
+          <h2 className="text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
+            Você não precisa de vários sistemas.
           </h2>
-          <p className="mt-4 text-[15px] leading-relaxed text-white/55">
-            Três pilares que sustentam a operação, do pedido à cozinha.
-          </p>
+          <p className="mt-4 text-[17px] text-gray-600">Um lugar só. Sem gambiarra.</p>
         </div>
-
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md bg-white/[0.06] md:grid-cols-3">
-          {pillars.map((p, i) => (
-            <div key={i} className="group flex flex-col bg-[#101319] transition-colors duration-200 hover:bg-[#13171F]">
-              <div className="flex h-48 items-center justify-center border-b border-white/[0.06] bg-black/30 p-4">
-                <img src={p.img} alt={p.title} className="h-full w-auto object-contain" />
-              </div>
-              <div className="flex flex-1 flex-col p-7">
-                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/40">
-                  0{i + 1} · {p.tag}
-                </span>
-                <h3 className="mt-3 text-[15px] font-medium text-white">{p.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/50">{p.desc}</p>
-              </div>
-            </div>
+        <ul className="space-y-4">
+          {items.map((it) => (
+            <li key={it} className="flex items-center gap-3 border-b border-gray-200 pb-4 text-[16px] text-gray-800">
+              <Check className="h-5 w-5 shrink-0 text-orange-500" strokeWidth={2.2} />
+              {it}
+            </li>
           ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Funcionalidades ─── */
-function FeaturesSection() {
-  const features = [
-    { icon: QrCode, title: "Cardápio digital com QR Code", desc: "Link público, PWA instalável e atualizações instantâneas no menu." },
-    { icon: ShoppingCart, title: "Checkout intuitivo", desc: "Endereço, pagamento e confirmação em um único fluxo, sem fricção." },
-    { icon: BarChart3, title: "Relatórios inteligentes", desc: "Faturamento, ticket médio e ranking de produtos por período.", pro: true },
-    { icon: Users, title: "Gestão de clientes", desc: "CRM com histórico, LTV e segmentação por frequência.", pro: true },
-    { icon: Printer, title: "Impressão térmica", desc: "ESC/POS via USB ou rede, impressão automática ao receber." },
-    { icon: Monitor, title: "PDV e controle de caixa", desc: "Abertura, sangria, suprimento e fechamento conciliado." },
-  ];
-
-  return (
-    <section
-      id="funcionalidades"
-      className="relative overflow-hidden py-32"
-      style={{
-        background:
-          "radial-gradient(1200px 700px at 85% -10%, rgba(124,58,237,0.32), transparent 55%), radial-gradient(900px 600px at -5% 110%, rgba(255,90,31,0.18), transparent 55%), linear-gradient(180deg, #07070D 0%, #0A0A14 100%)",
-      }}
-    >
-      {/* fine grid */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)",
-          backgroundSize: "64px 64px",
-          maskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black 35%, transparent 90%)",
-          WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 50% 30%, black 35%, transparent 90%)",
-        }}
-      />
-
-      <div className="relative mx-auto max-w-7xl px-6">
-        {/* Editorial header — assimétrico */}
-        <div className="mb-20 grid gap-10 md:grid-cols-12 md:items-end">
-          <div className="md:col-span-7">
-            <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.28em] text-white/40">
-              <span className="h-px w-10 bg-white/30" />
-              <span>02 — Plataforma</span>
-            </div>
-            <h2 className="mt-6 text-[44px] font-semibold leading-[0.98] tracking-tight text-white md:text-[78px]">
-              Tudo que você precisa.
-              <br />
-              <span className="italic font-light text-white/50">Nada que você não.</span>
-            </h2>
-          </div>
-          <div className="md:col-span-5 md:pb-3">
-            <p className="text-[15px] leading-relaxed text-white/55 md:text-[16px]">
-              Uma plataforma única — do pedido à impressão na cozinha.
-              Sem integrações frágeis, sem múltiplos sistemas, sem gambiarra.
-            </p>
-            <div className="mt-5 flex items-center gap-6 text-[12px] uppercase tracking-[0.18em] text-white/35">
-              <span><span className="text-white/80">12+</span> módulos</span>
-              <span className="h-3 w-px bg-white/15" />
-              <span><span className="text-white/80">99.9%</span> uptime</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bento grid — assimétrico, denso e com hierarquia editorial */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-12 md:auto-rows-[minmax(180px,auto)]">
-          {/* Featured — large */}
-          <FeatureCard
-            featured
-            icon={Zap}
-            title="Pedidos automatizados em tempo real"
-            desc="Recebimento instantâneo, fila ao vivo e atualização contínua entre todos os dispositivos. Sua operação inteira sincronizada."
-            className="md:col-span-7 md:row-span-2"
-            delay={0}
-            number="01"
-          >
-            <div className="mt-8 rounded-lg border border-white/[0.08] bg-black/50 p-5">
-              <div className="mb-4 flex items-center justify-between border-b border-white/5 pb-3">
-                <span className="text-[10px] font-medium uppercase tracking-[0.22em] text-white/40">
-                  Fila ao vivo · hoje
-                </span>
-                <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-emerald-300/80">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  </span>
-                  ativo
-                </span>
-              </div>
-              <div className="space-y-1">
-                {[
-                  { id: "#1287", name: "Ana Paula", status: "Novo", time: "agora", color: "text-orange-300", bar: "bg-orange-400" },
-                  { id: "#1286", name: "João M.", status: "Preparo", time: "3 min", color: "text-amber-300", bar: "bg-amber-400" },
-                  { id: "#1285", name: "Carlos R.", status: "Entrega", time: "12 min", color: "text-blue-300", bar: "bg-blue-400" },
-                  { id: "#1284", name: "Marina S.", status: "Concluído", time: "28 min", color: "text-white/40", bar: "bg-white/20" },
-                ].map((o) => (
-                  <div
-                    key={o.id}
-                    className="group/row relative flex items-center justify-between border-b border-white/[0.04] py-2.5 text-[13px] last:border-0"
-                  >
-                    <span className={`absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 ${o.bar}`} />
-                    <div className="flex items-center gap-4 pl-4">
-                      <span className="font-mono text-[11px] tabular-nums text-white/35">{o.id}</span>
-                      <span className="text-white/85">{o.name}</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className={`text-[11px] font-medium uppercase tracking-[0.14em] ${o.color}`}>{o.status}</span>
-                      <span className="font-mono text-[11px] tabular-nums text-white/35">{o.time}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </FeatureCard>
-
-          {/* Tall right */}
-          <FeatureCard
-            icon={features[2].icon}
-            title={features[2].title}
-            desc={features[2].desc}
-            pro={features[2].pro}
-            className="md:col-span-5 md:row-span-1"
-            delay={100}
-            number="02"
-          />
-          <FeatureCard
-            icon={features[3].icon}
-            title={features[3].title}
-            desc={features[3].desc}
-            pro={features[3].pro}
-            className="md:col-span-5 md:row-span-1"
-            delay={160}
-            number="03"
-          />
-
-          {/* Bottom row — 4 colunas */}
-          <FeatureCard
-            icon={features[0].icon}
-            title={features[0].title}
-            desc={features[0].desc}
-            className="md:col-span-3"
-            delay={220}
-            number="04"
-            compact
-          />
-          <FeatureCard
-            icon={features[1].icon}
-            title={features[1].title}
-            desc={features[1].desc}
-            className="md:col-span-3"
-            delay={280}
-            number="05"
-            compact
-          />
-          <FeatureCard
-            icon={features[4].icon}
-            title={features[4].title}
-            desc={features[4].desc}
-            className="md:col-span-3"
-            delay={340}
-            number="06"
-            compact
-          />
-          <FeatureCard
-            icon={features[5].icon}
-            title={features[5].title}
-            desc={features[5].desc}
-            className="md:col-span-3"
-            delay={400}
-            number="07"
-            compact
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FeatureCard({
-  icon: Icon,
-  title,
-  desc,
-  pro,
-  featured,
-  compact,
-  className = "",
-  delay = 0,
-  number,
-  children,
-}: {
-  icon: LucideIcon;
-  title: string;
-  desc: string;
-  pro?: boolean;
-  featured?: boolean;
-  compact?: boolean;
-  className?: string;
-  delay?: number;
-  number?: string;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div
-      className={`group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.045] ${className}`}
-      style={{
-        animation: `featureCardIn 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms both`,
-      }}
-    >
-      {/* Halo gradient on hover */}
-      <div
-        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-700 group-hover:opacity-100"
-        style={{
-          background:
-            "radial-gradient(420px circle at 80% 0%, rgba(255,122,26,0.12), transparent 45%)",
-        }}
-      />
-
-      {/* Big number watermark */}
-      {number && (
-        <span
-          className={`pointer-events-none absolute select-none font-semibold leading-none text-white/[0.04] transition-all duration-500 group-hover:text-white/[0.08] ${
-            featured ? "right-7 top-5 text-[150px] md:text-[200px]" : "right-4 top-3 text-[80px]"
-          }`}
-          style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-0.06em" }}
-        >
-          {number}
-        </span>
-      )}
-
-      <div className={`relative flex h-full flex-col ${compact ? "p-6" : featured ? "p-9" : "p-7"}`}>
-        <div className="flex items-start justify-between">
-          <div
-            className={`relative flex items-center justify-center rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] ${
-              featured ? "h-11 w-11" : "h-10 w-10"
-            }`}
-          >
-            <Icon className={`text-orange-300 ${featured ? "h-[19px] w-[19px]" : "h-[17px] w-[17px]"}`} strokeWidth={1.75} />
-          </div>
-          {pro && (
-            <span className="rounded-sm border border-orange-400/30 bg-orange-400/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.22em] text-orange-300">
-              Pro
-            </span>
-          )}
-        </div>
-
-        {/* Hairline divider */}
-        <div className={`${featured ? "mt-7" : "mt-6"} h-px w-10 bg-gradient-to-r from-orange-400/60 to-transparent`} />
-
-        <h3
-          className={`mt-5 font-semibold tracking-tight text-white ${
-            featured ? "text-[28px] leading-[1.08] md:text-[36px]" : compact ? "text-[15px]" : "text-[18px]"
-          }`}
-        >
-          {title}
-        </h3>
-        <p
-          className={`mt-3 leading-relaxed text-white/50 ${
-            featured ? "max-w-lg text-[15px]" : compact ? "text-[12.5px]" : "text-[13.5px]"
-          }`}
-        >
-          {desc}
-        </p>
-
-        {children && <div className="flex flex-1 flex-col justify-end">{children}</div>}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Como funciona ─── */
-function HowItWorksSection() {
-  const steps = [
-    { num: "01", title: "Crie sua loja", desc: "Cadastre-se em menos de 2 minutos e personalize seu perfil.", tag: "Setup" },
-    { num: "02", title: "Monte o cardápio", desc: "Adicione categorias, produtos, fotos e preços.", tag: "Catálogo" },
-    { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", tag: "Live" },
-  ];
-  return (
-    <section
-      id="como-funciona"
-      className="relative overflow-hidden py-28"
-      style={{
-        background:
-          "radial-gradient(900px 500px at 10% -5%, rgba(30,64,175,0.20), transparent 55%), radial-gradient(800px 500px at 100% 110%, rgba(124,58,237,0.18), transparent 55%), linear-gradient(180deg, #0A0F25 0%, #07071A 100%)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-        }}
-      />
-      <div className="relative mx-auto max-w-6xl px-4">
-        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
-            Como funciona
-          </span>
-          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
-            Três passos para{" "}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
-              começar a vender
-            </span>
-          </h2>
-        </motion.div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {steps.map((s, i) => (
-            <motion.div
-              key={i}
-              className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <div className="flex items-start justify-between">
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-lg border border-orange-500/30 text-2xl font-black text-orange-300"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
-                  }}
-                >
-                  {s.num}
-                </div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">{s.tag}</span>
-              </div>
-              <h3 className="mt-5 text-xl font-bold text-white">{s.title}</h3>
-              <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
-              <p className="text-[13.5px] leading-relaxed text-white/55">{s.desc}</p>
-            </motion.div>
-          ))}
-        </div>
+        </ul>
       </div>
     </section>
   );
@@ -493,190 +174,102 @@ function HowItWorksSection() {
 
 /* ─── Prova social ─── */
 function TestimonialsSection() {
-  const testimonials = [
-    { name: "Carlos M.", biz: "Dono de Lanchonete", text: "Antes eu anotava tudo no papel e perdia pedidos. Agora recebo tudo organizado no celular e imprimo direto na cozinha. Meus clientes notaram a diferença.", img: testimonialCarlos },
-    { name: "Ana P.", biz: "Dona de Açaiteria", text: "Montei meu cardápio digital sozinha em uma tarde. Meus clientes adoram pedir pelo celular, e minhas vendas cresceram 40% no primeiro mês.", img: testimonialAna },
-    { name: "Roberto S.", biz: "Dono de Pizzaria", text: "O caixa integrado me deu controle real do faturamento. Antes eu não sabia quanto entrava por dia. Hoje tenho clareza total.", img: testimonialRoberto },
+  const items = [
+    { name: "Carlos M.", biz: "Lanchonete", text: "Recebo todos os pedidos organizados no celular e imprimo direto na cozinha.", img: testimonialCarlos },
+    { name: "Ana P.", biz: "Açaiteria", text: "Montei meu cardápio em uma tarde. Vendas cresceram 40% no primeiro mês.", img: testimonialAna },
+    { name: "Roberto S.", biz: "Pizzaria", text: "O caixa integrado me deu controle real do faturamento.", img: testimonialRoberto },
   ];
   return (
-    <section
-      className="relative overflow-hidden py-28"
-      style={{
-        background:
-          "radial-gradient(900px 500px at 90% -10%, rgba(255,122,26,0.12), transparent 55%), radial-gradient(800px 500px at 0% 110%, rgba(124,58,237,0.18), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
-      }}
-    >
-      <div className="relative mx-auto max-w-6xl px-4">
-        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
-            Depoimentos
-          </span>
-          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
-            Quem usa,{" "}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
-              recomenda
-            </span>
+    <section className="border-t border-gray-200 bg-white">
+      <div className="mx-auto max-w-5xl px-5 py-24">
+        <div className="mb-14 max-w-2xl">
+          <h2 className="text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
+            Quem usa, continua usando.
           </h2>
-        </motion.div>
-
-        <div className="grid gap-5 md:grid-cols-3">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <div className="mb-5 flex gap-1">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="h-4 w-4 fill-orange-400 text-orange-400" />
-                ))}
-              </div>
-              <p className="flex-1 text-[14.5px] leading-relaxed text-white/75">"{t.text}"</p>
-              <div className="my-5 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
-              <div className="flex items-center gap-3">
-                <img src={t.img} alt={t.name} className="h-12 w-12 rounded-full object-cover ring-2 ring-orange-500/30" />
+        </div>
+        <div className="grid gap-8 md:grid-cols-3">
+          {items.map((t) => (
+            <div key={t.name} className="border-t border-gray-300 pt-6">
+              <p className="text-[15px] leading-relaxed text-gray-800">"{t.text}"</p>
+              <div className="mt-5 flex items-center gap-3">
+                <img src={t.img} alt={t.name} className="h-10 w-10 rounded-full object-cover" />
                 <div>
-                  <p className="text-sm font-bold text-white">{t.name}</p>
-                  <p className="text-xs text-white/50">{t.biz}</p>
+                  <p className="text-[13.5px] font-semibold text-gray-900">{t.name}</p>
+                  <p className="text-[12.5px] text-gray-500">{t.biz}</p>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
     </section>
   );
 }
+
+/* ─── Planos ─── */
 function PricingSection() {
   const plans = [
     {
       name: "Básico",
       price: "R$ 49,90",
-      period: "/mês",
-      desc: "Para começar a vender online",
-      included: ["Até 10 produtos", "1 cardápio online", "3 categorias", "Pedidos via WhatsApp", "Painel de pedidos básico", "Dashboard com visão geral", "Caixa (PDV) básico"],
-      locked: ["CRM avançado de clientes", "Analytics e relatórios detalhados", "Rastreio de pedidos em tempo real", "App personalizado instalável", "Múltiplos cardápios", "Gestão financeira completa"],
-      cta: "Começar agora",
+      desc: "Para começar a vender online.",
+      features: ["Até 10 produtos", "Pedidos via WhatsApp", "Painel de pedidos", "Caixa básico"],
       highlight: false,
     },
     {
       name: "Pro",
       price: "R$ 99,90",
-      period: "/mês",
-      desc: "Recursos completos para crescer",
-      included: ["Produtos ilimitados", "Múltiplos cardápios", "Categorias ilimitadas", "Checkout 100% online (sem WhatsApp)", "Rastreio de pedidos em tempo real", "Dashboard completo com métricas", "Gestão financeira (caixa, sangrias, suprimentos)", "Analytics avançado (faturamento, ticket médio, top produtos)", "CRM de clientes (LTV, histórico, WhatsApp)", "Relatórios exportáveis (CSV)", "App personalizado instalável", "Domínio customizado", "Suporte prioritário 24/7", "Painel de pedidos avançado"],
-      locked: [],
-      cta: "Assinar Pro",
+      desc: "Recursos completos para crescer.",
+      features: ["Produtos ilimitados", "Checkout 100% online", "CRM e relatórios", "App instalável", "Suporte prioritário"],
       highlight: true,
     },
   ];
   return (
-    <section
-      id="planos"
-      className="relative overflow-hidden py-28"
-      style={{
-        background:
-          "radial-gradient(900px 500px at 10% -5%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(800px 500px at 100% 110%, rgba(255,122,26,0.14), transparent 55%), linear-gradient(180deg, #0A0F25 0%, #07071A 100%)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-        }}
-      />
-      <div className="relative mx-auto max-w-6xl px-4">
-        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
-            Planos
-          </span>
-          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
-            Escolha o plano ideal para{" "}
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
-              seu negócio
-            </span>
+    <section id="planos" className="border-t border-gray-200 bg-[#FAFAFA]">
+      <div className="mx-auto max-w-5xl px-5 py-24">
+        <div className="mb-12 max-w-2xl">
+          <h2 className="text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
+            Planos simples. Sem taxa por pedido.
           </h2>
-          <p className="mt-5 text-[17px] leading-relaxed text-white/55">Sem taxa por pedido. Sem surpresas. Escolha o plano que cabe no seu bolso.</p>
-        </motion.div>
-
-        <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
-          {plans.map((p, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              className={`group relative flex h-full flex-col overflow-hidden rounded-xl border backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 ${
-                p.highlight
-                  ? "border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-white/[0.02] hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.4)]"
-                  : "border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] hover:border-orange-500/30"
+        </div>
+        <div className="mx-auto grid max-w-3xl gap-5 md:grid-cols-2">
+          {plans.map((p) => (
+            <div
+              key={p.name}
+              className={`flex flex-col rounded-lg border p-7 ${
+                p.highlight ? "border-orange-500 bg-white" : "border-gray-200 bg-white"
               }`}
             >
-              {p.highlight && (
-                <div
-                  className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-30 blur-3xl"
-                  style={{ background: "radial-gradient(circle, #FF7A1A 0%, transparent 70%)" }}
-                />
-              )}
-              <div className="relative flex h-full flex-col">
-                <div className="flex items-start justify-between">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-lg border border-orange-500/30"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
-                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
-                    }}
-                  >
-                    <Zap className="h-6 w-6 text-orange-400" strokeWidth={2.2} />
-                  </div>
-                  {p.highlight && (
-                    <span
-                      className="inline-flex items-center rounded-md border border-orange-500/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-orange-300"
-                      style={{ background: "linear-gradient(135deg, rgba(255,122,26,0.18), rgba(255,61,127,0.12))" }}
-                    >
-                      Popular
-                    </span>
-                  )}
-                </div>
-                <h3 className="mt-5 text-2xl font-bold text-white">{p.name}</h3>
-                <p className="mt-1 text-[13px] text-white/55">{p.desc}</p>
-
-                <div className="mt-5 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold tabular-nums text-white">{p.price}</span>
-                  <span className="text-sm text-white/50">{p.period}</span>
-                </div>
-
-                <div className="my-5 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
-
-                <ul className="flex-1 space-y-2.5">
-                  {p.included.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2.5 text-[13.5px] text-white/75">
-                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
-                      {f}
-                    </li>
-                  ))}
-                  {p.locked.map((f, j) => (
-                    <li key={`l-${j}`} className="flex items-start gap-2.5 text-[13.5px] text-white/30">
-                      <Lock className="mt-0.5 h-4 w-4 shrink-0" />
-                      <span className="line-through">{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button asChild size="lg" className={`mt-7 w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30" : "bg-white/10 hover:bg-white/15 text-white border border-white/15"}`}>
-                  <a href={`https://wa.me/5531986570126?text=${encodeURIComponent(`Olá, gostaria de assinar o plano ${p.name}.`)}`} target="_blank" rel="noopener noreferrer">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></a>
-                </Button>
+              <div className="flex items-center justify-between">
+                <h3 className="text-[17px] font-semibold text-gray-900">{p.name}</h3>
+                {p.highlight && (
+                  <span className="rounded border border-orange-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                    Popular
+                  </span>
+                )}
               </div>
-            </motion.div>
+              <p className="mt-1.5 text-[13.5px] text-gray-500">{p.desc}</p>
+              <div className="mt-5 flex items-baseline gap-1">
+                <span className="text-[32px] font-bold tabular-nums text-gray-900">{p.price}</span>
+                <span className="text-[13px] text-gray-500">/mês</span>
+              </div>
+              <ul className="mt-6 flex-1 space-y-2.5">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-[14px] text-gray-700">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" strokeWidth={2.2} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                asChild
+                className={`mt-7 w-full h-11 ${
+                  p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-gray-900 hover:bg-gray-800 text-white"
+                }`}
+              >
+                <Link to="/register">Criar conta</Link>
+              </Button>
+            </div>
           ))}
         </div>
       </div>
@@ -687,48 +280,31 @@ function PricingSection() {
 /* ─── FAQ ─── */
 function FAQSection() {
   const faqs = [
-    { q: "Preciso pagar taxa por pedido?", a: "Não. O Anotô não cobra comissão sobre suas vendas. Você paga apenas pelo plano escolhido." },
-    { q: "Funciona para retirada e delivery?", a: "Sim! Você pode habilitar retirada no local, delivery ou ambos, configurando bairros e taxas de entrega." },
-    { q: "Dá para imprimir em impressora térmica?", a: "Sim. O Anotô suporta impressão automática via ESC/POS em impressoras térmicas USB ou de rede." },
-    { q: "Posso ter mais de uma loja?", a: "No momento, cada conta gerencia uma loja. Estamos trabalhando no suporte a múltiplas unidades." },
-    { q: "Como funciona o plano Pro?", a: "O plano Pro inclui funcionalidades avançadas como CRM de clientes, relatórios detalhados e prioridade no suporte." },
+    { q: "Preciso pagar taxa por pedido?", a: "Não. O Anotô não cobra comissão sobre suas vendas. Você paga apenas o plano." },
+    { q: "Funciona para retirada e delivery?", a: "Sim. Você habilita retirada, delivery ou ambos, com bairros e taxas." },
+    { q: "Imprime em impressora térmica?", a: "Sim. Suporte a ESC/POS via USB ou rede, com impressão automática." },
+    { q: "Como funciona o plano Pro?", a: "Inclui CRM, relatórios detalhados, app instalável e suporte prioritário." },
   ];
   return (
-    <section
-      id="faq"
-      className="relative overflow-hidden py-28"
-      style={{
-        background:
-          "radial-gradient(800px 500px at 50% -10%, rgba(30,64,175,0.18), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
-      }}
-    >
-      <div className="relative mx-auto max-w-3xl px-4">
-        <motion.div className="mb-14 text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
-            FAQ
-          </span>
-          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">Perguntas frequentes</h2>
-          <p className="mt-5 text-[17px] text-white/55">Tire suas dúvidas antes de começar</p>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5 }}>
-          <Accordion type="single" collapsible className="space-y-3">
-            {faqs.map((f, i) => (
-              <AccordionItem
-                key={i}
-                value={`faq-${i}`}
-                className="overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl px-6 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all hover:border-orange-500/30 data-[state=open]:border-orange-500/40"
-              >
-                <AccordionTrigger className="py-5 text-[15px] font-semibold text-white hover:no-underline [&[data-state=open]]:text-orange-300">
-                  {f.q}
-                </AccordionTrigger>
-                <AccordionContent className="pb-5 text-[14px] leading-relaxed text-white/65">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </motion.div>
+    <section id="faq" className="border-t border-gray-200 bg-white">
+      <div className="mx-auto max-w-3xl px-5 py-24">
+        <div className="mb-10">
+          <h2 className="text-[32px] font-bold leading-tight tracking-tight text-gray-900 md:text-[40px]">
+            Perguntas frequentes
+          </h2>
+        </div>
+        <Accordion type="single" collapsible className="divide-y divide-gray-200 border-y border-gray-200">
+          {faqs.map((f, i) => (
+            <AccordionItem key={i} value={`faq-${i}`} className="border-0">
+              <AccordionTrigger className="py-5 text-left text-[15.5px] font-semibold text-gray-900 hover:no-underline">
+                {f.q}
+              </AccordionTrigger>
+              <AccordionContent className="pb-5 text-[14.5px] leading-relaxed text-gray-600">
+                {f.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </section>
   );
@@ -737,13 +313,15 @@ function FAQSection() {
 /* ─── CTA Final ─── */
 function FinalCTASection() {
   return (
-    <section className="py-16">
-      <div className="mx-auto max-w-3xl px-4 text-center">
-        <h2 className="text-3xl font-extrabold text-white">Pronto para digitalizar seu negócio?</h2>
-        <p className="mt-3 text-white/70">Crie sua conta gratuita e comece a receber pedidos em minutos.</p>
-        <Button size="lg" asChild className="mt-6 bg-orange-500 hover:bg-orange-600 text-white text-base px-8">
-          <a href={`https://wa.me/5531986570126?text=${encodeURIComponent("Oi, vim pelo site do Anotô. Gostaria de um teste para conhecer mais sobre.")}`} target="_blank" rel="noopener noreferrer">Começar grátis <ArrowRight className="ml-1 h-4 w-4" /></a>
+    <section className="border-t border-gray-200 bg-[#FAFAFA]">
+      <div className="mx-auto max-w-3xl px-5 py-24 text-center">
+        <h2 className="text-[34px] font-bold leading-tight tracking-tight text-gray-900 md:text-[44px]">
+          Comece agora. Sem taxa por pedido.
+        </h2>
+        <Button size="lg" asChild className="mt-8 bg-orange-500 hover:bg-orange-600 text-white text-base px-8 h-12">
+          <Link to="/register">Criar conta grátis <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
         </Button>
+        <p className="mt-4 text-[13.5px] text-gray-500">Leva menos de 2 minutos.</p>
       </div>
     </section>
   );
@@ -752,15 +330,15 @@ function FinalCTASection() {
 /* ─── Footer ─── */
 function LandingFooter() {
   return (
-    <footer className="border-t border-white/10 py-10">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center md:flex-row md:justify-between md:text-left">
-        <img src={logoLanding} alt="Anotô" className="h-8 w-auto object-contain brightness-0 invert" />
-        <div className="flex gap-6">
-          {["Termos de uso", "Privacidade", "Suporte"].map((l) => (
-            <a key={l} href="#" className="text-xs text-white/50 hover:text-white/80 transition">{l}</a>
+    <footer className="border-t border-gray-200 bg-white">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-5 py-8 text-center md:flex-row md:justify-between md:text-left">
+        <span className="text-sm font-bold" style={{ color: "#FF7A1A" }}>Anotô</span>
+        <div className="flex gap-5">
+          {["Termos", "Privacidade", "Suporte"].map((l) => (
+            <a key={l} href="#" className="text-[12.5px] text-gray-500 hover:text-gray-800 transition">{l}</a>
           ))}
         </div>
-        <p className="text-xs text-white/30">© {new Date().getFullYear()} Anotô. Todos os direitos reservados.</p>
+        <p className="text-[12px] text-gray-400">© {new Date().getFullYear()} Anotô.</p>
       </div>
     </footer>
   );
@@ -769,26 +347,17 @@ function LandingFooter() {
 /* ─── Page ─── */
 export default function Landing() {
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#07071A]">
-      {/* Light top: Header + Hero */}
-      <div style={{ background: "linear-gradient(180deg, #f0f4ff 0%, #ffffff 50%, #eef2ff 100%)" }}>
-        <LandingHeader />
-        <HeroSection />
-      </div>
-
-      {/* Dark zone — unified premium aesthetic */}
-      <BenefitsSection />
-      <FeaturesSection />
+    <div className="min-h-screen bg-white">
+      <LandingHeader />
+      <HeroSection />
+      <ProofSection />
       <HowItWorksSection />
+      <BenefitsSection />
       <TestimonialsSection />
       <PricingSection />
       <FAQSection />
-
-      {/* CTA + Footer */}
-      <div style={{ background: "linear-gradient(180deg, #0A0F25 0%, #07071A 100%)" }}>
-        <FinalCTASection />
-        <LandingFooter />
-      </div>
+      <FinalCTASection />
+      <LandingFooter />
     </div>
   );
 }
