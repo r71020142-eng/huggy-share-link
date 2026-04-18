@@ -317,7 +317,7 @@ function FeatureCard({
   delay = 0,
   children,
 }: {
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: LucideIcon;
   title: string;
   desc: string;
   pro?: boolean;
