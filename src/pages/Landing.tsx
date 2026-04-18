@@ -6,6 +6,7 @@ import {
   ArrowRight, Check,
 } from "lucide-react";
 import heroDevices from "@/assets/hero-devices.png";
+import logoLanding from "@/assets/logo-anoto-landing.png";
 import testimonialCarlos from "@/assets/testimonial-carlos.jpg";
 import testimonialAna from "@/assets/testimonial-ana.jpg";
 import testimonialRoberto from "@/assets/testimonial-roberto.jpg";
@@ -49,6 +50,7 @@ function HeroSection() {
     <section className="bg-white">
       <div className="mx-auto grid max-w-5xl items-center gap-10 px-5 py-20 md:grid-cols-[1.1fr_1fr] md:py-28">
         <div className="space-y-6">
+          <img src={logoLanding} alt="Anotô" className="h-10 md:h-12 w-auto object-contain" />
           <span className="inline-block text-[12px] font-semibold uppercase tracking-[0.14em] text-orange-600">
             Sem taxa por pedido
           </span>
