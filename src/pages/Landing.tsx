@@ -64,7 +64,7 @@ function HeroSection() {
               className="bg-clip-text text-transparent"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, #1a0b2e 0%, #4c1d95 35%, #7c3aed 55%, #2e1065 100%)",
+                  "linear-gradient(135deg, #4a1d05 0%, #c2410c 35%, #fb923c 55%, #7c2d12 100%)",
               }}
             >
               sem taxa por pedido.
