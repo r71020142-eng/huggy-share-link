@@ -74,7 +74,7 @@ export default function SobreNos() {
             <p className="text-gray-600">
               O Anotô foi criado pra resolver exatamente esse problema:
               centralizar tudo, simplificar a operação e deixar você focar
-              no que realmente importa — <span className="text-gray-900 font-semibold">vender.</span>
+              no que realmente importa. <span className="text-gray-900 font-semibold">Vender.</span>
             </p>
           </div>
         </div>
