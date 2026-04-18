@@ -157,49 +157,174 @@ function BenefitsSection() {
 
 /* ─── Funcionalidades ─── */
 function FeaturesSection() {
-  const features = [
-    { icon: QrCode, label: "Cardápio por link & QR Code", desc: "Compartilhe e seus clientes pedem pelo celular." },
-    { icon: ShoppingCart, label: "Carrinho e checkout", desc: "Experiência de compra rápida e intuitiva." },
-    { icon: ClipboardList, label: "Gestão de pedidos", desc: "Status em tempo real para sua equipe." },
-    { icon: Monitor, label: "PDV / Caixa", desc: "Controle financeiro completo do seu dia." },
-    { icon: MapPin, label: "Bairros e entregas", desc: "Taxas por região, automáticas no checkout." },
-    { icon: Printer, label: "Impressão térmica", desc: "Integração direta com impressoras ESC/POS." },
-    { icon: Users, label: "CRM de clientes", desc: "Conheça quem compra de você.", pro: true },
-    { icon: BarChart3, label: "Relatórios", desc: "Métricas para decisões inteligentes.", pro: true },
+  const main = {
+    icon: Zap,
+    title: "Pedidos automatizados em tempo real",
+    desc: "Receba, organize e dispare na cozinha em segundos. Painel Kanban ao vivo, notificações instantâneas e zero pedido perdido — mesmo no rush.",
+    bullets: ["Kanban ao vivo", "Notificação sonora", "Sincronia multi-dispositivo"],
+  };
+
+  const medium = [
+    { icon: QrCode, title: "Cardápio digital com QR Code", desc: "Seu menu vira app instalável. Compartilhe um link ou cole o QR na mesa e comece a vender." },
+    { icon: ShoppingCart, title: "Checkout rápido e intuitivo", desc: "Fluxo de compra pensado para converter. Endereço, pagamento e pedido em poucos toques." },
   ];
 
-  return (
-    <section id="funcionalidades" className="relative py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-14 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
-            Funcionalidades
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-white md:text-4xl">
-            Tudo que você precisa, num só sistema
-          </h2>
-        </div>
+  const small = [
+    { icon: BarChart3, title: "Relatórios inteligentes", desc: "Faturamento, ticket médio e top produtos.", pro: true },
+    { icon: Users, title: "Gestão de clientes", desc: "CRM com histórico, LTV e WhatsApp.", pro: true },
+    { icon: Printer, title: "Impressão automática", desc: "Térmica ESC/POS via USB ou rede." },
+    { icon: MapPin, title: "Entregas por bairro", desc: "Taxas automáticas no checkout." },
+  ];
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((f, i) => (
-            <motion.div
-              key={i}
-              className="group flex flex-col rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm p-6 transition-all hover:bg-white/15 hover:shadow-lg hover:border-white/20"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-30px" }}
-              transition={{ duration: 0.4, delay: i * 0.07 }}
+  const cardBase =
+    "group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-white/20 hover:bg-white/[0.07] hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]";
+
+  const IconBadge = ({ icon: Icon, size = "md" }: { icon: typeof Zap; size?: "md" | "lg" }) => (
+    <div
+      className={`relative flex items-center justify-center rounded-xl shadow-lg shadow-orange-500/30 ${
+        size === "lg" ? "h-14 w-14" : "h-11 w-11"
+      }`}
+      style={{ background: "linear-gradient(135deg, #FF7A1A 0%, #FF3D7F 100%)" }}
+    >
+      <Icon className={size === "lg" ? "h-7 w-7 text-white" : "h-5 w-5 text-white"} strokeWidth={2.2} />
+      <div className="absolute inset-0 rounded-xl bg-white/20 opacity-0 blur transition-opacity duration-500 group-hover:opacity-100" />
+    </div>
+  );
+
+  const ProBadge = () => (
+    <span
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white shadow-md shadow-orange-500/40"
+      style={{ background: "linear-gradient(135deg, #FF7A1A 0%, #FF3D7F 100%)" }}
+    >
+      Pro
+    </span>
+  );
+
+  return (
+    <section
+      id="funcionalidades"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(1200px 600px at 10% 0%, rgba(124,58,237,0.18), transparent 60%), radial-gradient(900px 500px at 100% 100%, rgba(30,64,175,0.22), transparent 60%), linear-gradient(180deg, #0B0B1A 0%, #0A0F25 100%)",
+      }}
+    >
+      {/* Glow orbs */}
+      <div className="pointer-events-none absolute -top-32 left-1/4 h-80 w-80 rounded-full bg-orange-500/10 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-purple-600/15 blur-3xl" />
+      {/* Grid pattern */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      <div className="relative mx-auto max-w-6xl px-4">
+        {/* Header */}
+        <motion.div
+          className="mx-auto mb-20 max-w-3xl text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-orange-300 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.6)]" />
+            Funcionalidades
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight text-white md:text-5xl">
+            Um sistema completo para{" "}
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(135deg, #FF7A1A 0%, #FF3D7F 60%, #A855F7 100%)" }}
             >
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-white/15">
-                <f.icon className="h-5 w-5 text-orange-400" />
+              vender mais
+            </span>{" "}
+            e operar melhor
+          </h2>
+          <p className="mt-5 text-lg text-white/60">
+            Tudo integrado, sem gambiarra: do primeiro toque do cliente ao fechamento do caixa.
+          </p>
+        </motion.div>
+
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-6 md:grid-rows-[auto_auto]">
+          {/* MAIN CARD — destaque */}
+          <motion.div
+            className={`${cardBase} md:col-span-4 md:row-span-2 p-8 md:p-10`}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Decorative gradient blob */}
+            <div
+              className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full opacity-30 blur-3xl transition-opacity duration-500 group-hover:opacity-50"
+              style={{ background: "linear-gradient(135deg, #FF7A1A, #A855F7)" }}
+            />
+            <div className="relative flex h-full flex-col">
+              <IconBadge icon={main.icon} size="lg" />
+              <h3 className="mt-6 text-2xl font-bold leading-tight text-white md:text-3xl">{main.title}</h3>
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/60">{main.desc}</p>
+
+              <div className="mt-auto pt-8">
+                <div className="flex flex-wrap gap-2">
+                  {main.bullets.map((b) => (
+                    <span
+                      key={b}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/80"
+                    >
+                      <CheckCircle2 className="h-3 w-3 text-orange-400" />
+                      {b}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <p className="text-[15px] font-semibold text-white">{f.label}</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">{f.desc}</p>
-              {f.pro && (
-                <Badge className="mt-3 w-fit bg-orange-500/20 text-orange-300 hover:bg-orange-500/30 text-[10px] font-bold border-orange-500/30 uppercase tracking-wide">
-                  Pro
-                </Badge>
-              )}
+            </div>
+          </motion.div>
+
+          {/* MEDIUM CARDS */}
+          {medium.map((f, i) => (
+            <motion.div
+              key={f.title}
+              className={`${cardBase} md:col-span-2 p-7`}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: 0.1 + i * 0.1 }}
+            >
+              <IconBadge icon={f.icon} />
+              <h3 className="mt-5 text-lg font-bold text-white">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/60">{f.desc}</p>
+            </motion.div>
+          ))}
+
+          {/* SMALL CARDS */}
+          {small.map((f, i) => (
+            <motion.div
+              key={f.title}
+              className={`${cardBase} md:col-span-3 lg:col-span-3 xl:col-span-3 p-6 ${
+                i >= 2 ? "" : ""
+              }`}
+              style={{ gridColumn: undefined }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: 0.3 + i * 0.08 }}
+            >
+              <div className="flex items-start gap-4">
+                <IconBadge icon={f.icon} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-white">{f.title}</h3>
+                    {f.pro && <ProBadge />}
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-white/60">{f.desc}</p>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
