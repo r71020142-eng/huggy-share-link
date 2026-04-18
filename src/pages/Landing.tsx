@@ -441,42 +441,68 @@ function FeaturesSection() {
 /* ─── Como funciona ─── */
 function HowItWorksSection() {
   const steps = [
-    { num: "01", title: "Crie sua loja", desc: "Cadastre-se em menos de 2 minutos e personalize seu perfil.", color: "#FF7A1A" },
-    { num: "02", title: "Monte o cardápio", desc: "Adicione categorias, produtos, fotos e preços.", color: "#1e40af" },
-    { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", color: "#7c3aed" },
+    { num: "01", title: "Crie sua loja", desc: "Cadastre-se em menos de 2 minutos e personalize seu perfil.", tag: "Setup" },
+    { num: "02", title: "Monte o cardápio", desc: "Adicione categorias, produtos, fotos e preços.", tag: "Catálogo" },
+    { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", tag: "Live" },
   ];
   return (
-    <section id="como-funciona" className="relative py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      id="como-funciona"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 10% -5%, rgba(30,64,175,0.20), transparent 55%), radial-gradient(800px 500px at 100% 110%, rgba(124,58,237,0.18), transparent 55%), linear-gradient(180deg, #0A0F25 0%, #07071A 100%)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4">
+        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             Como funciona
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
-            Três passos para começar a vender
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Três passos para{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
+              começar a vender
+            </span>
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="relative grid gap-0 md:grid-cols-3">
-          <div className="absolute top-12 left-[16.6%] right-[16.6%] hidden h-0.5 bg-gradient-to-r from-orange-300 via-blue-300 to-purple-300 md:block" />
-
+        <div className="grid gap-5 md:grid-cols-3">
           {steps.map((s, i) => (
             <motion.div
               key={i}
-              className="relative flex flex-col items-center text-center px-8 py-6"
-              initial={{ opacity: 0, y: 30 }}
+              className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <div
-                className="relative z-10 mb-6 flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-black text-white shadow-lg"
-                style={{ backgroundColor: s.color }}
-              >
-                {s.num}
+              <div className="flex items-start justify-between">
+                <div
+                  className="flex h-14 w-14 items-center justify-center rounded-lg border border-orange-500/30 text-2xl font-black text-orange-300"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
+                  }}
+                >
+                  {s.num}
+                </div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">{s.tag}</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">{s.title}</h3>
-              <p className="mt-3 max-w-[240px] text-[15px] leading-relaxed text-gray-500">{s.desc}</p>
+              <h3 className="mt-5 text-xl font-bold text-white">{s.title}</h3>
+              <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+              <p className="text-[13.5px] leading-relaxed text-white/55">{s.desc}</p>
             </motion.div>
           ))}
         </div>
