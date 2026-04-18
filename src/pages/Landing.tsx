@@ -103,49 +103,83 @@ function BenefitsSection() {
       img: benefitOrdersApp,
       title: "Zero taxa por pedido",
       desc: "Você fica com 100% do valor de cada venda. Sem comissões escondidas, sem surpresas no final do mês.",
-      accent: "#FF7A1A",
+      tag: "Margem 100%",
     },
     {
       img: benefitKanbanUI,
       title: "Pedidos organizados",
       desc: "Painel Kanban em tempo real. Veja o fluxo completo do pedido, da entrada à entrega, sem perder nada.",
-      accent: "#1e40af",
+      tag: "Realtime",
     },
     {
       img: benefitThermalPrinter,
       title: "Impressão automática",
       desc: "Pedido chegou, já imprime na cozinha. Compatível com impressoras térmicas ESC/POS via USB ou rede.",
-      accent: "#7c3aed",
+      tag: "ESC/POS",
     },
   ];
 
   return (
-    <section className="relative py-24 overflow-hidden">
-
-      {/* Decorative blurred circles */}
-      <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
-      <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+    <section
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 90% -10%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(800px 500px at 0% 110%, rgba(30,64,175,0.20), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+        }}
+      />
 
       <div className="relative mx-auto max-w-6xl px-4">
-        <div className="mb-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-400">
-            Por que escolher o Anotô
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-white md:text-4xl">
-            Feito para quem vive o dia a dia do balcão
+        <motion.div
+          className="mx-auto mb-16 max-w-3xl text-center"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
+            Por que Anotô
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Feito para quem vive o{" "}
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}
+            >
+              dia a dia
+            </span>
+            <br className="hidden md:block" /> do balcão
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {pillars.map((p, i) => (
-            <motion.div key={i} className="group flex flex-col overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 transition-all hover:bg-white/15 hover:-translate-y-1 hover:shadow-2xl" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5, delay: i * 0.15 }}>
-              <div className="flex items-center justify-center overflow-hidden bg-white/5 p-4 h-64">
-                <img src={p.img} alt={p.title} className="h-full w-auto object-contain rounded-xl" />
+            <motion.div
+              key={i}
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <div className="flex h-56 items-center justify-center overflow-hidden border-b border-white/[0.06] bg-black/30 p-4">
+                <img src={p.img} alt={p.title} className="h-full w-auto object-contain" />
               </div>
-              <div className="flex flex-1 flex-col p-6 pt-4">
-                <h3 className="text-xl font-bold text-white">{p.title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-white/70">{p.desc}</p>
-                <div className="mt-5 h-1 w-12 rounded-full" style={{ backgroundColor: p.accent }} />
+              <div className="flex flex-1 flex-col p-6">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-orange-300/80">0{i + 1} · {p.tag}</span>
+                <h3 className="mt-2 text-xl font-bold text-white">{p.title}</h3>
+                <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+                <p className="text-[13.5px] leading-relaxed text-white/55">{p.desc}</p>
               </div>
             </motion.div>
           ))}
@@ -407,42 +441,68 @@ function FeaturesSection() {
 /* ─── Como funciona ─── */
 function HowItWorksSection() {
   const steps = [
-    { num: "01", title: "Crie sua loja", desc: "Cadastre-se em menos de 2 minutos e personalize seu perfil.", color: "#FF7A1A" },
-    { num: "02", title: "Monte o cardápio", desc: "Adicione categorias, produtos, fotos e preços.", color: "#1e40af" },
-    { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", color: "#7c3aed" },
+    { num: "01", title: "Crie sua loja", desc: "Cadastre-se em menos de 2 minutos e personalize seu perfil.", tag: "Setup" },
+    { num: "02", title: "Monte o cardápio", desc: "Adicione categorias, produtos, fotos e preços.", tag: "Catálogo" },
+    { num: "03", title: "Receba pedidos", desc: "Compartilhe o link e receba pedidos em tempo real.", tag: "Live" },
   ];
   return (
-    <section id="como-funciona" className="relative py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      id="como-funciona"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 10% -5%, rgba(30,64,175,0.20), transparent 55%), radial-gradient(800px 500px at 100% 110%, rgba(124,58,237,0.18), transparent 55%), linear-gradient(180deg, #0A0F25 0%, #07071A 100%)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4">
+        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             Como funciona
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
-            Três passos para começar a vender
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Três passos para{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
+              começar a vender
+            </span>
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="relative grid gap-0 md:grid-cols-3">
-          <div className="absolute top-12 left-[16.6%] right-[16.6%] hidden h-0.5 bg-gradient-to-r from-orange-300 via-blue-300 to-purple-300 md:block" />
-
+        <div className="grid gap-5 md:grid-cols-3">
           {steps.map((s, i) => (
             <motion.div
               key={i}
-              className="relative flex flex-col items-center text-center px-8 py-6"
-              initial={{ opacity: 0, y: 30 }}
+              className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              <div
-                className="relative z-10 mb-6 flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-black text-white shadow-lg"
-                style={{ backgroundColor: s.color }}
-              >
-                {s.num}
+              <div className="flex items-start justify-between">
+                <div
+                  className="flex h-14 w-14 items-center justify-center rounded-lg border border-orange-500/30 text-2xl font-black text-orange-300"
+                  style={{
+                    background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
+                  }}
+                >
+                  {s.num}
+                </div>
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/35">{s.tag}</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900">{s.title}</h3>
-              <p className="mt-3 max-w-[240px] text-[15px] leading-relaxed text-gray-500">{s.desc}</p>
+              <h3 className="mt-5 text-xl font-bold text-white">{s.title}</h3>
+              <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+              <p className="text-[13.5px] leading-relaxed text-white/55">{s.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -459,48 +519,49 @@ function TestimonialsSection() {
     { name: "Roberto S.", biz: "Dono de Pizzaria", text: "O caixa integrado me deu controle real do faturamento. Antes eu não sabia quanto entrava por dia. Hoje tenho clareza total.", img: testimonialRoberto },
   ];
   return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 90% -10%, rgba(255,122,26,0.12), transparent 55%), radial-gradient(800px 500px at 0% 110%, rgba(124,58,237,0.18), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
+      }}
+    >
+      <div className="relative mx-auto max-w-6xl px-4">
+        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             Depoimentos
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
-            Quem usa, recomenda
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Quem usa,{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
+              recomenda
+            </span>
           </h2>
-          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Veja o que donos de negócios como o seu dizem sobre o Anotô</p>
-        </div>
+        </motion.div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {testimonials.map((t, i) => (
             <motion.div
               key={i}
-              className="relative flex flex-col rounded-3xl bg-white p-8 shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-              initial={{ opacity: 0, y: 30 }}
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
             >
-              {/* Stars */}
               <div className="mb-5 flex gap-1">
                 {[...Array(5)].map((_, j) => (
                   <Star key={j} className="h-4 w-4 fill-orange-400 text-orange-400" />
                 ))}
               </div>
-
-              {/* Quote */}
-              <p className="flex-1 text-[15px] text-gray-600 leading-relaxed italic">"{t.text}"</p>
-
-              {/* Author */}
-              <div className="mt-8 flex items-center gap-4 border-t border-gray-100 pt-6">
-                <img
-                  src={t.img}
-                  alt={t.name}
-                  className="h-14 w-14 rounded-full object-cover ring-2 ring-white shadow-md"
-                />
+              <p className="flex-1 text-[14.5px] leading-relaxed text-white/75">"{t.text}"</p>
+              <div className="my-5 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+              <div className="flex items-center gap-3">
+                <img src={t.img} alt={t.name} className="h-12 w-12 rounded-full object-cover ring-2 ring-orange-500/30" />
                 <div>
-                  <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                  <p className="text-xs text-gray-500">{t.biz}</p>
+                  <p className="text-sm font-bold text-white">{t.name}</p>
+                  <p className="text-xs text-white/50">{t.biz}</p>
                 </div>
               </div>
             </motion.div>
@@ -517,23 +578,8 @@ function PricingSection() {
       price: "R$ 49,90",
       period: "/mês",
       desc: "Para começar a vender online",
-      included: [
-        "Até 10 produtos",
-        "1 cardápio online",
-        "3 categorias",
-        "Pedidos via WhatsApp",
-        "Painel de pedidos básico",
-        "Dashboard com visão geral",
-        "Caixa (PDV) básico",
-      ],
-      locked: [
-        "CRM avançado de clientes",
-        "Analytics e relatórios detalhados",
-        "Rastreio de pedidos em tempo real",
-        "App personalizado instalável",
-        "Múltiplos cardápios",
-        "Gestão financeira completa",
-      ],
+      included: ["Até 10 produtos", "1 cardápio online", "3 categorias", "Pedidos via WhatsApp", "Painel de pedidos básico", "Dashboard com visão geral", "Caixa (PDV) básico"],
+      locked: ["CRM avançado de clientes", "Analytics e relatórios detalhados", "Rastreio de pedidos em tempo real", "App personalizado instalável", "Múltiplos cardápios", "Gestão financeira completa"],
       cta: "Começar agora",
       highlight: false,
     },
@@ -542,88 +588,114 @@ function PricingSection() {
       price: "R$ 99,90",
       period: "/mês",
       desc: "Recursos completos para crescer",
-      included: [
-        "Produtos ilimitados",
-        "Múltiplos cardápios",
-        "Categorias ilimitadas",
-        "Checkout 100% online (sem WhatsApp)",
-        "Rastreio de pedidos em tempo real",
-        "Dashboard completo com métricas",
-        "Gestão financeira (caixa, sangrias, suprimentos)",
-        "Analytics avançado (faturamento, ticket médio, top produtos)",
-        "CRM de clientes (LTV, histórico, WhatsApp)",
-        "Relatórios exportáveis (CSV)",
-        "App personalizado instalável",
-        "Domínio customizado",
-        "Suporte prioritário 24/7",
-        "Painel de pedidos avançado",
-      ],
+      included: ["Produtos ilimitados", "Múltiplos cardápios", "Categorias ilimitadas", "Checkout 100% online (sem WhatsApp)", "Rastreio de pedidos em tempo real", "Dashboard completo com métricas", "Gestão financeira (caixa, sangrias, suprimentos)", "Analytics avançado (faturamento, ticket médio, top produtos)", "CRM de clientes (LTV, histórico, WhatsApp)", "Relatórios exportáveis (CSV)", "App personalizado instalável", "Domínio customizado", "Suporte prioritário 24/7", "Painel de pedidos avançado"],
       locked: [],
       cta: "Assinar Pro",
       highlight: true,
     },
   ];
   return (
-    <section id="planos" className="py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      id="planos"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 10% -5%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(800px 500px at 100% 110%, rgba(255,122,26,0.14), transparent 55%), linear-gradient(180deg, #0A0F25 0%, #07071A 100%)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4">
+        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             Planos
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
-            Escolha o plano ideal para seu negócio
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Escolha o plano ideal para{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
+              seu negócio
+            </span>
           </h2>
-          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Sem taxa por pedido. Sem surpresas. Escolha o plano que cabe no seu bolso.</p>
-        </div>
-        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          <p className="mt-5 text-[17px] leading-relaxed text-white/55">Sem taxa por pedido. Sem surpresas. Escolha o plano que cabe no seu bolso.</p>
+        </motion.div>
+
+        <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
           {plans.map((p, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className={`group relative flex h-full flex-col overflow-hidden rounded-xl border backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 ${
+                p.highlight
+                  ? "border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-white/[0.02] hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.4)]"
+                  : "border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] hover:border-orange-500/30"
+              }`}
             >
-              <Card className={`relative overflow-hidden h-full flex flex-col ${p.highlight ? "border-2 shadow-xl ring-1 ring-blue-200" : "border-gray-200 shadow-sm"}`} style={p.highlight ? { borderColor: "#1e40af" } : {}}>
-                {p.highlight && (
-                  <div className="absolute -right-8 top-6 rotate-45 px-10 py-1 text-xs font-bold text-white" style={{ backgroundColor: "#FF7A1A" }}>
-                    Popular
+              {p.highlight && (
+                <div
+                  className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-30 blur-3xl"
+                  style={{ background: "radial-gradient(circle, #FF7A1A 0%, transparent 70%)" }}
+                />
+              )}
+              <div className="relative flex h-full flex-col">
+                <div className="flex items-start justify-between">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-lg border border-orange-500/30"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
+                    }}
+                  >
+                    <Zap className="h-6 w-6 text-orange-400" strokeWidth={2.2} />
                   </div>
-                )}
-                <CardHeader className="pb-4 pt-8">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: p.highlight ? "#1e40af" : "#f1f5f9" }}>
-                    <Zap className={`h-6 w-6 ${p.highlight ? "text-white" : "text-gray-500"}`} />
-                  </div>
-                  <CardTitle className="text-2xl text-gray-900">{p.name}</CardTitle>
-                  <CardDescription className="text-sm">{p.desc}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 space-y-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-gray-900">{p.price}</span>
-                    {p.period && <span className="text-sm text-gray-500">{p.period}</span>}
-                  </div>
-                  <div className="h-px bg-gray-100" />
-                  <ul className="space-y-3">
-                    {p.included.map((f, j) => (
-                      <li key={j} className="flex items-start gap-3 text-sm text-gray-700">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" style={{ color: p.highlight ? "#1e40af" : "#22c55e" }} />
-                        {f}
-                      </li>
-                    ))}
-                    {p.locked.map((f, j) => (
-                      <li key={`locked-${j}`} className="flex items-start gap-3 text-sm text-gray-400">
-                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gray-300" />
-                        <span className="line-through">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="pt-4 pb-8">
-                  <Button asChild size="lg" className={`w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25" : "bg-gray-900 hover:bg-gray-800 text-white"}`}>
-                    <a href={`https://wa.me/5531986570126?text=${encodeURIComponent(`Olá, gostaria de assinar o plano ${p.name}.`)}`} target="_blank" rel="noopener noreferrer">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></a>
-                  </Button>
-                </CardFooter>
-              </Card>
+                  {p.highlight && (
+                    <span
+                      className="inline-flex items-center rounded-md border border-orange-500/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-orange-300"
+                      style={{ background: "linear-gradient(135deg, rgba(255,122,26,0.18), rgba(255,61,127,0.12))" }}
+                    >
+                      Popular
+                    </span>
+                  )}
+                </div>
+                <h3 className="mt-5 text-2xl font-bold text-white">{p.name}</h3>
+                <p className="mt-1 text-[13px] text-white/55">{p.desc}</p>
+
+                <div className="mt-5 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold tabular-nums text-white">{p.price}</span>
+                  <span className="text-sm text-white/50">{p.period}</span>
+                </div>
+
+                <div className="my-5 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+
+                <ul className="flex-1 space-y-2.5">
+                  {p.included.map((f, j) => (
+                    <li key={j} className="flex items-start gap-2.5 text-[13.5px] text-white/75">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+                      {f}
+                    </li>
+                  ))}
+                  {p.locked.map((f, j) => (
+                    <li key={`l-${j}`} className="flex items-start gap-2.5 text-[13.5px] text-white/30">
+                      <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span className="line-through">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild size="lg" className={`mt-7 w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30" : "bg-white/10 hover:bg-white/15 text-white border border-white/15"}`}>
+                  <a href={`https://wa.me/5531986570126?text=${encodeURIComponent(`Olá, gostaria de assinar o plano ${p.name}.`)}`} target="_blank" rel="noopener noreferrer">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></a>
+                </Button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -642,28 +714,35 @@ function FAQSection() {
     { q: "Como funciona o plano Pro?", a: "O plano Pro inclui funcionalidades avançadas como CRM de clientes, relatórios detalhados e prioridade no suporte." },
   ];
   return (
-    <section id="faq" className="py-24">
-      <div className="mx-auto max-w-3xl px-4">
-        <div className="mb-14 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      id="faq"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(800px 500px at 50% -10%, rgba(30,64,175,0.18), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
+      }}
+    >
+      <div className="relative mx-auto max-w-3xl px-4">
+        <motion.div className="mb-14 text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             FAQ
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">Perguntas frequentes</h2>
-          <p className="mt-4 text-gray-500">Tire suas dúvidas antes de começar</p>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5 }}
-        >
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">Perguntas frequentes</h2>
+          <p className="mt-5 text-[17px] text-white/55">Tire suas dúvidas antes de começar</p>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5 }}>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((f, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="rounded-2xl border border-gray-200 bg-white px-6 shadow-sm transition-shadow hover:shadow-md data-[state=open]:shadow-md data-[state=open]:border-blue-200">
-                <AccordionTrigger className="py-5 text-[15px] font-semibold text-gray-900 hover:no-underline [&[data-state=open]]:text-blue-700">
+              <AccordionItem
+                key={i}
+                value={`faq-${i}`}
+                className="overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl px-6 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all hover:border-orange-500/30 data-[state=open]:border-orange-500/40"
+              >
+                <AccordionTrigger className="py-5 text-[15px] font-semibold text-white hover:no-underline [&[data-state=open]]:text-orange-300">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="pb-5 text-[14px] text-gray-600 leading-relaxed">
+                <AccordionContent className="pb-5 text-[14px] leading-relaxed text-white/65">
                   {f.a}
                 </AccordionContent>
               </AccordionItem>
@@ -710,29 +789,23 @@ function LandingFooter() {
 /* ─── Page ─── */
 export default function Landing() {
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-[#07071A]">
       {/* Light top: Header + Hero */}
       <div style={{ background: "linear-gradient(180deg, #f0f4ff 0%, #ffffff 50%, #eef2ff 100%)" }}>
         <LandingHeader />
         <HeroSection />
       </div>
 
-      {/* Dark zone: Benefits + Features */}
-      <div style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%)" }}>
-        <BenefitsSection />
-        <FeaturesSection />
-      </div>
+      {/* Dark zone — unified premium aesthetic */}
+      <BenefitsSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <PricingSection />
+      <FAQSection />
 
-      {/* Light zone: How it works + Testimonials + Pricing + FAQ */}
-      <div style={{ background: "linear-gradient(180deg, #f8fafc 0%, #ffffff 15%, #f0f4ff 40%, #ffffff 60%, #eef2ff 80%, #f8fafc 100%)" }}>
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <FAQSection />
-      </div>
-
-      {/* Dark zone: CTA + Footer */}
-      <div style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)" }}>
+      {/* CTA + Footer */}
+      <div style={{ background: "linear-gradient(180deg, #0A0F25 0%, #07071A 100%)" }}>
         <FinalCTASection />
         <LandingFooter />
       </div>
