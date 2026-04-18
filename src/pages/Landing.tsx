@@ -48,8 +48,8 @@ function LandingHeader() {
 function HeroSection() {
   return (
     <section className="bg-white">
-      <div className="mx-auto grid max-w-5xl items-center gap-10 px-5 py-20 md:grid-cols-[1.1fr_1fr] md:py-28">
-        <div className="space-y-6">
+      <div className="mx-auto grid max-w-5xl items-start gap-10 px-5 py-12 md:grid-cols-[1.1fr_1fr] md:py-16">
+        <div className="space-y-5">
           <img
             src={logoLanding}
             alt="Anotô"
