@@ -336,6 +336,7 @@ function FeatureCard({
   compact,
   className = "",
   delay = 0,
+  number,
   children,
 }: {
   icon: LucideIcon;
@@ -346,46 +347,66 @@ function FeatureCard({
   compact?: boolean;
   className?: string;
   delay?: number;
+  number?: string;
   children?: React.ReactNode;
 }) {
   return (
     <div
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/[0.14] hover:bg-white/[0.05] hover:shadow-[0_20px_60px_-15px_rgba(124,58,237,0.35)] ${className}`}
+      className={`group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] transition-all duration-500 hover:border-white/20 hover:bg-white/[0.045] ${className}`}
       style={{
         animation: `featureCardIn 0.7s cubic-bezier(0.22,1,0.36,1) ${delay}ms both`,
       }}
     >
-      {/* gradient sheen on hover */}
-      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-        <div className="absolute -inset-px rounded-2xl bg-gradient-to-br from-orange-400/10 via-transparent to-purple-500/10" />
-      </div>
+      {/* Halo gradient on hover */}
+      <div
+        className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+        style={{
+          background:
+            "radial-gradient(420px circle at 80% 0%, rgba(255,122,26,0.12), transparent 45%)",
+        }}
+      />
 
-      <div className={`relative flex h-full flex-col ${compact ? "p-6" : featured ? "p-8" : "p-7"}`}>
-        <div className="flex items-center justify-between">
+      {/* Big number watermark */}
+      {number && (
+        <span
+          className={`pointer-events-none absolute select-none font-semibold leading-none text-white/[0.04] transition-all duration-500 group-hover:text-white/[0.08] ${
+            featured ? "right-7 top-5 text-[150px] md:text-[200px]" : "right-4 top-3 text-[80px]"
+          }`}
+          style={{ fontVariantNumeric: "tabular-nums", letterSpacing: "-0.06em" }}
+        >
+          {number}
+        </span>
+      )}
+
+      <div className={`relative flex h-full flex-col ${compact ? "p-6" : featured ? "p-9" : "p-7"}`}>
+        <div className="flex items-start justify-between">
           <div
-            className={`flex items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 shadow-[0_8px_24px_-8px_rgba(251,146,60,0.6)] ${
-              featured ? "h-12 w-12" : "h-10 w-10"
+            className={`relative flex items-center justify-center rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.08] to-white/[0.02] ${
+              featured ? "h-11 w-11" : "h-10 w-10"
             }`}
           >
-            <Icon className={featured ? "h-5 w-5 text-white" : "h-[18px] w-[18px] text-white"} strokeWidth={2} />
+            <Icon className={`text-orange-300 ${featured ? "h-[19px] w-[19px]" : "h-[17px] w-[17px]"}`} strokeWidth={1.75} />
           </div>
           {pro && (
-            <span className="rounded-full bg-gradient-to-r from-orange-400 to-amber-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_4px_12px_-4px_rgba(251,146,60,0.6)]">
+            <span className="rounded-sm border border-orange-400/30 bg-orange-400/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.22em] text-orange-300">
               Pro
             </span>
           )}
         </div>
 
+        {/* Hairline divider */}
+        <div className={`${featured ? "mt-7" : "mt-6"} h-px w-10 bg-gradient-to-r from-orange-400/60 to-transparent`} />
+
         <h3
-          className={`mt-6 font-semibold tracking-tight text-white ${
-            featured ? "text-[22px] leading-tight md:text-[26px]" : compact ? "text-[15px]" : "text-[17px]"
+          className={`mt-5 font-semibold tracking-tight text-white ${
+            featured ? "text-[28px] leading-[1.08] md:text-[36px]" : compact ? "text-[15px]" : "text-[18px]"
           }`}
         >
           {title}
         </h3>
         <p
-          className={`mt-2 leading-relaxed text-white/55 ${
-            featured ? "max-w-md text-[15px]" : compact ? "text-[13px]" : "text-[14px]"
+          className={`mt-3 leading-relaxed text-white/50 ${
+            featured ? "max-w-lg text-[15px]" : compact ? "text-[12.5px]" : "text-[13.5px]"
           }`}
         >
           {desc}
