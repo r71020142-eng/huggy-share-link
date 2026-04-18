@@ -338,6 +338,7 @@ function FAQSection() {
   );
 }
 
+function FinalCTASection() {
   return (
     <section className="border-t border-gray-200 bg-[#FAFAFA]">
       <div className="mx-auto max-w-3xl px-5 py-24 text-center">
@@ -360,6 +361,7 @@ function LandingFooter() {
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-5 py-8 text-center md:flex-row md:justify-between md:text-left">
         <span className="text-sm font-bold" style={{ color: "#FF7A1A" }}>Anotô</span>
         <div className="flex gap-5">
+          <Link to="/sobre-nos" className="text-[12.5px] text-gray-500 hover:text-gray-800 transition">Sobre Nós</Link>
           {["Termos", "Privacidade", "Suporte"].map((l) => (
             <a key={l} href="#" className="text-[12.5px] text-gray-500 hover:text-gray-800 transition">{l}</a>
           ))}
@@ -380,7 +382,6 @@ export default function Landing() {
       <HowItWorksSection />
       <BenefitsSection />
       <TestimonialsSection />
-      <AboutSection />
       <PricingSection />
       <FAQSection />
       <FinalCTASection />
