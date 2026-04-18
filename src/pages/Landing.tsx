@@ -789,29 +789,23 @@ function LandingFooter() {
 /* ─── Page ─── */
 export default function Landing() {
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden bg-[#07071A]">
       {/* Light top: Header + Hero */}
       <div style={{ background: "linear-gradient(180deg, #f0f4ff 0%, #ffffff 50%, #eef2ff 100%)" }}>
         <LandingHeader />
         <HeroSection />
       </div>
 
-      {/* Dark zone: Benefits + Features */}
-      <div style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #312e81 40%, #1e1b4b 100%)" }}>
-        <BenefitsSection />
-        <FeaturesSection />
-      </div>
+      {/* Dark zone — unified premium aesthetic */}
+      <BenefitsSection />
+      <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <PricingSection />
+      <FAQSection />
 
-      {/* Light zone: How it works + Testimonials + Pricing + FAQ */}
-      <div style={{ background: "linear-gradient(180deg, #f8fafc 0%, #ffffff 15%, #f0f4ff 40%, #ffffff 60%, #eef2ff 80%, #f8fafc 100%)" }}>
-        <HowItWorksSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <FAQSection />
-      </div>
-
-      {/* Dark zone: CTA + Footer */}
-      <div style={{ background: "linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)" }}>
+      {/* CTA + Footer */}
+      <div style={{ background: "linear-gradient(180deg, #0A0F25 0%, #07071A 100%)" }}>
         <FinalCTASection />
         <LandingFooter />
       </div>
