@@ -76,6 +76,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<HomeRoute />} />
               <Route path="/landing" element={<Landing />} />
+              <Route path="/sobre-nos" element={<SobreNos />} />
               <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
               <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
               <Route path="/m/:slug" element={<PublicMenu />} />
