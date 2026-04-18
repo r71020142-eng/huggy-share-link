@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Store } from "lucide-react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
+import logoAnoto from "@/assets/logo-anoto.png";
 import { toast } from "sonner";
 
 export default function Register() {
@@ -84,11 +84,10 @@ export default function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-            <Store className="h-6 w-6 text-primary-foreground" />
+        <CardHeader className="text-center pt-0 px-0">
+          <div className="mx-auto mb-6 w-full overflow-hidden rounded-t-lg">
+            <img src={logoAnoto} alt="Anotô" className="w-full h-auto object-cover" />
           </div>
-          <CardTitle className="text-2xl">Criar Conta</CardTitle>
           <CardDescription>Comece a vender online agora</CardDescription>
         </CardHeader>
         <form onSubmit={handleRegister}>
