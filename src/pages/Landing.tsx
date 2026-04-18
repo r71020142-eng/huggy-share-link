@@ -578,23 +578,8 @@ function PricingSection() {
       price: "R$ 49,90",
       period: "/mês",
       desc: "Para começar a vender online",
-      included: [
-        "Até 10 produtos",
-        "1 cardápio online",
-        "3 categorias",
-        "Pedidos via WhatsApp",
-        "Painel de pedidos básico",
-        "Dashboard com visão geral",
-        "Caixa (PDV) básico",
-      ],
-      locked: [
-        "CRM avançado de clientes",
-        "Analytics e relatórios detalhados",
-        "Rastreio de pedidos em tempo real",
-        "App personalizado instalável",
-        "Múltiplos cardápios",
-        "Gestão financeira completa",
-      ],
+      included: ["Até 10 produtos", "1 cardápio online", "3 categorias", "Pedidos via WhatsApp", "Painel de pedidos básico", "Dashboard com visão geral", "Caixa (PDV) básico"],
+      locked: ["CRM avançado de clientes", "Analytics e relatórios detalhados", "Rastreio de pedidos em tempo real", "App personalizado instalável", "Múltiplos cardápios", "Gestão financeira completa"],
       cta: "Começar agora",
       highlight: false,
     },
@@ -603,88 +588,114 @@ function PricingSection() {
       price: "R$ 99,90",
       period: "/mês",
       desc: "Recursos completos para crescer",
-      included: [
-        "Produtos ilimitados",
-        "Múltiplos cardápios",
-        "Categorias ilimitadas",
-        "Checkout 100% online (sem WhatsApp)",
-        "Rastreio de pedidos em tempo real",
-        "Dashboard completo com métricas",
-        "Gestão financeira (caixa, sangrias, suprimentos)",
-        "Analytics avançado (faturamento, ticket médio, top produtos)",
-        "CRM de clientes (LTV, histórico, WhatsApp)",
-        "Relatórios exportáveis (CSV)",
-        "App personalizado instalável",
-        "Domínio customizado",
-        "Suporte prioritário 24/7",
-        "Painel de pedidos avançado",
-      ],
+      included: ["Produtos ilimitados", "Múltiplos cardápios", "Categorias ilimitadas", "Checkout 100% online (sem WhatsApp)", "Rastreio de pedidos em tempo real", "Dashboard completo com métricas", "Gestão financeira (caixa, sangrias, suprimentos)", "Analytics avançado (faturamento, ticket médio, top produtos)", "CRM de clientes (LTV, histórico, WhatsApp)", "Relatórios exportáveis (CSV)", "App personalizado instalável", "Domínio customizado", "Suporte prioritário 24/7", "Painel de pedidos avançado"],
       locked: [],
       cta: "Assinar Pro",
       highlight: true,
     },
   ];
   return (
-    <section id="planos" className="py-24">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-16 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      id="planos"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 10% -5%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(800px 500px at 100% 110%, rgba(255,122,26,0.14), transparent 55%), linear-gradient(180deg, #0A0F25 0%, #07071A 100%)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-6xl px-4">
+        <motion.div className="mx-auto mb-16 max-w-3xl text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             Planos
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">
-            Escolha o plano ideal para seu negócio
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Escolha o plano ideal para{" "}
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}>
+              seu negócio
+            </span>
           </h2>
-          <p className="mt-4 text-gray-500 max-w-lg mx-auto">Sem taxa por pedido. Sem surpresas. Escolha o plano que cabe no seu bolso.</p>
-        </div>
-        <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          <p className="mt-5 text-[17px] leading-relaxed text-white/55">Sem taxa por pedido. Sem surpresas. Escolha o plano que cabe no seu bolso.</p>
+        </motion.div>
+
+        <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
           {plans.map((p, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              className={`group relative flex h-full flex-col overflow-hidden rounded-xl border backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] p-7 transition-all duration-300 hover:-translate-y-1 ${
+                p.highlight
+                  ? "border-orange-500/40 bg-gradient-to-b from-orange-500/[0.08] to-white/[0.02] hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.4)]"
+                  : "border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] hover:border-orange-500/30"
+              }`}
             >
-              <Card className={`relative overflow-hidden h-full flex flex-col ${p.highlight ? "border-2 shadow-xl ring-1 ring-blue-200" : "border-gray-200 shadow-sm"}`} style={p.highlight ? { borderColor: "#1e40af" } : {}}>
-                {p.highlight && (
-                  <div className="absolute -right-8 top-6 rotate-45 px-10 py-1 text-xs font-bold text-white" style={{ backgroundColor: "#FF7A1A" }}>
-                    Popular
+              {p.highlight && (
+                <div
+                  className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-30 blur-3xl"
+                  style={{ background: "radial-gradient(circle, #FF7A1A 0%, transparent 70%)" }}
+                />
+              )}
+              <div className="relative flex h-full flex-col">
+                <div className="flex items-start justify-between">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-lg border border-orange-500/30"
+                    style={{
+                      background: "linear-gradient(135deg, rgba(255,122,26,0.18) 0%, rgba(255,61,127,0.10) 100%)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px -4px rgba(255,122,26,0.3)",
+                    }}
+                  >
+                    <Zap className="h-6 w-6 text-orange-400" strokeWidth={2.2} />
                   </div>
-                )}
-                <CardHeader className="pb-4 pt-8">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl" style={{ backgroundColor: p.highlight ? "#1e40af" : "#f1f5f9" }}>
-                    <Zap className={`h-6 w-6 ${p.highlight ? "text-white" : "text-gray-500"}`} />
-                  </div>
-                  <CardTitle className="text-2xl text-gray-900">{p.name}</CardTitle>
-                  <CardDescription className="text-sm">{p.desc}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 space-y-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-gray-900">{p.price}</span>
-                    {p.period && <span className="text-sm text-gray-500">{p.period}</span>}
-                  </div>
-                  <div className="h-px bg-gray-100" />
-                  <ul className="space-y-3">
-                    {p.included.map((f, j) => (
-                      <li key={j} className="flex items-start gap-3 text-sm text-gray-700">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" style={{ color: p.highlight ? "#1e40af" : "#22c55e" }} />
-                        {f}
-                      </li>
-                    ))}
-                    {p.locked.map((f, j) => (
-                      <li key={`locked-${j}`} className="flex items-start gap-3 text-sm text-gray-400">
-                        <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gray-300" />
-                        <span className="line-through">{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="pt-4 pb-8">
-                  <Button asChild size="lg" className={`w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/25" : "bg-gray-900 hover:bg-gray-800 text-white"}`}>
-                    <a href={`https://wa.me/5531986570126?text=${encodeURIComponent(`Olá, gostaria de assinar o plano ${p.name}.`)}`} target="_blank" rel="noopener noreferrer">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></a>
-                  </Button>
-                </CardFooter>
-              </Card>
+                  {p.highlight && (
+                    <span
+                      className="inline-flex items-center rounded-md border border-orange-500/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-orange-300"
+                      style={{ background: "linear-gradient(135deg, rgba(255,122,26,0.18), rgba(255,61,127,0.12))" }}
+                    >
+                      Popular
+                    </span>
+                  )}
+                </div>
+                <h3 className="mt-5 text-2xl font-bold text-white">{p.name}</h3>
+                <p className="mt-1 text-[13px] text-white/55">{p.desc}</p>
+
+                <div className="mt-5 flex items-baseline gap-1">
+                  <span className="text-4xl font-extrabold tabular-nums text-white">{p.price}</span>
+                  <span className="text-sm text-white/50">{p.period}</span>
+                </div>
+
+                <div className="my-5 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+
+                <ul className="flex-1 space-y-2.5">
+                  {p.included.map((f, j) => (
+                    <li key={j} className="flex items-start gap-2.5 text-[13.5px] text-white/75">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-400" />
+                      {f}
+                    </li>
+                  ))}
+                  {p.locked.map((f, j) => (
+                    <li key={`l-${j}`} className="flex items-start gap-2.5 text-[13.5px] text-white/30">
+                      <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span className="line-through">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild size="lg" className={`mt-7 w-full text-base font-semibold ${p.highlight ? "bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/30" : "bg-white/10 hover:bg-white/15 text-white border border-white/15"}`}>
+                  <a href={`https://wa.me/5531986570126?text=${encodeURIComponent(`Olá, gostaria de assinar o plano ${p.name}.`)}`} target="_blank" rel="noopener noreferrer">{p.cta} <ArrowRight className="ml-2 h-4 w-4" /></a>
+                </Button>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -703,28 +714,35 @@ function FAQSection() {
     { q: "Como funciona o plano Pro?", a: "O plano Pro inclui funcionalidades avançadas como CRM de clientes, relatórios detalhados e prioridade no suporte." },
   ];
   return (
-    <section id="faq" className="py-24">
-      <div className="mx-auto max-w-3xl px-4">
-        <div className="mb-14 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#FF7A1A" }}>
+    <section
+      id="faq"
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(800px 500px at 50% -10%, rgba(30,64,175,0.18), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
+      }}
+    >
+      <div className="relative mx-auto max-w-3xl px-4">
+        <motion.div className="mb-14 text-center" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
             FAQ
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 md:text-4xl">Perguntas frequentes</h2>
-          <p className="mt-4 text-gray-500">Tire suas dúvidas antes de começar</p>
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5 }}
-        >
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">Perguntas frequentes</h2>
+          <p className="mt-5 text-[17px] text-white/55">Tire suas dúvidas antes de começar</p>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5 }}>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((f, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="rounded-2xl border border-gray-200 bg-white px-6 shadow-sm transition-shadow hover:shadow-md data-[state=open]:shadow-md data-[state=open]:border-blue-200">
-                <AccordionTrigger className="py-5 text-[15px] font-semibold text-gray-900 hover:no-underline [&[data-state=open]]:text-blue-700">
+              <AccordionItem
+                key={i}
+                value={`faq-${i}`}
+                className="overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl px-6 shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all hover:border-orange-500/30 data-[state=open]:border-orange-500/40"
+              >
+                <AccordionTrigger className="py-5 text-[15px] font-semibold text-white hover:no-underline [&[data-state=open]]:text-orange-300">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="pb-5 text-[14px] text-gray-600 leading-relaxed">
+                <AccordionContent className="pb-5 text-[14px] leading-relaxed text-white/65">
                   {f.a}
                 </AccordionContent>
               </AccordionItem>
