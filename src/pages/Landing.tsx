@@ -85,8 +85,22 @@ function HeroSection() {
           <p className="pt-1 text-[13px] text-gray-500">Leva menos de 2 minutos. Sem cartão de crédito.</p>
         </div>
 
-        <div className="flex justify-center">
-          <img src={heroDevices} alt="Anotô em notebook, tablet e celular" className="w-full max-w-md h-auto object-contain" />
+        <div className="relative flex justify-center">
+          {/* Glow ambient */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10"
+            style={{
+              background:
+                "radial-gradient(60% 55% at 50% 55%, rgba(251,146,60,0.35) 0%, rgba(124,58,237,0.18) 45%, transparent 75%)",
+              filter: "blur(40px)",
+            }}
+          />
+          <img
+            src={heroDevices}
+            alt="Anotô em notebook, tablet e celular"
+            className="w-full max-w-md h-auto object-contain animate-hero-float drop-shadow-[0_30px_40px_rgba(76,29,149,0.25)]"
+          />
         </div>
       </div>
     </section>
