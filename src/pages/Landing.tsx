@@ -103,49 +103,83 @@ function BenefitsSection() {
       img: benefitOrdersApp,
       title: "Zero taxa por pedido",
       desc: "Você fica com 100% do valor de cada venda. Sem comissões escondidas, sem surpresas no final do mês.",
-      accent: "#FF7A1A",
+      tag: "Margem 100%",
     },
     {
       img: benefitKanbanUI,
       title: "Pedidos organizados",
       desc: "Painel Kanban em tempo real. Veja o fluxo completo do pedido, da entrada à entrega, sem perder nada.",
-      accent: "#1e40af",
+      tag: "Realtime",
     },
     {
       img: benefitThermalPrinter,
       title: "Impressão automática",
       desc: "Pedido chegou, já imprime na cozinha. Compatível com impressoras térmicas ESC/POS via USB ou rede.",
-      accent: "#7c3aed",
+      tag: "ESC/POS",
     },
   ];
 
   return (
-    <section className="relative py-24 overflow-hidden">
-
-      {/* Decorative blurred circles */}
-      <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-orange-500/20 blur-3xl" />
-      <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+    <section
+      className="relative overflow-hidden py-28"
+      style={{
+        background:
+          "radial-gradient(900px 500px at 90% -10%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(800px 500px at 0% 110%, rgba(30,64,175,0.20), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
+        }}
+      />
 
       <div className="relative mx-auto max-w-6xl px-4">
-        <div className="mb-6 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-400">
-            Por que escolher o Anotô
-          </p>
-          <h2 className="mt-2 text-3xl font-extrabold text-white md:text-4xl">
-            Feito para quem vive o dia a dia do balcão
+        <motion.div
+          className="mx-auto mb-16 max-w-3xl text-center"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
+            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
+            Por que Anotô
+          </span>
+          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
+            Feito para quem vive o{" "}
+            <span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}
+            >
+              dia a dia
+            </span>
+            <br className="hidden md:block" /> do balcão
           </h2>
-        </div>
+        </motion.div>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-3">
           {pillars.map((p, i) => (
-            <motion.div key={i} className="group flex flex-col overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 transition-all hover:bg-white/15 hover:-translate-y-1 hover:shadow-2xl" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-50px" }} transition={{ duration: 0.5, delay: i * 0.15 }}>
-              <div className="flex items-center justify-center overflow-hidden bg-white/5 p-4 h-64">
-                <img src={p.img} alt={p.title} className="h-full w-auto object-contain rounded-xl" />
+            <motion.div
+              key={i}
+              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <div className="flex h-56 items-center justify-center overflow-hidden border-b border-white/[0.06] bg-black/30 p-4">
+                <img src={p.img} alt={p.title} className="h-full w-auto object-contain" />
               </div>
-              <div className="flex flex-1 flex-col p-6 pt-4">
-                <h3 className="text-xl font-bold text-white">{p.title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-white/70">{p.desc}</p>
-                <div className="mt-5 h-1 w-12 rounded-full" style={{ backgroundColor: p.accent }} />
+              <div className="flex flex-1 flex-col p-6">
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-orange-300/80">0{i + 1} · {p.tag}</span>
+                <h3 className="mt-2 text-xl font-bold text-white">{p.title}</h3>
+                <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
+                <p className="text-[13.5px] leading-relaxed text-white/55">{p.desc}</p>
               </div>
             </motion.div>
           ))}
