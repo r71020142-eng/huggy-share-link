@@ -120,68 +120,32 @@ function BenefitsSection() {
   ];
 
   return (
-    <section
-      className="relative overflow-hidden py-28"
-      style={{
-        background:
-          "radial-gradient(900px 500px at 90% -10%, rgba(124,58,237,0.18), transparent 55%), radial-gradient(800px 500px at 0% 110%, rgba(30,64,175,0.20), transparent 55%), linear-gradient(180deg, #07071A 0%, #0A0F25 100%)",
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, black 40%, transparent 100%)",
-        }}
-      />
-
-      <div className="relative mx-auto max-w-6xl px-4">
-        <motion.div
-          className="mx-auto mb-16 max-w-3xl text-center"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300/90 backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_2px_rgba(255,122,26,0.7)]" />
-            Por que Anotô
-          </span>
-          <h2 className="mt-6 text-4xl font-extrabold leading-[1.05] tracking-tight text-white md:text-5xl">
-            Feito para quem vive o{" "}
-            <span
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: "linear-gradient(120deg, #FF7A1A 0%, #FF3D7F 55%, #A855F7 100%)" }}
-            >
-              dia a dia
-            </span>
-            <br className="hidden md:block" /> do balcão
+    <section className="bg-[#0B0D12] py-28 border-t border-white/[0.06]">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="mb-16 max-w-2xl">
+          <p className="text-[12px] font-medium uppercase tracking-[0.16em] text-white/40">Por que Anotô</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-[40px] md:leading-[1.15]">
+            Feito para quem vive o dia a dia do balcão.
           </h2>
-        </motion.div>
+          <p className="mt-4 text-[15px] leading-relaxed text-white/55">
+            Três pilares que sustentam a operação, do pedido à cozinha.
+          </p>
+        </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-md bg-white/[0.06] md:grid-cols-3">
           {pillars.map((p, i) => (
-            <motion.div
-              key={i}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-gradient-to-b from-white/[0.04] to-white/[0.015] backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(0,0,0,0.6)] transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:shadow-[0_20px_60px_-15px_rgba(255,122,26,0.25)]"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-            >
-              <div className="flex h-56 items-center justify-center overflow-hidden border-b border-white/[0.06] bg-black/30 p-4">
+            <div key={i} className="group flex flex-col bg-[#101319] transition-colors duration-200 hover:bg-[#13171F]">
+              <div className="flex h-48 items-center justify-center border-b border-white/[0.06] bg-black/30 p-4">
                 <img src={p.img} alt={p.title} className="h-full w-auto object-contain" />
               </div>
-              <div className="flex flex-1 flex-col p-6">
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-orange-300/80">0{i + 1} · {p.tag}</span>
-                <h3 className="mt-2 text-xl font-bold text-white">{p.title}</h3>
-                <div className="my-4 h-px w-full bg-gradient-to-r from-white/[0.08] via-white/[0.04] to-transparent" />
-                <p className="text-[13.5px] leading-relaxed text-white/55">{p.desc}</p>
+              <div className="flex flex-1 flex-col p-7">
+                <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-white/40">
+                  0{i + 1} · {p.tag}
+                </span>
+                <h3 className="mt-3 text-[15px] font-medium text-white">{p.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-white/50">{p.desc}</p>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
