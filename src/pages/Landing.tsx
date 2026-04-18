@@ -23,6 +23,7 @@ function LandingHeader() {
           {[
             ["Funcionalidades", "#funcionalidades"],
             ["Como funciona", "#como-funciona"],
+            ["Sobre nós", "#sobre-nos"],
             ["Planos", "#planos"],
             ["FAQ", "#faq"],
           ].map(([label, href]) => (
