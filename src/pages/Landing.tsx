@@ -53,7 +53,7 @@ function HeroSection() {
           <img
             src={logoLanding}
             alt="Anotô"
-            className="block w-[110px] md:w-[150px] h-auto object-contain mb-2"
+            className="block w-[180px] md:w-[240px] h-auto object-contain mb-2"
           />
           <span className="inline-block text-[12px] font-semibold uppercase tracking-[0.14em] text-orange-600">
             Sem taxa por pedido
