@@ -210,6 +210,7 @@ function TimelineSection() {
   );
 }
 
+export default function SobreNos() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
