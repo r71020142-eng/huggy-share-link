@@ -131,7 +131,85 @@ function TimelineItem({
   );
 }
 
-export default function SobreNos() {
+function TimelineSection() {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [progress, setProgress] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const wrap = wrapperRef.current;
+      if (!wrap) return;
+      const rect = wrap.getBoundingClientRect();
+      const center = window.innerHeight / 2;
+      const passed = center - rect.top;
+      setProgress(Math.max(0, Math.min(1, passed / rect.height)));
+
+      let best = 0;
+      let bestDist = Infinity;
+      itemRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const d = Math.abs(r.top + r.height / 2 - center);
+        if (d < bestDist) { bestDist = d; best = i; }
+      });
+      setActiveIndex(best);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return (
+    <section className="relative">
+      <div className="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
+        <div ref={wrapperRef} className="relative">
+          {/* track */}
+          <div
+            aria-hidden
+            className="absolute top-0 bottom-0 left-2 md:left-1/2 md:-translate-x-1/2 w-px bg-white/10"
+          />
+          {/* progress fill */}
+          <div
+            aria-hidden
+            className="absolute top-0 left-2 md:left-1/2 md:-translate-x-1/2 w-px transition-[height] duration-150"
+            style={{
+              height: `${progress * 100}%`,
+              background: "linear-gradient(to bottom, rgba(255,122,26,0.9), rgba(255,122,26,0.6))",
+              boxShadow: "0 0 12px rgba(255,122,26,0.6)",
+            }}
+          />
+          {/* moving dot */}
+          <div
+            aria-hidden
+            className="absolute left-2 md:left-1/2 -translate-x-1/2 -translate-y-1/2 transition-[top] duration-150"
+            style={{ top: `${progress * 100}%` }}
+          >
+            <span className="block h-5 w-5 rounded-full border-2 border-orange-300 bg-orange-500 shadow-[0_0_22px_rgba(255,122,26,0.9)]" />
+          </div>
+
+          <div className="space-y-16 md:space-y-24">
+            {MILESTONES.map((m, i) => (
+              <TimelineItem
+                key={m.year}
+                m={m}
+                index={i}
+                active={i === activeIndex}
+                innerRef={(el) => (itemRefs.current[i] = el)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
