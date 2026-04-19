@@ -5,11 +5,13 @@ import deliveryDaLu from "@/assets/partners/delivery-da-lu.png";
 import kakauPizza from "@/assets/partners/kakau-pizza.png";
 import faustinoCarnes from "@/assets/partners/faustino-carnes.png";
 import feedbackBurguerDoVale from "@/assets/social-proof/burguer-do-vale-feedback.png";
+import feedbackKakauPizza from "@/assets/social-proof/kakau-pizza-feedback.png";
 
 type Shot = { src: string; alt: string };
 
 const SCREENSHOTS: Shot[] = [
   { src: feedbackBurguerDoVale, alt: "Feedback do Burguer do Vale no WhatsApp" },
+  { src: feedbackKakauPizza, alt: "Feedback da Kakau Pizza no WhatsApp" },
 ];
 
 const PARTNERS: Shot[] = [
