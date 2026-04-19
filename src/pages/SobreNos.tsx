@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const BRAND = "#FF7A1A";
 
@@ -61,16 +62,32 @@ const MILESTONES: Milestone[] = [
   },
 ];
 
-function TimelineItem({ m, index }: { m: Milestone; index: number }) {
+function TimelineItem({
+  m,
+  index,
+  active,
+  innerRef,
+}: {
+  m: Milestone;
+  index: number;
+  active: boolean;
+  innerRef: (el: HTMLDivElement | null) => void;
+}) {
   const isLeft = index % 2 === 0;
 
   return (
-    <div className="relative md:grid md:grid-cols-2 md:gap-12">
+    <div ref={innerRef} className="relative md:grid md:grid-cols-2 md:gap-12">
       {/* Dot + year badge on the central line (desktop) */}
       <div className="pointer-events-none absolute left-1/2 top-6 hidden -translate-x-1/2 items-center gap-3 md:flex">
-        <span className="h-4 w-4 rounded-full border-2 border-white/40 bg-black" />
         <span
-          className="rounded-full px-3 py-1 text-[12px] font-bold text-white shadow-lg"
+          className={`h-4 w-4 rounded-full border-2 transition-all duration-500 ${
+            active ? "scale-125 border-orange-400 bg-orange-500 shadow-[0_0_18px_rgba(255,122,26,0.8)]" : "border-white/30 bg-black"
+          }`}
+        />
+        <span
+          className={`rounded-full px-3 py-1 text-[12px] font-bold text-white shadow-lg transition-all duration-500 ${
+            active ? "scale-110" : "opacity-70"
+          }`}
           style={{ backgroundColor: BRAND }}
         >
           {m.year}
@@ -79,13 +96,21 @@ function TimelineItem({ m, index }: { m: Milestone; index: number }) {
 
       {/* Mobile dot */}
       <div className="absolute -left-[7px] top-6 flex items-center gap-3 md:hidden">
-        <span className="h-3.5 w-3.5 rounded-full border-2 border-white/40 bg-black" />
+        <span
+          className={`h-3.5 w-3.5 rounded-full border-2 transition-all duration-500 ${
+            active ? "scale-125 border-orange-400 bg-orange-500 shadow-[0_0_14px_rgba(255,122,26,0.8)]" : "border-white/30 bg-black"
+          }`}
+        />
       </div>
 
       {/* Card */}
       <div className={isLeft ? "md:col-start-1 md:pr-12" : "md:col-start-2 md:pl-12"}>
         <div
-          className="relative ml-8 md:ml-0 rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent p-6 md:p-7 shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+          className={`relative ml-8 md:ml-0 rounded-2xl border p-6 md:p-7 transition-all duration-500 ${
+            active
+              ? "border-orange-500/50 bg-gradient-to-b from-orange-500/[0.08] to-transparent shadow-[0_18px_50px_rgba(255,122,26,0.18)] -translate-y-1"
+              : "border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent shadow-[0_8px_30px_rgba(0,0,0,0.35)] opacity-70"
+          }`}
         >
           <span
             className="inline-block rounded-full px-3 py-1 text-[11px] font-bold text-white md:hidden"
