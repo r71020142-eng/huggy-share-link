@@ -1,28 +1,13 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
-/**
- * Prova Social: prints (screenshots) + logos de parceiros.
- *
- * Como adicionar:
- * 1. Coloque imagens em src/assets/social-proof/ e src/assets/partners/
- * 2. Importe e adicione nos arrays SCREENSHOTS e PARTNERS abaixo.
- *
- * Ex:
- *   import print1 from "@/assets/social-proof/print1.jpg";
- *   import logoLoja from "@/assets/partners/loja.png";
- */
+import burguerDoVale from "@/assets/partners/burguer-do-vale.png";
 
 type Shot = { src: string; alt: string };
 
-// 👉 Adicione seus prints aqui
-const SCREENSHOTS: Shot[] = [
-  // { src: print1, alt: "Conversa de cliente elogiando" },
-];
+const SCREENSHOTS: Shot[] = [];
 
-// 👉 Adicione as logos das lojas parceiras aqui
 const PARTNERS: Shot[] = [
-  // { src: logoLoja, alt: "Lanchonete X" },
+  { src: burguerDoVale, alt: "Burguer do Vale" },
 ];
 
 export default function SocialProofSection() {
