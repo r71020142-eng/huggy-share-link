@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import burguerDoVale from "@/assets/partners/burguer-do-vale.png";
 import deliveryDaLu from "@/assets/partners/delivery-da-lu.png";
 import kakauPizza from "@/assets/partners/kakau-pizza.png";
+import faustinoCarnes from "@/assets/partners/faustino-carnes.png";
 import feedbackBurguerDoVale from "@/assets/social-proof/burguer-do-vale-feedback.png";
 
 type Shot = { src: string; alt: string };
@@ -15,6 +16,7 @@ const PARTNERS: Shot[] = [
   { src: burguerDoVale, alt: "Burguer do Vale" },
   { src: deliveryDaLu, alt: "Delivery da Lu" },
   { src: kakauPizza, alt: "Kakau Pizza" },
+  { src: faustinoCarnes, alt: "Faustino Casa de Carnes" },
 ];
 
 export default function SocialProofSection() {
