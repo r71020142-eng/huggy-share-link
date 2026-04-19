@@ -10,6 +10,7 @@ import logoLanding from "@/assets/logo-anoto-landing.png";
 import testimonialCarlos from "@/assets/testimonial-carlos.jpg";
 import testimonialAna from "@/assets/testimonial-ana.jpg";
 import testimonialRoberto from "@/assets/testimonial-roberto.jpg";
+import SocialProofSection from "@/components/landing/SocialProofSection";
 
 /* ─── Header ─── */
 function LandingHeader() {
@@ -382,6 +383,7 @@ export default function Landing() {
       <HowItWorksSection />
       <BenefitsSection />
       <TestimonialsSection />
+      <SocialProofSection />
       <PricingSection />
       <FAQSection />
       <FinalCTASection />
