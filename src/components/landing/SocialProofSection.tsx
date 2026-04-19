@@ -1,28 +1,13 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-
-/**
- * Prova Social: prints (screenshots) + logos de parceiros.
- *
- * Como adicionar:
- * 1. Coloque imagens em src/assets/social-proof/ e src/assets/partners/
- * 2. Importe e adicione nos arrays SCREENSHOTS e PARTNERS abaixo.
- *
- * Ex:
- *   import print1 from "@/assets/social-proof/print1.jpg";
- *   import logoLoja from "@/assets/partners/loja.png";
- */
+import burguerDoVale from "@/assets/partners/burguer-do-vale.png";
 
 type Shot = { src: string; alt: string };
 
-// 👉 Adicione seus prints aqui
-const SCREENSHOTS: Shot[] = [
-  // { src: print1, alt: "Conversa de cliente elogiando" },
-];
+const SCREENSHOTS: Shot[] = [];
 
-// 👉 Adicione as logos das lojas parceiras aqui
 const PARTNERS: Shot[] = [
-  // { src: logoLoja, alt: "Lanchonete X" },
+  { src: burguerDoVale, alt: "Burguer do Vale" },
 ];
 
 export default function SocialProofSection() {
@@ -76,15 +61,35 @@ export default function SocialProofSection() {
             Lojas que já usam o Anotô
           </p>
           {PARTNERS.length > 0 ? (
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-14">
+            <div
+              className="mt-10 flex flex-wrap items-center justify-center gap-x-12 gap-y-10 md:gap-x-16"
+              style={{ perspective: "1000px" }}
+            >
               {PARTNERS.map((p, i) => (
-                <img
+                <div
                   key={i}
-                  src={p.src}
-                  alt={p.alt}
-                  loading="lazy"
-                  className="h-10 w-auto object-contain opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0 md:h-12"
-                />
+                  className="group relative transition-transform duration-500 ease-out [transform-style:preserve-3d] hover:[transform:rotateX(12deg)_rotateY(-14deg)_translateZ(20px)]"
+                >
+                  {/* base shadow */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-2 -z-10 rounded-2xl bg-black/30 blur-xl opacity-50 transition-all duration-500 group-hover:opacity-80 group-hover:blur-2xl group-hover:translate-y-3"
+                  />
+                  {/* glossy backplate */}
+                  <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-white to-gray-100 p-3 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.9)] ring-1 ring-black/5 transition-shadow duration-500 group-hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,1)]">
+                    <img
+                      src={p.src}
+                      alt={p.alt}
+                      loading="lazy"
+                      className="h-20 w-20 md:h-24 md:w-24 object-contain rounded-xl"
+                    />
+                    {/* highlight sweep */}
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                    />
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
