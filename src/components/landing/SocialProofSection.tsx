@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import burguerDoVale from "@/assets/partners/burguer-do-vale.png";
+import deliveryDaLu from "@/assets/partners/delivery-da-lu.png";
 
 type Shot = { src: string; alt: string };
 
@@ -8,6 +9,7 @@ const SCREENSHOTS: Shot[] = [];
 
 const PARTNERS: Shot[] = [
   { src: burguerDoVale, alt: "Burguer do Vale" },
+  { src: deliveryDaLu, alt: "Delivery da Lu" },
 ];
 
 export default function SocialProofSection() {
