@@ -11,6 +11,7 @@ type Shot = { src: string; alt: string };
 
 const SCREENSHOTS: Shot[] = [
   { src: feedbackBurguerDoVale, alt: "Feedback do Burguer do Vale no WhatsApp" },
+  { src: feedbackKakauPizza, alt: "Feedback da Kakau Pizza no WhatsApp" },
 ];
 
 const PARTNERS: Shot[] = [
