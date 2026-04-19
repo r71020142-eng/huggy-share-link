@@ -85,7 +85,7 @@ function HeroSection() {
           <p className="pt-1 text-[13px] text-gray-500">Leva menos de 2 minutos. Sem cartão de crédito.</p>
         </div>
 
-        <div className="relative flex justify-center md:mt-24 lg:mt-32">
+        <div className="relative flex justify-center md:mt-48 lg:mt-64">
           {/* Glow ambient */}
           <div
             aria-hidden
