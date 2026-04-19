@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import burguerDoVale from "@/assets/partners/burguer-do-vale.png";
 import deliveryDaLu from "@/assets/partners/delivery-da-lu.png";
+import kakauPizza from "@/assets/partners/kakau-pizza.png";
 import feedbackBurguerDoVale from "@/assets/social-proof/burguer-do-vale-feedback.png";
 
 type Shot = { src: string; alt: string };
@@ -13,6 +14,7 @@ const SCREENSHOTS: Shot[] = [
 const PARTNERS: Shot[] = [
   { src: burguerDoVale, alt: "Burguer do Vale" },
   { src: deliveryDaLu, alt: "Delivery da Lu" },
+  { src: kakauPizza, alt: "Kakau Pizza" },
 ];
 
 export default function SocialProofSection() {
