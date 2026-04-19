@@ -166,26 +166,7 @@ export default function SobreNos() {
       </section>
 
       {/* Timeline */}
-      <section className="relative">
-        <div className="mx-auto max-w-5xl px-6 pb-24 md:pb-32">
-          <div className="relative">
-            {/* central vertical line */}
-            <div
-              aria-hidden
-              className="absolute top-0 bottom-0 left-2 md:left-1/2 md:-translate-x-1/2 w-px"
-              style={{
-                background:
-                  "linear-gradient(to bottom, transparent, rgba(255,122,26,0.6) 10%, rgba(255,122,26,0.6) 90%, transparent)",
-              }}
-            />
-            <div className="space-y-16 md:space-y-24">
-              {MILESTONES.map((m, i) => (
-                <TimelineItem key={m.year} m={m} index={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <TimelineSection />
 
       {/* CTA */}
       <section className="border-t border-white/10">
