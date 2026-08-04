@@ -141,7 +141,13 @@ export function buildReceipt(
     boldOn();
     txt(order.customer_name || "");
     boldOff();
-    if (order.customer_address) txt(fit(order.customer_address, WIDTH));
+    if (order.customer_address) {
+      const addr = order.customer_address;
+      // Print in multiple lines if longer than WIDTH
+      for (let i = 0; i < addr.length; i += WIDTH) {
+        txt(addr.substring(i, i + WIDTH));
+      }
+    }
     if (order.customer_phone) txt("(" + (order.customer_phone || "") + ")");
     txt(SEP);
 
