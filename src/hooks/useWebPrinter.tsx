@@ -114,7 +114,12 @@ function buildEscPosBytes(order: any, items: any[], store: any, copies = 1, mode
     bold(true);
     addText(`Cliente: ${order.customer_name}`);
     bold(false);
-    if (order.customer_address) addText(`End: ${order.customer_address}`);
+    if (order.customer_address) {
+      const addr = order.customer_address;
+      for (let i = 0; i < addr.length; i += 32) {
+        addText(`End: ${addr.substring(i, i + 32)}`);
+      }
+    }
     if (order.customer_phone) addText(`Tel: ${order.customer_phone}`);
     addLine();
     addText(padColumns("ITEM", "QTD", "VALOR"));
