@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Download, Database, Loader2, Info } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-type TableName = Parameters<typeof supabase.from>[0];
+type TableName = string;
 
 interface ExportableTable {
   /** Nome real da tabela no banco */
@@ -92,7 +92,7 @@ async function fetchAllRows(table: TableName): Promise<Record<string, unknown>[]
 
   // Loop defensivo: encerra quando a página retorna menos que PAGE_SIZE
   for (;;) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from(table)
       .select("*")
       .range(from, from + PAGE_SIZE - 1);
