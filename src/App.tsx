@@ -36,6 +36,7 @@ import SuperAdminStores from "@/pages/superadmin/Stores";
 import SuperAdminUsers from "@/pages/superadmin/Users";
 import SuperAdminActivityLogs from "@/pages/superadmin/ActivityLogs";
 import SuperAdminPrintMonitoring from "@/pages/superadmin/PrintMonitoring";
+import SuperAdminDataExport from "@/pages/superadmin/DataExport";
 import PublicMenu from "@/pages/public/PublicMenu";
 import Landing from "@/pages/Landing";
 import SobreNos from "@/pages/SobreNos";
@@ -109,6 +110,7 @@ const App = () => (
                 <Route path="users" element={<SuperAdminUsers />} />
                 <Route path="logs" element={<SuperAdminActivityLogs />} />
                 <Route path="print-monitoring" element={<SuperAdminPrintMonitoring />} />
+                <Route path="export" element={<SuperAdminDataExport />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
