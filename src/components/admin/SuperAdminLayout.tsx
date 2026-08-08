@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, Outlet } from "react-router-dom";
-import { Shield, Key, Store, Users, LogOut, LayoutDashboard, Printer } from "lucide-react";
+import { Shield, Key, Store, Users, LogOut, LayoutDashboard, Printer, Database } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -25,6 +25,7 @@ const navItems = [
   { title: "Lojas", url: "/superadmin/stores", icon: Store },
   { title: "Usuários", url: "/superadmin/users", icon: Users },
   { title: "Logs", url: "/superadmin/logs", icon: Shield },
+  { title: "Exportar Dados", url: "/superadmin/export", icon: Database },
 ];
 
 export function SuperAdminLayout() {
