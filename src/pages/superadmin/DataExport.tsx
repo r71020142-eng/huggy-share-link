@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Download, Database, Loader2, Info } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { SchemaSqlCard } from "@/components/admin/SchemaSqlCard";
 
 type TableName = string;
 
@@ -248,6 +249,8 @@ export default function SuperAdminDataExport() {
           </Card>
         ))}
       </div>
+
+      <SchemaSqlCard />
     </div>
   );
 }
